@@ -29,6 +29,7 @@ make && make install
 3) Install Go(if not already installed)
 
 4) Install Go Plugin
+
 Download this repository,
 ``` 
 mkdir kdev-go/build && cd kdev-go/build

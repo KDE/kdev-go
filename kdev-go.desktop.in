@@ -1,0 +1,18 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Service
+Exec=blubb
+Comment=Go Language Support
+Name=Go Support
+GenericName=Go Support
+ServiceTypes=KDevelop/Plugin
+Icon=text-x-go
+X-KDE-Library=kdevgoplugin
+X-KDevelop-Version=@KDEV_PLUGIN_VERSION@
+X-KDevelop-Language=Go
+X-KDevelop-Args=GO
+X-KDevelop-Interfaces=ILanguageSupport
+X-KDevelop-SupportedMimeTypes=text/x-go
+X-KDE-PluginInfo-Name=kdevgoplugin
+X-KDevelop-Mode=NoGUI
+X-KDevelop-LoadMode=AlwaysOn

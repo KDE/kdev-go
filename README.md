@@ -12,9 +12,11 @@ Some of the most important features include:
  -   Code completion(struct and interface members, type methods and package imports)
 
 **HOWTO install this plugin**
+
 I haven't tested the plugin with stable KDevelop versions so I can't say for sure, but most likely you will need to install KDevelop from git.
 
 1) Follow KDevelop installation instructions here https://techbase.kde.org/Projects/KDevelop4/HowToCompile
+
 2) Install KDevelop-PG-Qt
 ```
 git clone git://anongit.kde.org/kdevelop-pg-qt
@@ -23,8 +25,10 @@ cmake -DCMAKE_PREFIX_PATH=`your KDevelop install dir`
  -DCMAKE_INSTALL_PREFIX=`your KDevelop install dir` ../
 make && make install
 ```
-4) Install Go(if not already installed)
-3) Install Go Plugin
+
+3) Install Go(if not already installed)
+
+4) Install Go Plugin
 Download this repository,
 ``` 
 mkdir kdev-go/build && cd kdev-go/build
@@ -32,9 +36,11 @@ cmake -DCMAKE_PREFIX_PATH=`your KDevelop install dir`
  -DCMAKE_INSTALL_PREFIX=`your KDevelop install dir` ../
 make && make install
 ```
-If you installed KDevelop into a custom directory don't forget add this directory to $KDEDIRS and run kbuildsycoca4 afterwards
+
+If you installed KDevelop into a custom directory don't forget to add this directory to $KDEDIRS and run kbuildsycoca4 afterwards.
 
 **HOWTO use this plugin**
+
 I recommend following official code organization suggestions for example like [here](http://golang.org/doc/code.html) or [here](http://www.youtube.com/watch?v=XCsL89YtqCs). In that case you will need to set $GOPATH environment variable to the root of your project before starting KDevelop. Plugin can also try to find path to your project automatically, but it can fail. For go standart library to work you need the path to your 'go' binary be in $PATH environment variable, which if you installed Go normally(with your package manager) should already be there. After that just start KDevelop and open your Go project. If plugin doesn't work(e.g. highlighting is disabled) check if it's loaded in KDevelop(Help->Loaded Plugins). If not - check if it's installed for example like this: find 'KDevelop installation path' -name "*kdevgo*". If it is installed and loaded but still not working consider opening an issue on github or contacting me directly at onehundredof@gmail.com.
 
 For building and executing your application I recommend using custom build system built into KDevelop.

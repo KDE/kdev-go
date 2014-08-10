@@ -384,12 +384,48 @@ bool ExpressionVisitor::handleBuiltinFunction(PrimaryExprAst* node)
 	return false;
     if(node->callOrBuiltinParam)
     {
-	QualifiedIdentifier builtinFunction = identifierForNode(node->id);
-	if(builtinFunction.toString() == "make" && node->callOrBuiltinParam->type)
+	//QualifiedIdentifier builtinFunction = identifierForNode(node->id);
+	QString builtinFunction = identifierForNode(node->id).toString();
+	if(builtinFunction == "make" && node->callOrBuiltinParam->type)
 	{//first argument must be slice, map or channel type
 	    AbstractType::Ptr type = m_builder->buildType(node->callOrBuiltinParam->type);
 	    visitCallOrBuiltinParam(node->callOrBuiltinParam);
 	    pushType(type);
+	    return true;
+	}else if(builtinFunction == "new")
+	{
+	    AbstractType::Ptr type;
+	    if(!node->callOrBuiltinParam->type)
+	    {//extract type name from expression
+		ExpressionAst* exp = node->callOrBuiltinParam->expression;
+		while(exp && exp->unaryExpression && exp->unaryExpression->primaryExpr)
+		{
+		    if(exp->unaryExpression->primaryExpr->expression)
+		    {//type enclosed in parentheses
+			exp = exp->unaryExpression->primaryExpr->expression;
+			continue;
+		    }
+		    if(exp->unaryExpression->primaryExpr->id)
+		    {
+			IdentifierAst* fullname=0;
+			if(exp->unaryExpression->primaryExpr->primaryExprResolve && exp->unaryExpression->primaryExpr->primaryExprResolve->selector)
+			    fullname = exp->unaryExpression->primaryExpr->primaryExprResolve->selector;
+			type = m_builder->buildType(exp->unaryExpression->primaryExpr->id, fullname);
+		    }
+		    break;
+		}
+		if(!type) return false;
+	    }else
+	    {
+		type = m_builder->buildType(node->callOrBuiltinParam->type);
+	    }
+	    visitCallOrBuiltinParam(node->callOrBuiltinParam);
+	    if(type)
+	    {
+		PointerType* ptype = new PointerType();
+		ptype->setBaseType(type);
+		pushType(AbstractType::Ptr(ptype));
+	    }
 	    return true;
 	}
 	return false;

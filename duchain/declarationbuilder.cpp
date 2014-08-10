@@ -780,3 +780,9 @@ AbstractType::Ptr DeclarationBuilder::buildType(go::TypeAst* node)
     return lastType();
 }
 
+AbstractType::Ptr DeclarationBuilder::buildType(go::IdentifierAst* node, go::IdentifierAst* fullname)
+{
+    visitTypeName(typeNameFromIdentifier(node, fullname));
+    return lastType();
+}
+

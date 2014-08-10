@@ -83,6 +83,7 @@ public:
      * Think how to do it properly.
      */
     AbstractType::Ptr buildType(go::TypeAst* node);
+    AbstractType::Ptr buildType(go::IdentifierAst* node, go::IdentifierAst* fullname=0);
     
 private:
     go::GoFunctionDeclaration* parseSignature(go::SignatureAst* node, bool declareParameters, go::IdentifierAst* name=0);

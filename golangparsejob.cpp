@@ -59,7 +59,7 @@ void GoParseJob::run()
 	code.chop(1);
     
     //ParseSession session(QString(contents().contents).toUtf8(), priority());
-    ParseSession session(code, priority());
+    ParseSession session(code, parsePriority());
     
     session.setCurrentDocument(document());
     session.setFeatures(minimumFeatures());
@@ -79,7 +79,8 @@ void GoParseJob::run()
         translateDUChainToRevision(context);
         context->setRange(RangeInRevision(0, 0, INT_MAX, INT_MAX));
     }
-    //kDebug() << "Job features: " << minimumFeatures();
+    kDebug() << "Job features: " << minimumFeatures();
+    kDebug() << "Job priority: " << parsePriority();
     
     kDebug() << document();
     bool result = session.startParsing();
@@ -92,6 +93,10 @@ void GoParseJob::run()
     if((minimumFeatures() & TopDUContext::AllDeclarationsContextsAndUses) == TopDUContext::AllDeclarationsAndContexts)
 	forExport = true;
     //kDebug() << contents().contents;
+    //Force parse priority 0 in opened documents
+    //(if document was parsed as import before opening it's priority will not be 0)
+    if(!forExport)
+	setParsePriority(0);
     if(result)
     {
 	QReadLocker parseLock(languageSupport()->language()->parseLock());

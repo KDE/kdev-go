@@ -628,7 +628,7 @@ void DeclarationBuilder::visitTypeSpec(go::TypeSpecAst* node)
     m_contextIdentifier = identifierForNode(node->name);
     visitType(node->type);
     DUChainWriteLocker lock;
-    kDebug() << lastType()->toString();
+    //kDebug() << lastType()->toString();
     decl->setType(lastType());
     
     decl->setIsTypeAlias(true);
@@ -641,8 +641,8 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
     //prevent recursive imports
     //without preventing recursive imports. importing standart go library(2000+ files) takes minutes and sometimes never stops
     //thankfully go import mechanism doesn't need recursive imports(I think)
-    if(m_export)
-	return;
+    //if(m_export)
+	//return;
     QString import(identifierForIndex(node->importpath->import).toString());
     QList<ReferencedTopDUContext> contexts = m_session->contextForImport(import);
     if(contexts.empty())

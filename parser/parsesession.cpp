@@ -53,6 +53,7 @@ ParseSession::ParseSession(const QByteArray& contents, int priority, bool append
     m_lexer = new go::Lexer(iter);
     m_parser->setMemoryPool(m_pool);
     m_parser->setTokenStream(m_lexer);
+    forExport=false;
     
 }
 
@@ -140,7 +141,17 @@ void ParseSession::setCurrentDocument(const KDevelop::IndexedString& document)
     m_document = document;
 }
 
-
+/**
+ * Currently priority order works in this way
+ * 	-1: Direct imports of opened file
+ * 	 0: opened files
+ * 	 1: Imports of direct imports(needed to resolve types of some functions)
+ * 	 2: Reparse of direct imports, after its imports are finished
+ * THIS AND BELOW IS NOT PARSED ATM
+ * 	 3: Import of imports of direct imports(currently not parsed nor they actually needed I think)
+ * 	 4: Reparse of imports of direct imports
+ * 	 5: ...
+ */
 QList<ReferencedTopDUContext> ParseSession::contextForImport(QString package)
 {
     package = package.mid(1, package.length()-2);
@@ -190,6 +201,8 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QString package)
     }
     QList<ReferencedTopDUContext> contexts;
     bool shouldReparse=false;
+    //reduce priority if it is recursive import
+    int priority = forExport ? m_priority + 2 : m_priority - 1;
     for(QString filename : files)
     {
 	filename = path.filePath(filename);
@@ -206,12 +219,12 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QString package)
 	else
 	{
 	    shouldReparse = true;
-	    scheduleForParsing(url, m_priority-1, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts));
+	    scheduleForParsing(url, priority, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts));
 	}
     }
     if(shouldReparse) 
 	//scheduleForParsing(m_document, m_priority, TopDUContext::AllDeclarationsContextsAndUses);
-	scheduleForParsing(m_document, m_priority, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
+	scheduleForParsing(m_document, priority+1, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
     return contexts;
 }
 
@@ -220,6 +233,10 @@ void ParseSession::scheduleForParsing(const IndexedString& url, int priority, To
     BackgroundParser* bgparser = KDevelop::ICore::self()->languageController()->backgroundParser();
     //TopDUContext::Features features = (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::VisibleDeclarationsAndContexts);//(TopDUContext::Features)
 	//(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsContextsAndUses);
+
+    //currently recursive imports work really slow, nor they usually needed
+    if(m_priority >= 1)
+	return;
 	
     if (bgparser->isQueued(url)) 
     {
@@ -280,6 +297,8 @@ QList< ReferencedTopDUContext > ParseSession::contextForThisPackage(IndexedStrin
 void ParseSession::setFeatures(TopDUContext::Features features)
 {
     m_features = features;
+    if((m_features & TopDUContext::AllDeclarationsContextsAndUses) == TopDUContext::AllDeclarationsAndContexts)
+	forExport = true;
 }
 
 QString ParseSession::textForNode(go::AstNode* node)

@@ -104,6 +104,7 @@ private:
     KDevelop::IndexedString m_document;
     KDevelop::TopDUContext::Features m_features;
     int m_priority;
+    bool forExport;
   
 };
 

@@ -41,7 +41,7 @@ ParseSession::ParseSession(const QByteArray& contents, int priority, bool append
 						      //m_contents(QString(contents).toUtf8()),
 						      m_contents(contents),
 						      m_priority(priority),
-						      m_features(TopDUContext::VisibleDeclarationsAndContexts)
+						      m_features(TopDUContext::AllDeclarationsAndContexts)
 {
     //appending with new line helps lexer to set correct semicolons
     //(lexer sets semicolons on newlines if some conditions are met because
@@ -206,12 +206,12 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QString package)
 	else
 	{
 	    shouldReparse = true;
-	    scheduleForParsing(url, m_priority-1, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::VisibleDeclarationsAndContexts));
+	    scheduleForParsing(url, m_priority-1, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts));
 	}
     }
     if(shouldReparse) 
 	//scheduleForParsing(m_document, m_priority, TopDUContext::AllDeclarationsContextsAndUses);
-	scheduleForParsing(m_document, m_priority, m_features);
+	scheduleForParsing(m_document, m_priority, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
     return contexts;
 }
 
@@ -266,13 +266,13 @@ QList< ReferencedTopDUContext > ParseSession::contextForThisPackage(IndexedStrin
 		contexts.append(context);
 	    else
 	    {
-		scheduleForParsing(url, m_priority-1, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::VisibleDeclarationsAndContexts));
+		scheduleForParsing(url, m_priority-1, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts));
 		shouldReparse=true;
 	    }
 	     
 	 }
 	 if(shouldReparse)
-	     scheduleForParsing(m_document, m_priority, m_features);
+	     scheduleForParsing(m_document, m_priority, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
     }
     return contexts;
 }

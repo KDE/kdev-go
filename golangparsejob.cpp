@@ -85,9 +85,12 @@ void GoParseJob::run()
     bool result = session.startParsing();
     //this is useful for testing parser, comment it for actual working
     //Q_ASSERT(result);
-    bool forExport = true;
-    if((minimumFeatures() & TopDUContext::AllDeclarationsContextsAndUses) == TopDUContext::AllDeclarationsContextsAndUses)
-	forExport = false;
+    //When switching between files(even if they are not modified) KDevelop decides they need to be updated
+    //and calls parseJob with VisibleDeclarations feature
+    //so for now feature, identifying import will be AllDeclarationsAndContexts, without Uses
+    bool forExport = false;
+    if((minimumFeatures() & TopDUContext::AllDeclarationsContextsAndUses) == TopDUContext::AllDeclarationsAndContexts)
+	forExport = true;
     //kDebug() << contents().contents;
     if(result)
     {
@@ -119,8 +122,10 @@ void GoParseJob::run()
     setDuChain(context);
     {
         DUChainWriteLocker lock;
+	context->setFeatures(minimumFeatures());
         ParsingEnvironmentFilePointer file = context->parsingEnvironmentFile();
 	Q_ASSERT(file);
+	DUChain::self()->updateContextEnvironment(context->topContext(), file.data());
     }
     highlightDUChain();
     

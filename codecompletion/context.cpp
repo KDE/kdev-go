@@ -21,6 +21,7 @@
 #include "context.h"
 
 #include <language/codecompletion/normaldeclarationcompletionitem.h>
+#include <language/duchain/types/pointertype.h>
 
 #include "parser/golexer.h"
 #include "parser/goparser.h"
@@ -74,6 +75,14 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::importAndMemberComplet
     AbstractType::Ptr lasttype = lastType(m_text.left(m_text.size()-1));
     if(lasttype)
     {
+	//evaluate pointers
+	if(fastCast<PointerType*>(lasttype.constData()))
+	{
+	    DUChainReadLocker lock;
+	    PointerType* ptype = fastCast<PointerType*>(lasttype.constData());
+	    if(ptype->baseType())
+		lasttype = ptype->baseType();
+	}
 	if(fastCast<StructureType*>(lasttype.constData()))
 	{//we have to look for namespace declarations
 	    //TODO handle namespace aliases

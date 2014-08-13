@@ -145,12 +145,12 @@ void ParseSession::setCurrentDocument(const KDevelop::IndexedString& document)
  * Currently priority order works in this way
  * 	-1: Direct imports of opened file
  * 	 0: opened files
- * 	 1: Imports of direct imports(needed to resolve types of some functions)
- * 	 2: Reparse of direct imports, after its imports are finished
- * THIS AND BELOW IS NOT PARSED ATM
- * 	 3: Import of imports of direct imports(currently not parsed nor they actually needed I think)
- * 	 4: Reparse of imports of direct imports
- * 	 5: ...
+ * 	...
+ * 	 99... imports of imports of imports....
+ * 	 99998: Imports of direct imports(needed to resolve types of some function)
+ * 	 99999: Reparse of direct imports, after its imports are finished
+ * 	 100000: reparse of opened file, after all recursive imports
+ * layers higher than 99998 are NOT parsed right now because its too slow
  */
 QList<ReferencedTopDUContext> ParseSession::contextForImport(QString package)
 {
@@ -202,7 +202,14 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QString package)
     QList<ReferencedTopDUContext> contexts;
     bool shouldReparse=false;
     //reduce priority if it is recursive import
-    int priority = forExport ? m_priority + 2 : m_priority - 1;
+    //int priority = forExport ? m_priority + 2 : m_priority - 1;
+    int priority = BackgroundParser::WorstPriority;
+    if(!forExport)
+	priority = -1; //parse direct imports as soon as possible
+    else if(m_priority<=-1)
+	priority = BackgroundParser::WorstPriority-2;//imports of direct imports to the stack bottom
+    else
+	priority = m_priority - 2;//currently parsejob does not get created in this cases to reduce recursion
     for(QString filename : files)
     {
 	filename = path.filePath(filename);
@@ -223,8 +230,11 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QString package)
 	}
     }
     if(shouldReparse) 
-	//scheduleForParsing(m_document, m_priority, TopDUContext::AllDeclarationsContextsAndUses);
+    //reparse this file after its imports are done
 	scheduleForParsing(m_document, priority+1, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
+
+    if(!forExport && m_priority != BackgroundParser::WorstPriority)//always schedule last reparse after all recursive imports are done
+	scheduleForParsing(m_document, BackgroundParser::WorstPriority, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
     return contexts;
 }
 
@@ -234,8 +244,15 @@ void ParseSession::scheduleForParsing(const IndexedString& url, int priority, To
     //TopDUContext::Features features = (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::VisibleDeclarationsAndContexts);//(TopDUContext::Features)
 	//(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsContextsAndUses);
 
+    //try skipping test packages if they are not direct
+    if(forExport && priority >= BackgroundParser::InitialParsePriority && url.str().endsWith("_test.go"))
+	return;
+
     //currently recursive imports work really slow, nor they usually needed
-    if(m_priority >= 1)
+    //so disallow recursive imports
+    int levels=0; //allowed levels of recursion
+    if(forExport && m_priority >= BackgroundParser::InitialParsePriority && m_priority <= BackgroundParser::WorstPriority - 2*levels)
+    //if(forExport)
 	return;
 	
     if (bgparser->isQueued(url)) 
@@ -249,13 +266,18 @@ void ParseSession::scheduleForParsing(const IndexedString& url, int priority, To
     bgparser->addDocument(url, features, priority, 0, ParseJob::FullSequentialProcessing);
 }
 
-
+/**
+ * Reparse files that import current context.
+ * Only works for opened files, so another opened files get notified of changed context
+ */
 void ParseSession::reparseImporters(DUContext* context)
 {
     DUChainReadLocker lock;
 
+    if(forExport || m_priority!=0)
+	return;
     for (DUContext* importer : context->importers()) {
-        scheduleForParsing(importer->url(), m_priority, TopDUContext::AllDeclarationsContextsAndUses);
+        scheduleForParsing(importer->url(), BackgroundParser::WorstPriority, (TopDUContext::Features)(importer->topContext()->features() | TopDUContext::ForceUpdate));
     }
 }
 

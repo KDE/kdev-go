@@ -57,15 +57,16 @@ void GoParseJob::run()
     QByteArray code = contents().contents;
     while(code.endsWith('\0'))
 	code.chop(1);
-    
+
     //ParseSession session(QString(contents().contents).toUtf8(), priority());
     ParseSession session(code, parsePriority());
     
     session.setCurrentDocument(document());
     session.setFeatures(minimumFeatures());
-    
+
     if(abortRequested())
       return;
+
 
     ReferencedTopDUContext context;
     {
@@ -81,11 +82,12 @@ void GoParseJob::run()
     }
     kDebug() << "Job features: " << minimumFeatures();
     kDebug() << "Job priority: " << parsePriority();
-    
+
     kDebug() << document();
     bool result = session.startParsing();
     //this is useful for testing parser, comment it for actual working
     //Q_ASSERT(result);
+
     //When switching between files(even if they are not modified) KDevelop decides they need to be updated
     //and calls parseJob with VisibleDeclarations feature
     //so for now feature, identifying import will be AllDeclarationsAndContexts, without Uses
@@ -93,10 +95,7 @@ void GoParseJob::run()
     if((minimumFeatures() & TopDUContext::AllDeclarationsContextsAndUses) == TopDUContext::AllDeclarationsAndContexts)
 	forExport = true;
     //kDebug() << contents().contents;
-    //Force parse priority 0 in opened documents
-    //(if document was parsed as import before opening it's priority will not be 0)
-    if(!forExport)
-	setParsePriority(0);
+
     if(result)
     {
 	QReadLocker parseLock(languageSupport()->language()->parseLock());
@@ -112,8 +111,8 @@ void GoParseJob::run()
 	    go::UseBuilder useBuilder(&session);
 	    useBuilder.buildUses(session.ast());
 	}
-	//still not sure if we need this
-	//session.reparseImporters(context);
+	//this notifies other opened files of changes
+	session.reparseImporters(context);
 	
     }
     if(!context){

@@ -21,6 +21,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/parser
     )
     
+enable_testing()
+
 add_subdirectory(parser)
 add_subdirectory(duchain)
 add_subdirectory(codecompletion)

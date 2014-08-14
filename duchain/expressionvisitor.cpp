@@ -379,15 +379,21 @@ bool ExpressionVisitor::handleComplexLiterals(PrimaryExprResolveAst* node, Decla
 
 bool ExpressionVisitor::handleBuiltinFunction(PrimaryExprAst* node)
 {
+    if(!node->callOrBuiltinParam)
+	return false;
     //we can't find types without builder
     if(!m_builder)
+    {//but we can build uses anyway
+	visitCallOrBuiltinParam(node->callOrBuiltinParam);
 	return false;
+    }
     if(node->callOrBuiltinParam)
     {
 	//QualifiedIdentifier builtinFunction = identifierForNode(node->id);
 	QString builtinFunction = identifierForNode(node->id).toString();
-	if(builtinFunction == "make" && node->callOrBuiltinParam->type)
-	{//first argument must be slice, map or channel type
+	if((builtinFunction == "make" || builtinFunction == "append") && node->callOrBuiltinParam->type)
+	{//for make first argument must be slice, map or channel type
+	    //TODO check types and open problem if they not what they should be
 	    AbstractType::Ptr type = m_builder->buildType(node->callOrBuiltinParam->type);
 	    visitCallOrBuiltinParam(node->callOrBuiltinParam);
 	    pushType(type);
@@ -432,6 +438,17 @@ bool ExpressionVisitor::handleBuiltinFunction(PrimaryExprAst* node)
     }
     return false;
 }
+
+void ExpressionVisitor::visitTypeName(TypeNameAst* node)
+{
+    QualifiedIdentifier id(identifierForNode(node->name));
+    if(node->type_resolve->fullName)
+	id.push(identifierForNode(node->type_resolve->fullName));
+    DeclarationPointer decl = getTypeDeclaration(id, m_context);
+    if(decl)
+	pushUse(node->name, decl.data());
+}
+
 
 
 }

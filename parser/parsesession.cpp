@@ -162,7 +162,7 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QString package)
     if(result.isEmpty())
     {//try find path automatically
 	QDir currentDir(m_document.toUrl().directory());
-	kDebug() << currentDir.dirName();
+	//kDebug() << currentDir.dirName();
 	while(currentDir.exists() && currentDir.dirName() != "src")
 	    currentDir.cdUp();
 	if(currentDir.exists() && currentDir.dirName() == "src")

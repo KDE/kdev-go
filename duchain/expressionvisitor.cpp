@@ -446,7 +446,16 @@ void ExpressionVisitor::visitTypeName(TypeNameAst* node)
 	id.push(identifierForNode(node->type_resolve->fullName));
     DeclarationPointer decl = getTypeDeclaration(id, m_context);
     if(decl)
-	pushUse(node->name, decl.data());
+    {
+	if(node->type_resolve->fullName)
+	{
+	    //TODO can we do that more efficient?
+	    DeclarationPointer package = getFirstDeclaration(decl->topContext());
+	    pushUse(node->name, package.data());
+	    pushUse(node->type_resolve->fullName, decl.data());
+	}else
+	    pushUse(node->name, decl.data());
+    }
 }
 
 

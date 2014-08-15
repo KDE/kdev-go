@@ -28,6 +28,8 @@ private slots:
     void initTestCase();
     void sanityCheck();
     void cleanupTestCase();
+    void builtinFunctions_data();
+    void builtinFunctions();
 };
 
 

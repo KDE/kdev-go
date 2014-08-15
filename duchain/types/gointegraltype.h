@@ -21,11 +21,13 @@
 
 #include <language/duchain/types/integraltype.h>
 
+#include "goduchainexport.h"
+
 namespace go {
     
 typedef KDevelop::IntegralTypeData GoIntegralTypeData;
 
-class GoIntegralType : public KDevelop::IntegralType
+class KDEVGODUCHAIN_EXPORT GoIntegralType : public KDevelop::IntegralType
 {
 public:
    typedef TypePtr<GoIntegralType> Ptr; 

@@ -304,7 +304,6 @@ void DeclarationNavigationContext::htmlFunction()
     const go::GoFunctionDeclaration* function = dynamic_cast<const go::GoFunctionDeclaration*>(m_declaration.data());
     if(!function) 
 	AbstractDeclarationNavigationContext::htmlFunction();
-    
 
     const go::GoFunctionType::Ptr type = m_declaration->abstractType().cast<go::GoFunctionType>();
     if( !type ) {
@@ -331,22 +330,25 @@ void DeclarationNavigationContext::htmlFunction()
 
 	QVector<Declaration*> decls;
 	if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(m_declaration.data())) {
-	decls = argumentContext->localDeclarations(m_topContext.data());
+	    decls = argumentContext->localDeclarations(m_topContext.data());
 	}
 	foreach(const AbstractType::Ptr& argType, type->arguments()) {
-	if( !first )
-	    modifyHtml() += ", ";
-	first = false;
+	    if( !first )
+		modifyHtml() += ", ";
+	    first = false;
 
-	if (currentArgNum < decls.size()) {
-	    modifyHtml() += nameHighlight(Qt::escape(decls[currentArgNum]->identifier().toString())) + " ";
-	}
-	eventuallyMakeTypeLinks( argType );
+	    if (currentArgNum < decls.size()) {
+		modifyHtml() += nameHighlight(Qt::escape(decls[currentArgNum]->identifier().toString())) + " ";
+	    }
 
-	/*if( currentArgNum >= firstDefaultParam )
-	    modifyHtml() += " = " + Qt::escape(function->defaultParameters()[ currentArgNum - firstDefaultParam ].str());*/
+	    if(type->modifiers() == go::GoFunctionType::VariadicArgument && currentArgNum == decls.size()-1)
+		modifyHtml() += "...";
+	    eventuallyMakeTypeLinks( argType );
 
-	++currentArgNum;
+	    /*if( currentArgNum >= firstDefaultParam )
+		modifyHtml() += " = " + Qt::escape(function->defaultParameters()[ currentArgNum - firstDefaultParam ].str());*/
+
+	    ++currentArgNum;
 	}
 
 	modifyHtml() += " )";

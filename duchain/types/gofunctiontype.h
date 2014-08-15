@@ -82,6 +82,10 @@ public:
         Identity = 79
     };
 
+    enum {
+	VariadicArgument=1<<12
+    };
+
   typedef GoFunctionTypeData Data;
   typedef KDevelop::FunctionType BaseType;
   

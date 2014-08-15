@@ -203,7 +203,7 @@ void DeclarationBuilder::parseParameters(go::ParametersAst* node, bool parseArgu
 	visitParameter(param);
 	//variadic arguments
 	if(param->unnamedvartype || param->vartype)
-	    function->setModifiers(1000);
+	    function->setModifiers(go::GoFunctionType::VariadicArgument);
 	if(!param->complexType && !param->parenType && !param->unnamedvartype && 
 	    !param->type && !param->vartype && !param->fulltype)
 	    paramNames.append(param->idOrType); //we only have an identifier
@@ -224,7 +224,7 @@ void DeclarationBuilder::parseParameters(go::ParametersAst* node, bool parseArgu
 		visitParameter(param);
 		//variadic arguments
 		if(param->unnamedvartype || param->vartype)
-		    function->setModifiers(1000);
+		    function->setModifiers(go::GoFunctionType::VariadicArgument);
 		if(param->complexType || param->parenType || param->unnamedvartype || param->fulltype)
 		{//we have a unnamed parameter list of types
 		    AbstractType::Ptr lType = lastType();

@@ -433,6 +433,26 @@ bool ExpressionVisitor::handleBuiltinFunction(PrimaryExprAst* node)
 		pushType(AbstractType::Ptr(ptype));
 	    }
 	    return true;
+	}else if(builtinFunction == "cap" || builtinFunction == "copy" || builtinFunction == "len")
+	{
+	    visitCallOrBuiltinParam(node->callOrBuiltinParam);
+	    pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeInt)));
+	}else if((builtinFunction == "imag" || builtinFunction == "real") && node->callOrBuiltinParam->expression)
+	{
+	    visitExpression(node->callOrBuiltinParam->expression);
+	    auto types = popTypes();
+	    if(types.size() != 1)
+		return false;
+	    AbstractType::Ptr type = resolveTypeAlias(types.first());
+	    GoIntegralType* itype = fastCast<GoIntegralType*>(type.constData());
+	    if(itype)
+	    {
+		if(itype->dataType() == GoIntegralType::TypeComplex64)
+		    pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeFloat32)));
+		else
+		    pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeFloat64)));
+		return true;
+	    }
 	}
 	return false;
     }

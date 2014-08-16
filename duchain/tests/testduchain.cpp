@@ -84,6 +84,15 @@ void TestDuchain::builtinFunctions_data()
     QTest::newRow("new 2") << "new(mytype)" << "main::mytype*";
     QTest::newRow("new 2") << "new([]unknown)" << "unknown[]*";
     QTest::newRow("append") << "append([]int, 1, 2)" << "int[]";
+
+    QTest::newRow("cap") << "cap(myvar)" << "int";
+    QTest::newRow("copy") << "copy(a, b)" << "int";
+    QTest::newRow("len") << "len(array)" << "int";
+    QTest::newRow("real") << "real(5i)" << "float64";
+    QTest::newRow("real 2") << "real(myvar)" << "float32";
+    QTest::newRow("imag") << "imag(2i)" << "float64";
+    QTest::newRow("imag 2") << "imag(myvar)" << "float32";
+    QTest::newRow("imag 3") << "imag(2+3i)" << "float64";
 }
 
 
@@ -92,7 +101,7 @@ void TestDuchain::builtinFunctions()
     QFETCH(QString, expression);
     QFETCH(QString, type);
 
-    QString code(QString("package main; type mytype int; func main() { testvar := %1; }").arg(expression));
+    QString code(QString("package main; type mytype int; var myvar complex64; func main() { testvar := %1; }").arg(expression));
 
     DUContext* context = getMainContext(code);
     QVERIFY(context);

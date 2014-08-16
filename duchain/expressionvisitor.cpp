@@ -453,6 +453,20 @@ bool ExpressionVisitor::handleBuiltinFunction(PrimaryExprAst* node)
 		    pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeFloat64)));
 		return true;
 	    }
+	}else if(builtinFunction == "complex")
+	{
+	    visitCallOrBuiltinParam(node->callOrBuiltinParam);
+	    pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeComplex128)));
+	    return true;
+	}else if(builtinFunction == "recover")
+	{
+	    visitCallOrBuiltinParam(node->callOrBuiltinParam);
+	    GoStructureType* type = new GoStructureType();
+	    type->setInterfaceType();
+	    type->setContext(m_builder->newContext(RangeInRevision::invalid()));
+	    type->setPrettyName("interface {}");
+	    pushType(AbstractType::Ptr(type));
+	    return true;
 	}
 	return false;
     }

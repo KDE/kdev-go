@@ -93,6 +93,9 @@ void TestDuchain::builtinFunctions_data()
     QTest::newRow("imag") << "imag(2i)" << "float64";
     QTest::newRow("imag 2") << "imag(myvar)" << "float32";
     QTest::newRow("imag 3") << "imag(2+3i)" << "float64";
+    QTest::newRow("complex") << "complex(-1, 0)" << "complex128";
+    QTest::newRow("recover") << "recover()" << "interface {}";
+    QTest::newRow("real + complex") << "real(complex(1, 1))" << "float64";
 }
 
 

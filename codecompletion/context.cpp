@@ -108,7 +108,7 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::importAndMemberComplet
 			    continue;
 			//import only declarations that start with capital letter(Go language rule)
 			if(m_duContext->topContext() != declaration->topContext())
-			    if(ident.toString().at(0) != ident.toString().at(0).toUpper())
+			    if(!ident.toString().at(0).isLetter() || (ident.toString().at(0) != ident.toString().at(0).toUpper()))
 				continue;
 			items << CompletionTreeItemPointer(new NormalDeclarationCompletionItem(DeclarationPointer(decl.first), 
 										    KSharedPtr<KDevelop::CodeCompletionContext>(), decl.second));

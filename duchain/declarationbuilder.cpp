@@ -120,7 +120,7 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
 	auto iter = expressionList->expressionsSequence->front(), end = iter;
 	do
 	{
-	    go::ExpressionVisitor exprVisitor(m_session, currentContext(), this);
+	    exprVisitor.clearAll();
 	    exprVisitor.visitExpression(iter->element);
 	    Q_ASSERT(exprVisitor.lastTypes().size() != 0);
 	    types.append(exprVisitor.lastTypes().first());

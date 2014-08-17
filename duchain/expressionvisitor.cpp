@@ -355,6 +355,13 @@ QList< IdentifierAst* > ExpressionVisitor::allIds()
     return m_ids;
 }
 
+void ExpressionVisitor::clearAll()
+{
+    m_declarations.clear();
+    m_ids.clear();
+    m_types.clear();
+}
+
 QualifiedIdentifier ExpressionVisitor::identifierForNode(IdentifierAst* node)
 {
     if(!node)

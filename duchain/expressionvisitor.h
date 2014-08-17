@@ -42,9 +42,14 @@ public:
     virtual void visitCallOrBuiltinParam(go::CallOrBuiltinParamAst* node);
     virtual void visitCallParam(go::CallParamAst* node);
     virtual void visitTypeName(go::TypeNameAst* node);
-    
+
     virtual void visitBlock(go::BlockAst* node);
-    
+
+    /**
+     * Delete all stored types and uses
+     */
+    void clearAll();
+
     QList<DeclarationPointer> allDeclarations();
     QList<IdentifierAst*> allIds();
  

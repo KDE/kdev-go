@@ -69,6 +69,7 @@ public:
     virtual void visitSourceFile(go::SourceFileAst* node);
     virtual void visitShortVarDecl(go::ShortVarDeclAst* node);
     virtual void visitConstSpec(go::ConstSpecAst* node);
+    virtual void visitConstDecl(go::ConstDeclAst* node);
   
     
     /*struct GoImport{
@@ -115,6 +116,7 @@ private:
     
     QualifiedIdentifier m_contextIdentifier;
     bool m_preBuilding;
+    QList<AbstractType::Ptr> m_constAutoTypes;
 };
 
 #endif

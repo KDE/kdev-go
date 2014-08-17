@@ -145,16 +145,58 @@ void TestDuchain::test_declareVariables()
 
 void TestDuchain::test_constants()
 {
-    QString code("package main; const const1, const2 float32 = 1, 2;");
+    QString code("package main; const const1, const2 float32 = 1, 2; const ( const3, const4, const5 = 'a', 3, \"abc\"; ); ");
     DUContext* context = getPackageContext(code);
     DUChainReadLocker lock;
     Declaration* decl = context->findDeclarations(QualifiedIdentifier("const1")).first();
     QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeFloat32));
-    qDebug() << decl->abstractType()->modifiers();
     QVERIFY(decl->abstractType()->modifiers() & AbstractType::ConstModifier);
     decl = context->findDeclarations(QualifiedIdentifier("const2")).first();
     QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeFloat32));
     QVERIFY(decl->abstractType()->modifiers() & AbstractType::ConstModifier);
+    decl = context->findDeclarations(QualifiedIdentifier("const3")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeRune));
+    QVERIFY(decl->abstractType()->modifiers() & AbstractType::ConstModifier);
+    decl = context->findDeclarations(QualifiedIdentifier("const4")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeInt));
+    QVERIFY(decl->abstractType()->modifiers() & AbstractType::ConstModifier);
+    decl = context->findDeclarations(QualifiedIdentifier("const5")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeString));
+    QVERIFY(decl->abstractType()->modifiers() & AbstractType::ConstModifier);
+}
+
+void TestDuchain::test_constants_omittedType()
+{
+    QString code("package main; const ( const1, const2 uint = 1, 2; const3, const4; ); const ( const5, const6 = 3, 4.; const7, const8; ); const const9;");
+    DUContext* context = getPackageContext(code);
+    DUChainReadLocker lock;
+    Declaration* decl = context->findDeclarations(QualifiedIdentifier("const1")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeUint));
+    QVERIFY(decl->abstractType()->modifiers() & AbstractType::ConstModifier);
+    decl = context->findDeclarations(QualifiedIdentifier("const2")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeUint));
+    QVERIFY(decl->abstractType()->modifiers() & AbstractType::ConstModifier);
+    decl = context->findDeclarations(QualifiedIdentifier("const3")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeUint));
+    QVERIFY(decl->abstractType()->modifiers() & AbstractType::ConstModifier);
+    decl = context->findDeclarations(QualifiedIdentifier("const4")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeUint));
+    QVERIFY(decl->abstractType()->modifiers() & AbstractType::ConstModifier);
+
+    decl = context->findDeclarations(QualifiedIdentifier("const5")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeInt));
+    QVERIFY(decl->abstractType()->modifiers() & AbstractType::ConstModifier);
+    decl = context->findDeclarations(QualifiedIdentifier("const6")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeFloat64));
+    QVERIFY(decl->abstractType()->modifiers() & AbstractType::ConstModifier);
+    decl = context->findDeclarations(QualifiedIdentifier("const7")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeInt));
+    QVERIFY(decl->abstractType()->modifiers() & AbstractType::ConstModifier);
+    decl = context->findDeclarations(QualifiedIdentifier("const8")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeFloat64));
+    QVERIFY(decl->abstractType()->modifiers() & AbstractType::ConstModifier);
+
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("const9")).size(), 0);
 }
 
 DUContext* getPackageContext(const QString& code)

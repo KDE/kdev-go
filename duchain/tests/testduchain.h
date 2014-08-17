@@ -32,6 +32,7 @@ private slots:
     void builtinFunctions();
     void test_declareVariables();
     void test_constants();
+    void test_constants_omittedType();
 };
 
 

@@ -95,6 +95,7 @@ void DeclarationBuilder::declareVariablesWithType(go::IdentifierAst* id, go::IdL
 	dec->setKind(Declaration::Instance);
 	closeDeclaration();
     }
+    if(declareConstant) m_constAutoTypes.append(lastType());
 
     if(idList)
     {
@@ -106,6 +107,7 @@ void DeclarationBuilder::declareVariablesWithType(go::IdentifierAst* id, go::IdL
 	    dec->setType<AbstractType>(lastType());
 	    dec->setKind(Declaration::Instance);
 	    closeDeclaration();
+	    if(declareConstant) m_constAutoTypes.append(lastType());
 	    iter = iter->next;
 	}
 	while (iter != end);
@@ -143,6 +145,8 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
 	return;
     for(AbstractType::Ptr& type : types)
 	type->setModifiers(declareConstant ? AbstractType::ConstModifier : AbstractType::NoModifiers);
+    if(declareConstant)
+	m_constAutoTypes = types;
 
     {
 	DUChainWriteLocker lock;
@@ -173,6 +177,13 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
     }
 }
 
+void DeclarationBuilder::visitConstDecl(go::ConstDeclAst* node)
+{
+    m_constAutoTypes.clear();
+    go::DefaultVisitor::visitConstDecl(node);
+}
+
+
 void DeclarationBuilder::visitConstSpec(go::ConstSpecAst* node)
 {
     if(node->type)
@@ -182,8 +193,37 @@ void DeclarationBuilder::visitConstSpec(go::ConstSpecAst* node)
     {
 	declareVariables(node->id, node->idList, node->expression, node->expressionList, true);
     }else
-    {
-	
+    {//this can only happen after a previous constSpec with some expressionList
+	//in this case identifiers assign same types as previous constSpec(http://golang.org/ref/spec#Constant_declarations)
+	if(m_constAutoTypes.size() == 0)
+	    return;
+	{
+	    DUChainWriteLocker lock;
+	    Declaration* dec = openDeclaration<Declaration>(identifierForNode(node->id), editorFindRange(node->id, 0));
+	    dec->setType<AbstractType>(m_constAutoTypes.first());
+	    dec->setKind(Declaration::Instance);
+	    closeDeclaration();
+	}
+
+	if(node->idList)
+	{
+	    int typeIndex = 1;
+	    auto iter = node->idList->idSequence->front(), end = iter;
+	    do
+	    {
+		if(typeIndex >= m_constAutoTypes.size()) //not enough types to declare all constants
+		    return;
+
+		DUChainWriteLocker lock;
+		Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
+		dec->setType<AbstractType>(m_constAutoTypes.at(typeIndex));
+		dec->setKind(Declaration::Instance);
+		closeDeclaration();
+		iter = iter->next;
+		typeIndex++;
+	    }
+	    while (iter != end);
+	}
     }
 }
 

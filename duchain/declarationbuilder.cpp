@@ -76,6 +76,7 @@ void DeclarationBuilder::visitVarSpec(go::VarSpecAst* node)
 	DUChainWriteLocker lock;
 	Declaration* dec = openDeclaration<Declaration>(identifierForNode(node->id), editorFindRange(node->id, 0));
 	//dec->setType<AbstractType>(lastType());
+	lastType()->setModifiers(AbstractType::NoModifiers);
 	dec->setType(lastType());
 	dec->setKind(Declaration::Instance);
 	closeDeclaration();
@@ -86,6 +87,7 @@ void DeclarationBuilder::visitVarSpec(go::VarSpecAst* node)
 	    do
 	    {
 		Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
+		lastType()->setModifiers(AbstractType::NoModifiers);
 		dec->setType<AbstractType>(lastType());
 		dec->setKind(Declaration::Instance);
 		closeDeclaration();
@@ -95,16 +97,17 @@ void DeclarationBuilder::visitVarSpec(go::VarSpecAst* node)
 	}
     }else if(node->expression)
     {
-	declareVariables(node->id, node->idList, node->expression, node->expressionList);
+	declareVariables(node->id, node->idList, node->expression, node->expressionList, false);
     }
 }
 
 void DeclarationBuilder::visitShortVarDecl(go::ShortVarDeclAst* node)
 {
-    declareVariables(node->id, node->idList, node->expression, node->expressionList);
+    declareVariables(node->id, node->idList, node->expression, node->expressionList, false);
 }
 
-void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* idList, go::ExpressionAst* expression, go::ExpressionListAst* expressionList)
+void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* idList, go::ExpressionAst* expression,
+					    go::ExpressionListAst* expressionList, bool declareConstant)
 {
     QList<AbstractType::Ptr> types;
     if(!expression)
@@ -131,6 +134,9 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
 
     if(types.size() == 0)
 	return;
+    for(AbstractType::Ptr& type : types)
+	type->setModifiers(declareConstant ? AbstractType::ConstModifier : AbstractType::NoModifiers);
+
     {
 	DUChainWriteLocker lock;
 	Declaration* dec = openDeclaration<Declaration>(identifierForNode(id), editorFindRange(id, 0));
@@ -157,6 +163,45 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
 	    typeIndex++;
 	}
 	while (iter != end);
+    }
+}
+
+void DeclarationBuilder::visitConstSpec(go::ConstSpecAst* node)
+{
+    if(node->type)
+    {
+	m_contextIdentifier = identifierForNode(node->id);
+	visitType(node->type);
+	if(!lastType())
+	    injectType(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
+	DUChainWriteLocker lock;
+	Declaration* dec = openDeclaration<Declaration>(identifierForNode(node->id), editorFindRange(node->id, 0));
+	//dec->setType<AbstractType>(lastType());
+	lastType()->setModifiers(AbstractType::ConstModifier);
+	dec->setType(lastType());
+	dec->setKind(Declaration::Instance);
+	closeDeclaration();
+
+	if(node->idList)
+	{
+	    auto iter = node->idList->idSequence->front(), end = iter;
+	    do
+	    {
+		Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
+		lastType()->setModifiers(AbstractType::ConstModifier);
+		dec->setType<AbstractType>(lastType());
+		dec->setKind(Declaration::Instance);
+		closeDeclaration();
+		iter = iter->next;
+	    }
+	    while (iter != end);
+	}
+    }else if(node->expression)
+    {
+	declareVariables(node->id, node->idList, node->expression, node->expressionList, true);
+    }else
+    {
+	
     }
 }
 

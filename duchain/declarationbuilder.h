@@ -68,6 +68,7 @@ public:
     virtual void visitImportSpec(go::ImportSpecAst* node);
     virtual void visitSourceFile(go::SourceFileAst* node);
     virtual void visitShortVarDecl(go::ShortVarDeclAst* node);
+    virtual void visitConstSpec(go::ConstSpecAst* node);
   
     
     /*struct GoImport{
@@ -98,9 +99,11 @@ private:
      * from idList with respective types. If there is a single expression, returning multiple types
      * idList will get assigned those types. Otherwise we get only first type no matter how many of them
      * expression returns.(I believe this is how it works in Go, correct it if I'm wrong)
+     * @param declareConstant whether to declare usual variables or constants
      */
-    void declareVariables(go::IdentifierAst* id, go::IdListAst* idList, go::ExpressionAst* expression, go::ExpressionListAst* expressionList);
-    
+    void declareVariables(go::IdentifierAst* id, go::IdListAst* idList, go::ExpressionAst* expression,
+			    go::ExpressionListAst* expressionList, bool declareConstant);
+
     void importThisPackage();
     bool m_export;
     

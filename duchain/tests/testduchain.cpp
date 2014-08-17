@@ -128,6 +128,7 @@ void TestDuchain::test_declareVariables()
     DUChainReadLocker lock;
     Declaration* decl = context->findDeclarations(QualifiedIdentifier("test1")).first();
     QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeInt));
+    QVERIFY((decl->abstractType()->modifiers() & AbstractType::NoModifiers) == AbstractType::NoModifiers);
     decl = context->findDeclarations(QualifiedIdentifier("test2")).first();
     QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeBool));
     decl = context->findDeclarations(QualifiedIdentifier("test3")).first();
@@ -140,6 +141,20 @@ void TestDuchain::test_declareVariables()
     QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeRune));
     auto declarations = context->findDeclarations(QualifiedIdentifier("test7"));
     QCOMPARE(declarations.size(), 0);
+}
+
+void TestDuchain::test_constants()
+{
+    QString code("package main; const const1, const2 float32 = 1, 2;");
+    DUContext* context = getPackageContext(code);
+    DUChainReadLocker lock;
+    Declaration* decl = context->findDeclarations(QualifiedIdentifier("const1")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeFloat32));
+    qDebug() << decl->abstractType()->modifiers();
+    QVERIFY(decl->abstractType()->modifiers() & AbstractType::ConstModifier);
+    decl = context->findDeclarations(QualifiedIdentifier("const2")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeFloat32));
+    QVERIFY(decl->abstractType()->modifiers() & AbstractType::ConstModifier);
 }
 
 DUContext* getPackageContext(const QString& code)

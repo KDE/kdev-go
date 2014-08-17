@@ -20,6 +20,7 @@
 
 #include "parser/parsesession.h"
 #include "declarationbuilder.h"
+#include "types/gointegraltype.h"
 
 #include <qtest_kde.h>
 
@@ -115,6 +116,30 @@ void TestDuchain::builtinFunctions()
     AbstractType::Ptr result = decl->abstractType();
 
     QCOMPARE(result->toString(), type);
+}
+
+void TestDuchain::test_declareVariables()
+{
+    QString code("package main; func multitest() (int, bool) { return 1, true; } \n \
+		func singletest() rune { return 'a'; } \n func main() { test1, test2 := multitest(); \
+		test3, test4 := singletest(), 3., 100; var test5, test6, test7 = multitest(), singletest(); }");
+
+    DUContext* context = getMainContext(code);
+    DUChainReadLocker lock;
+    Declaration* decl = context->findDeclarations(QualifiedIdentifier("test1")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeInt));
+    decl = context->findDeclarations(QualifiedIdentifier("test2")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeBool));
+    decl = context->findDeclarations(QualifiedIdentifier("test3")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeRune));
+    decl = context->findDeclarations(QualifiedIdentifier("test4")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeFloat64));
+    decl = context->findDeclarations(QualifiedIdentifier("test5")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeInt));
+    decl = context->findDeclarations(QualifiedIdentifier("test6")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeRune));
+    auto declarations = context->findDeclarations(QualifiedIdentifier("test7"));
+    QCOMPARE(declarations.size(), 0);
 }
 
 DUContext* getPackageContext(const QString& code)

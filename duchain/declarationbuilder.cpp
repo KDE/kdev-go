@@ -107,60 +107,54 @@ void DeclarationBuilder::visitShortVarDecl(go::ShortVarDeclAst* node)
 void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* idList, go::ExpressionAst* expression, go::ExpressionListAst* expressionList)
 {
     QList<AbstractType::Ptr> types;
-    if(expression)
-    {
-	go::ExpressionVisitor exprVisitor(m_session, currentContext(), this);
-	exprVisitor.visitExpression(expression);
+    if(!expression)
+	return;
+    go::ExpressionVisitor exprVisitor(m_session, currentContext(), this);
+    exprVisitor.visitExpression(expression);
+    Q_ASSERT(exprVisitor.lastTypes().size() != 0);
+    if(!expressionList)
 	types = exprVisitor.lastTypes();
-	Q_ASSERT(types.size() != 0);
-	injectType<AbstractType>(AbstractType::Ptr(types.first()));
-    }else
-	injectType<AbstractType>(AbstractType::Ptr());
-    
-    if(!lastType())
-	injectType(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
-    DUChainWriteLocker lock;
-    Declaration* dec = openDeclaration<Declaration>(identifierForNode(id), editorFindRange(id, 0));
-    dec->setType<AbstractType>(lastType());
-    dec->setKind(Declaration::Instance);
-    closeDeclaration();
-    lock.unlock();
-    
-    //uglyness of this code stems from weird grammar. Consider rewriting it
-    //what we are doing here is we assign types to idList
-    //problem is Go function are allowed to return multiple values
-    //so it's not just a simple iteration over two lists
+    else
+    {
+	types.append(exprVisitor.lastTypes().first());
+	auto iter = expressionList->expressionsSequence->front(), end = iter;
+	do
+	{
+	    go::ExpressionVisitor exprVisitor(m_session, currentContext(), this);
+	    exprVisitor.visitExpression(iter->element);
+	    Q_ASSERT(exprVisitor.lastTypes().size() != 0);
+	    types.append(exprVisitor.lastTypes().first());
+	    iter = iter->next;
+	}
+	while (iter != end);
+    }
+
+    if(types.size() == 0)
+	return;
+    {
+	DUChainWriteLocker lock;
+	Declaration* dec = openDeclaration<Declaration>(identifierForNode(id), editorFindRange(id, 0));
+	dec->setType<AbstractType>(types.first());
+	dec->setKind(Declaration::Instance);
+	closeDeclaration();
+    }
+
     if(idList)
     {
-	types.removeFirst();
-	const KDevPG::ListNode<go::ExpressionAst*>* expr=0;
-	if(expressionList)
-	    expr = expressionList->expressionsSequence->front();
+	int typeIndex = 1;
 	auto iter = idList->idSequence->front(), end = iter;
 	do
 	{
-	    if(types.size() != 0)
-		injectType<AbstractType>(types.first());
-	    else
-	    {
-		if(!expr) //not enough expressions to assign types
-		    return;
-		go::ExpressionVisitor exprVisitor(m_session, currentContext(), this);
-		exprVisitor.visitExpression(expr->element);
-		types = exprVisitor.lastTypes();
-		Q_ASSERT(types.size() != 0);
-		injectType<AbstractType>(types.first());
-		expr = expr->next;
-	    }
-	    types.removeFirst();
-	    
-	    lock.lock();
+	    if(typeIndex >= types.size()) //not enough types to declare all variables
+		return;
+
+	    DUChainWriteLocker lock;
 	    Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
-	    dec->setType<AbstractType>(lastType());
+	    dec->setType<AbstractType>(types.at(typeIndex));
 	    dec->setKind(Declaration::Instance);
 	    closeDeclaration();
-	    lock.unlock();
 	    iter = iter->next;
+	    typeIndex++;
 	}
 	while (iter != end);
     }

@@ -30,6 +30,7 @@ private slots:
     void cleanupTestCase();
     void builtinFunctions_data();
     void builtinFunctions();
+    void test_declareVariables();
 };
 
 

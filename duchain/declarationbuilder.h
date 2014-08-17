@@ -92,6 +92,13 @@ private:
     void addArgumentHelper(go::GoFunctionType::Ptr function, KDevelop::AbstractType::Ptr argument, bool parseArguments);
     go::TypeNameAst* typeNameFromIdentifier(go::IdentifierAst* id, go::IdentifierAst* fullname=0);
     void declareParameter(go::IdentifierAst* name, const AbstractType::Ptr& type);
+
+    /**
+     * Deduces types of expression with ExpressionVisitor and declares variables
+     * from idList with respective types. If there is a single expression, returning multiple types
+     * idList will get assigned those types. Otherwise we get only first type no matter how many of them
+     * expression returns.(I believe this is how it works in Go, correct it if I'm wrong)
+     */
     void declareVariables(go::IdentifierAst* id, go::IdListAst* idList, go::ExpressionAst* expression, go::ExpressionListAst* expressionList);
     
     void importThisPackage();

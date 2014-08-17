@@ -103,6 +103,10 @@ private:
      */
     void declareVariables(go::IdentifierAst* id, go::IdListAst* idList, go::ExpressionAst* expression,
 			    go::ExpressionListAst* expressionList, bool declareConstant);
+    /**
+     * declares variables or constants with names from id and idList of type type.
+     */
+    void declareVariablesWithType(go::IdentifierAst* id, go::IdListAst* idList, go::TypeAst* type, bool declareConstant);
 
     void importThisPackage();
     bool m_export;

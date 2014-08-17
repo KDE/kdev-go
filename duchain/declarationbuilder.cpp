@@ -69,32 +69,7 @@ void DeclarationBuilder::visitVarSpec(go::VarSpecAst* node)
 {
     if(node->type)
     {//if type is supplied we don't visit expressions
-	m_contextIdentifier = identifierForNode(node->id);
-	visitType(node->type);
-	if(!lastType())
-	    injectType(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
-	DUChainWriteLocker lock;
-	Declaration* dec = openDeclaration<Declaration>(identifierForNode(node->id), editorFindRange(node->id, 0));
-	//dec->setType<AbstractType>(lastType());
-	lastType()->setModifiers(AbstractType::NoModifiers);
-	dec->setType(lastType());
-	dec->setKind(Declaration::Instance);
-	closeDeclaration();
-	
-	if(node->idList)
-	{
-	    auto iter = node->idList->idSequence->front(), end = iter;
-	    do
-	    {
-		Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
-		lastType()->setModifiers(AbstractType::NoModifiers);
-		dec->setType<AbstractType>(lastType());
-		dec->setKind(Declaration::Instance);
-		closeDeclaration();
-		iter = iter->next;
-	    }
-	    while (iter != end);
-	}
+	declareVariablesWithType(node->id, node->idList, node->type, false);
     }else if(node->expression)
     {
 	declareVariables(node->id, node->idList, node->expression, node->expressionList, false);
@@ -105,6 +80,38 @@ void DeclarationBuilder::visitShortVarDecl(go::ShortVarDeclAst* node)
 {
     declareVariables(node->id, node->idList, node->expression, node->expressionList, false);
 }
+
+void DeclarationBuilder::declareVariablesWithType(go::IdentifierAst* id, go::IdListAst* idList, go::TypeAst* type, bool declareConstant)
+{
+    m_contextIdentifier = identifierForNode(id);
+    visitType(type);
+    if(!lastType())
+	injectType(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
+    lastType()->setModifiers(declareConstant ? AbstractType::ConstModifier : AbstractType::NoModifiers);
+    {
+	DUChainWriteLocker lock;
+	Declaration* dec = openDeclaration<Declaration>(identifierForNode(id), editorFindRange(id, 0));
+	dec->setType(lastType());
+	dec->setKind(Declaration::Instance);
+	closeDeclaration();
+    }
+
+    if(idList)
+    {
+	auto iter = idList->idSequence->front(), end = iter;
+	do
+	{
+	    DUChainWriteLocker lock;
+	    Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
+	    dec->setType<AbstractType>(lastType());
+	    dec->setKind(Declaration::Instance);
+	    closeDeclaration();
+	    iter = iter->next;
+	}
+	while (iter != end);
+    }
+}
+
 
 void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* idList, go::ExpressionAst* expression,
 					    go::ExpressionListAst* expressionList, bool declareConstant)
@@ -170,32 +177,7 @@ void DeclarationBuilder::visitConstSpec(go::ConstSpecAst* node)
 {
     if(node->type)
     {
-	m_contextIdentifier = identifierForNode(node->id);
-	visitType(node->type);
-	if(!lastType())
-	    injectType(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
-	DUChainWriteLocker lock;
-	Declaration* dec = openDeclaration<Declaration>(identifierForNode(node->id), editorFindRange(node->id, 0));
-	//dec->setType<AbstractType>(lastType());
-	lastType()->setModifiers(AbstractType::ConstModifier);
-	dec->setType(lastType());
-	dec->setKind(Declaration::Instance);
-	closeDeclaration();
-
-	if(node->idList)
-	{
-	    auto iter = node->idList->idSequence->front(), end = iter;
-	    do
-	    {
-		Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
-		lastType()->setModifiers(AbstractType::ConstModifier);
-		dec->setType<AbstractType>(lastType());
-		dec->setKind(Declaration::Instance);
-		closeDeclaration();
-		iter = iter->next;
-	    }
-	    while (iter != end);
-	}
+	declareVariablesWithType(node->id, node->idList, node->type, true);
     }else if(node->expression)
     {
 	declareVariables(node->id, node->idList, node->expression, node->expressionList, true);

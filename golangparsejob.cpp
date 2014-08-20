@@ -28,10 +28,13 @@
 #include <interfaces/ilanguage.h>
 
 #include <QReadLocker>
+#include <QProcess>
 
 #include "parsesession.h"
 #include "duchain/declarationbuilder.h"
 #include "duchain/usebuilder.h"
+
+QList<QString> GoParseJob::m_CachedSearchPaths;
 
 using namespace KDevelop;
 
@@ -93,8 +96,10 @@ void GoParseJob::run()
     //so for now feature, identifying import will be AllDeclarationsAndContexts, without Uses
     bool forExport = false;
     if((minimumFeatures() & TopDUContext::AllDeclarationsContextsAndUses) == TopDUContext::AllDeclarationsAndContexts)
-	forExport = true;
+        forExport = true;
     //kDebug() << contents().contents;
+
+    session.setIncludePaths(getSearchPaths(forExport));
 
     if(result)
     {
@@ -112,7 +117,7 @@ void GoParseJob::run()
 	    useBuilder.buildUses(session.ast());
 	}
 	//this notifies other opened files of changes
-	session.reparseImporters(context);
+	//session.reparseImporters(context);
 	
     }
     if(!context){
@@ -137,4 +142,48 @@ void GoParseJob::run()
       kDebug() << "===Success===" << document().str();
     else
       kDebug() << "===Failed===" << document().str();
+}
+
+QList<QString> GoParseJob::getSearchPaths(bool forExport)
+{
+    QList<QString> paths;
+    if(!forExport)
+    {//try to find path automatically for opened documents
+        QDir currentDir(document().toUrl().directory());
+        //kDebug() << currentDir.dirName();
+        while(currentDir.exists() && currentDir.dirName() != "src")
+            currentDir.cdUp();
+        if(currentDir.exists() && currentDir.dirName() == "src")
+            paths.append(currentDir.absolutePath());
+    }
+
+    if(GoParseJob::m_CachedSearchPaths.empty())
+    {
+        //check $GOPATH env var
+        QByteArray result = qgetenv("GOPATH");
+        if(!result.isEmpty())
+        {
+            QDir path(result);
+            if(path.exists() && path.cd("src") && path.exists())
+                m_CachedSearchPaths.append(path.absolutePath());
+        }
+        //then check $GOROOT
+        //these days most people don't set GOROOT manually
+        //instead go tool can find correct value for GOROOT on its own
+        //in order for this to work go exec must be in $PATH
+        QProcess p;
+        p.start("go env GOROOT");
+        p.waitForFinished();
+        result = p.readAllStandardOutput();
+        if(result.endsWith("\n"))
+            result.remove(result.length()-1, 1);
+        if(!result.isEmpty())
+        {
+            QDir path = QDir(result);
+            if(path.exists() && path.cd("src") && path.cd("pkg") && path.exists())
+                m_CachedSearchPaths.append(path.absolutePath());
+        }
+    }
+    paths.append(m_CachedSearchPaths);
+    return paths;
 }

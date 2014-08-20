@@ -29,6 +29,10 @@ public:
   
 protected:
       virtual void run() override;
+
+private:
+    QList<QString> getSearchPaths(bool forExport);
+    static QList<QString> m_CachedSearchPaths;
   
 };
 

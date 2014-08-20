@@ -750,7 +750,7 @@ void DeclarationBuilder::visitSourceFile(go::SourceFileAst* node)
     packageDeclaration->setInternalContext(currentContext());
     //import all files in current directory
     if(!m_export)
-	importThisPackage();
+        importThisPackage();
     
     go::DefaultVisitor::visitSourceFile(node);
     closeContext();

@@ -155,49 +155,16 @@ void ParseSession::setCurrentDocument(const KDevelop::IndexedString& document)
 QList<ReferencedTopDUContext> ParseSession::contextForImport(QString package)
 {
     package = package.mid(1, package.length()-2);
-    //try $GOPATH first
-    QByteArray result = qgetenv("GOPATH");
     QStringList files;
-    QDir path;
-    if(result.isEmpty())
-    {//try find path automatically
-	QDir currentDir(m_document.toUrl().directory());
-	//kDebug() << currentDir.dirName();
-	while(currentDir.exists() && currentDir.dirName() != "src")
-	    currentDir.cdUp();
-	if(currentDir.exists() && currentDir.dirName() == "src")
-	{
-	    currentDir.cdUp();
-	    if(currentDir.exists())
-		result = currentDir.absolutePath().toUtf8();
-	}
-    }
-    if(!result.isEmpty())
+    for(const QString& pathname : m_includePaths)
     {
-	path = QDir(result);
-	if(path.exists() && path.cd("src") && path.cd(package) && path.exists())
-	{
-	    files = path.entryList(QStringList("*.go"), QDir::Files | QDir::NoSymLinks);
-	    //kDebug() << "path found in GOPATH: " << path.absolutePath() << " contains files: " << files;
-	}
-    }
-    //then search $GOROOT
-    //these days most people don't set GOROOT manually
-    //instead go tool can find correct value for GOROOT on its own
-    //in order for this to work go exec must be in $PATH
-    QProcess p;
-    p.start("go env GOROOT");
-    p.waitForFinished();
-    result = p.readAllStandardOutput();
-    if(result.endsWith("\n")) result.remove(result.length()-1, 1);
-    if(!result.isEmpty() && files.empty())
-    {
-	path = QDir(result);
-	if(path.exists() && path.cd("src") && path.cd("pkg") && path.cd(package) && path.exists())
-	{
-	    files = path.entryList(QStringList("*.go"), QDir::Files | QDir::NoSymLinks);
-	    //kDebug() << "path found in GOROOT: " << path.absolutePath() << " contains files: " << files;
-	}
+        QDir path(pathname);
+        if(path.exists() && path.cd(package))
+        {
+            for(const QString& file : path.entryList(QStringList("*.go"), QDir::Files | QDir::NoSymLinks))
+                files.append(path.filePath(file));
+            break;
+        }
     }
     QList<ReferencedTopDUContext> contexts;
     bool shouldReparse=false;
@@ -205,36 +172,35 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QString package)
     //int priority = forExport ? m_priority + 2 : m_priority - 1;
     int priority = BackgroundParser::WorstPriority;
     if(!forExport)
-	priority = -1; //parse direct imports as soon as possible
+        priority = -1; //parse direct imports as soon as possible
     else if(m_priority<=-1)
-	priority = BackgroundParser::WorstPriority-2;//imports of direct imports to the stack bottom
+        priority = BackgroundParser::WorstPriority-2;//imports of direct imports to the stack bottom
     else
-	priority = m_priority - 2;//currently parsejob does not get created in this cases to reduce recursion
+        priority = m_priority - 2;//currently parsejob does not get created in this cases to reduce recursion
     for(QString filename : files)
     {
-	filename = path.filePath(filename);
-	QFile file(filename);
-	if(!file.exists())
-	    continue;
-	
-	IndexedString url(filename);
-	DUChainReadLocker lock; 
-	ReferencedTopDUContext context = DUChain::self()->chainForDocument(url);
-	lock.unlock();
-	if(context)
-	    contexts.append(context);
-	else
-	{
-	    shouldReparse = true;
-	    scheduleForParsing(url, priority, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts));
-	}
+        QFile file(filename);
+        if(!file.exists())
+            continue;
+
+        IndexedString url(filename);
+        DUChainReadLocker lock;
+        ReferencedTopDUContext context = DUChain::self()->chainForDocument(url);
+        lock.unlock();
+        if(context)
+            contexts.append(context);
+        else
+        {
+            shouldReparse = true;
+            scheduleForParsing(url, priority, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts));
+        }
     }
     if(shouldReparse) 
     //reparse this file after its imports are done
 	scheduleForParsing(m_document, priority+1, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
 
     if(!forExport && m_priority != BackgroundParser::WorstPriority)//always schedule last reparse after all recursive imports are done
-	scheduleForParsing(m_document, BackgroundParser::WorstPriority, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
+        scheduleForParsing(m_document, BackgroundParser::WorstPriority, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
     return contexts;
 }
 
@@ -326,6 +292,11 @@ void ParseSession::setFeatures(TopDUContext::Features features)
 QString ParseSession::textForNode(go::AstNode* node)
 {
     return QString(m_contents.mid(m_lexer->at(node->startToken).begin, m_lexer->at(node->endToken).end - m_lexer->at(node->startToken).begin+1));
+}
+
+void ParseSession::setIncludePaths(const QList<QString>& paths)
+{
+    m_includePaths = paths;
 }
 
 

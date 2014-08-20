@@ -57,27 +57,29 @@ public:
     go::StartAst* ast();
     
     QString symbol(qint64 index);
-    
+
     KDevelop::RangeInRevision findRange(go::AstNode* from, go::AstNode* to);
-    
+
     KDevelop::IndexedString currentDocument();
-    
+
     void setCurrentDocument(const KDevelop::IndexedString& document);
-    
+
     KDevelop::IndexedString url();
-    
+
     QList<KDevelop::ReferencedTopDUContext> contextForImport(QString package);
-    
+
     QList<KDevelop::ReferencedTopDUContext> contextForThisPackage(KDevelop::IndexedString package);
-    
+
     void scheduleForParsing(const KDevelop::IndexedString& url, int priority, KDevelop::TopDUContext::Features features);
-    
+
     void reparseImporters(KDevelop::DUContext* context);
-    
+
     void setFeatures(KDevelop::TopDUContext::Features features);
-    
+
     QString textForNode(go::AstNode* node);
-    
+
+    void setIncludePaths(const QList<QString> &paths);
+
     /**
      *	Don't use this function!
      *  Most of the times you don't need to access lexer of parseSession directly,
@@ -105,6 +107,7 @@ private:
     KDevelop::TopDUContext::Features m_features;
     int m_priority;
     bool forExport;
+    QList<QString> m_includePaths;
   
 };
 

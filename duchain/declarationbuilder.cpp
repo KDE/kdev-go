@@ -88,6 +88,7 @@ void DeclarationBuilder::declareVariablesWithType(go::IdentifierAst* id, go::IdL
     if(!lastType())
 	injectType(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
     lastType()->setModifiers(declareConstant ? AbstractType::ConstModifier : AbstractType::NoModifiers);
+    if(identifierForNode(id).toString() != "_")
     {
 	DUChainWriteLocker lock;
 	Declaration* dec = openDeclaration<Declaration>(identifierForNode(id), editorFindRange(id, 0));
@@ -102,12 +103,16 @@ void DeclarationBuilder::declareVariablesWithType(go::IdentifierAst* id, go::IdL
 	auto iter = idList->idSequence->front(), end = iter;
 	do
 	{
-	    DUChainWriteLocker lock;
-	    Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
-	    dec->setType<AbstractType>(lastType());
-	    dec->setKind(Declaration::Instance);
-	    closeDeclaration();
-	    if(declareConstant) m_constAutoTypes.append(lastType());
+            if(identifierForNode(iter->element).toString() != "_")
+            {
+                DUChainWriteLocker lock;
+                Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
+                dec->setType<AbstractType>(lastType());
+                dec->setKind(Declaration::Instance);
+                closeDeclaration();
+            }
+	    if(declareConstant)
+                m_constAutoTypes.append(lastType());
 	    iter = iter->next;
 	}
 	while (iter != end);
@@ -148,6 +153,7 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
     if(declareConstant)
 	m_constAutoTypes = types;
 
+    if(identifierForNode(id).toString() != "_")
     {
 	DUChainWriteLocker lock;
 	Declaration* dec = openDeclaration<Declaration>(identifierForNode(id), editorFindRange(id, 0));
@@ -164,12 +170,14 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
 	{
 	    if(typeIndex >= types.size()) //not enough types to declare all variables
 		return;
-
-	    DUChainWriteLocker lock;
-	    Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
-	    dec->setType<AbstractType>(types.at(typeIndex));
-	    dec->setKind(Declaration::Instance);
-	    closeDeclaration();
+            if(identifierForNode(iter->element).toString() != "_")
+            {
+                DUChainWriteLocker lock;
+                Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
+                dec->setType<AbstractType>(types.at(typeIndex));
+                dec->setKind(Declaration::Instance);
+                closeDeclaration();
+            }
 	    iter = iter->next;
 	    typeIndex++;
 	}

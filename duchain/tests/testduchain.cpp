@@ -122,7 +122,7 @@ void TestDuchain::test_declareVariables()
 {
     QString code("package main; func multitest() (int, bool) { return 1, true; } \n \
 		func singletest() rune { return 'a'; } \n func main() { test1, test2 := multitest(); \
-		test3, test4 := singletest(), 3., 100; var test5, test6, test7 = multitest(), singletest(); }");
+		test3, test4 := singletest(), 3., 100; var test5, test6, test7 = multitest(), singletest(); var _, test8, _ = 0., 5, true;}");
 
     DUContext* context = getMainContext(code);
     DUChainReadLocker lock;
@@ -140,6 +140,11 @@ void TestDuchain::test_declareVariables()
     decl = context->findDeclarations(QualifiedIdentifier("test6")).first();
     QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeRune));
     auto declarations = context->findDeclarations(QualifiedIdentifier("test7"));
+    QCOMPARE(declarations.size(), 0);
+
+    decl = context->findDeclarations(QualifiedIdentifier("test8")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeInt));
+    declarations = context->findDeclarations(QualifiedIdentifier("_"));
     QCOMPARE(declarations.size(), 0);
 }
 

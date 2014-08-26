@@ -152,7 +152,8 @@ QList<QString> GoParseJob::getSearchPaths(bool forExport)
         QDir currentDir(document().toUrl().directory());
         //kDebug() << currentDir.dirName();
         while(currentDir.exists() && currentDir.dirName() != "src")
-            currentDir.cdUp();
+            if(!currentDir.cdUp())
+                break;
         if(currentDir.exists() && currentDir.dirName() == "src")
             paths.append(currentDir.absolutePath());
     }

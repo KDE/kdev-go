@@ -182,6 +182,10 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QString package)
         QFile file(filename);
         if(!file.exists())
             continue;
+        //test files are not part of binary package, so we can exclude them
+        //we parse test files only if we open them in KDevelop
+        if(filename.endsWith("_test.go"))
+            continue;
 
         IndexedString url(filename);
         DUChainReadLocker lock;
@@ -191,8 +195,8 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QString package)
             contexts.append(context);
         else
         {
-            shouldReparse = true;
-            scheduleForParsing(url, priority, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts));
+            if(scheduleForParsing(url, priority, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts)))
+                shouldReparse = true;
         }
     }
     if(shouldReparse) 
@@ -204,22 +208,18 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QString package)
     return contexts;
 }
 
-void ParseSession::scheduleForParsing(const IndexedString& url, int priority, TopDUContext::Features features)
+bool ParseSession::scheduleForParsing(const IndexedString& url, int priority, TopDUContext::Features features)
 {
     BackgroundParser* bgparser = KDevelop::ICore::self()->languageController()->backgroundParser();
     //TopDUContext::Features features = (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::VisibleDeclarationsAndContexts);//(TopDUContext::Features)
 	//(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsContextsAndUses);
-
-    //try skipping test packages if they are not direct
-    if(forExport && priority >= BackgroundParser::InitialParsePriority && url.str().endsWith("_test.go"))
-	return;
 
     //currently recursive imports work really slow, nor they usually needed
     //so disallow recursive imports
     int levels=0; //allowed levels of recursion
     if(forExport && m_priority >= BackgroundParser::InitialParsePriority && m_priority <= BackgroundParser::WorstPriority - 2*levels)
     //if(forExport)
-	return;
+	return false;
 	
     if (bgparser->isQueued(url)) 
     {
@@ -227,9 +227,10 @@ void ParseSession::scheduleForParsing(const IndexedString& url, int priority, To
 	    // Remove the document and re-queue it with a greater priority
 	    bgparser->removeDocument(url);
 	else 
-	    return;
+	    return true;
     }
     bgparser->addDocument(url, features, priority, 0, ParseJob::FullSequentialProcessing);
+    return true;
 }
 
 /**
@@ -271,8 +272,8 @@ QList< ReferencedTopDUContext > ParseSession::contextForThisPackage(IndexedStrin
 		contexts.append(context);
 	    else
 	    {
-		scheduleForParsing(url, m_priority-1, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts));
-		shouldReparse=true;
+		if(scheduleForParsing(url, m_priority-1, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts)))
+                    shouldReparse=true;
 	    }
 	     
 	 }

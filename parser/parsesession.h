@@ -70,7 +70,7 @@ public:
 
     QList<KDevelop::ReferencedTopDUContext> contextForThisPackage(KDevelop::IndexedString package);
 
-    void scheduleForParsing(const KDevelop::IndexedString& url, int priority, KDevelop::TopDUContext::Features features);
+    bool scheduleForParsing(const KDevelop::IndexedString& url, int priority, KDevelop::TopDUContext::Features features);
 
     void reparseImporters(KDevelop::DUContext* context);
 

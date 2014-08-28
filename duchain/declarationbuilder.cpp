@@ -717,13 +717,24 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
     if(contexts.empty())
 	return;
  
+    //usually package name matches directory, so try searching for that first
+    QualifiedIdentifier packageName(import.mid(1, import.length()-2));
     bool firstContext = true;
     for(const ReferencedTopDUContext& context : contexts)
-    { //first declaration in top context must be package declaration
-	DeclarationPointer decl = go::getFirstDeclaration(context);
-	if(!decl)
-	    continue;
-	QualifiedIdentifier packageName(decl->qualifiedIdentifier());
+    {
+        //don't import itself
+        if(context.data() == topContext())
+            continue;
+        DeclarationPointer decl = go::getDeclaration(packageName, context);
+        if(!decl && firstContext)
+        {
+            decl = go::getFirstDeclaration(context); //package name differs from directory, so get the real name
+            if(!decl)
+                continue;
+            packageName = decl->qualifiedIdentifier();
+        }
+        if(!decl) //contexts belongs to a different package
+            continue;
 	
         if(firstContext) //only open declarations once per import(others are redundant)
         {
@@ -761,6 +772,7 @@ void DeclarationBuilder::visitSourceFile(go::SourceFileAst* node)
     openContext(node, editorFindRange(node, 0), DUContext::Namespace, identifierForNode(node->packageClause->packageName));
     
     packageDeclaration->setInternalContext(currentContext());
+    m_thisPackage = identifierForNode(node->packageClause->packageName);
     //import all files in current directory
     if(!m_export)
         importThisPackage();
@@ -780,11 +792,12 @@ void DeclarationBuilder::importThisPackage()
     
     for(const ReferencedTopDUContext& context : contexts)
     {
-	//first declaration in top context must be package declaration
-	DeclarationPointer decl = go::getFirstDeclaration(context);
+        if(context.data() == topContext())
+            continue;
+	//import only contexts with the same package name
+	DeclarationPointer decl = go::getDeclaration(m_thisPackage, context);
 	if(!decl)
 	    continue;
-	QualifiedIdentifier packageName(decl->qualifiedIdentifier());
 	
 	DUChainWriteLocker lock;
 	//TODO Since package names are identical duchain should find declarations without namespace alias, right?

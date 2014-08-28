@@ -117,6 +117,7 @@ private:
     QualifiedIdentifier m_contextIdentifier;
     bool m_preBuilding;
     QList<AbstractType::Ptr> m_constAutoTypes;
+    QualifiedIdentifier m_thisPackage;
 };
 
 #endif

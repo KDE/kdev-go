@@ -717,6 +717,7 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
     if(contexts.empty())
 	return;
  
+    bool firstContext = true;
     for(const ReferencedTopDUContext& context : contexts)
     { //first declaration in top context must be package declaration
 	DeclarationPointer decl = go::getFirstDeclaration(context);
@@ -724,28 +725,32 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
 	    continue;
 	QualifiedIdentifier packageName(decl->qualifiedIdentifier());
 	
-	DUChainWriteLocker lock;
-	if(node->packageName)
-	{//create alias for package
-	    QualifiedIdentifier id = identifierForNode(node->packageName);
-	    NamespaceAliasDeclaration* decl = openDeclaration<NamespaceAliasDeclaration>(id, editorFindRange(node->importpath, 0));
-	    decl->setKind(Declaration::NamespaceAlias);
-	    decl->setImportIdentifier(packageName); //this needs to be actual package name
-	    closeDeclaration();
-	}else if(node->dot != -1)
-	{//anonymous import
-	    NamespaceAliasDeclaration* decl = openDeclaration<NamespaceAliasDeclaration>(QualifiedIdentifier(globalImportIdentifier()), 
-											 editorFindRange(node->importpath, 0));
-	    decl->setKind(Declaration::NamespaceAlias);
-	    decl->setImportIdentifier(packageName); //this needs to be actual package name
-	    closeDeclaration();
-	}else
-	{
-	    Declaration* decl = openDeclaration<Declaration>(packageName, editorFindRange(node->importpath, 0));
-	    decl->setKind(Declaration::Import);
-	    closeDeclaration();
-	}
+        if(firstContext) //only open declarations once per import(others are redundant)
+        {
+            DUChainWriteLocker lock;
+            if(node->packageName)
+            {//create alias for package
+                QualifiedIdentifier id = identifierForNode(node->packageName);
+                NamespaceAliasDeclaration* decl = openDeclaration<NamespaceAliasDeclaration>(id, editorFindRange(node->importpath, 0));
+                decl->setKind(Declaration::NamespaceAlias);
+                decl->setImportIdentifier(packageName); //this needs to be actual package name
+                closeDeclaration();
+            }else if(node->dot != -1)
+            {//anonymous import
+                NamespaceAliasDeclaration* decl = openDeclaration<NamespaceAliasDeclaration>(QualifiedIdentifier(globalImportIdentifier()), 
+                                                                                            editorFindRange(node->importpath, 0));
+                decl->setKind(Declaration::NamespaceAlias);
+                decl->setImportIdentifier(packageName); //this needs to be actual package name
+                closeDeclaration();
+            }else
+            {
+                Declaration* decl = openDeclaration<Declaration>(packageName, editorFindRange(node->importpath, 0));
+                decl->setKind(Declaration::Import);
+                closeDeclaration();
+            }
+        }
 	topContext()->addImportedParentContext(context.data());
+        firstContext = false;
     }
 }
 

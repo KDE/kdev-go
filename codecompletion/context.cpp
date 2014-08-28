@@ -60,6 +60,10 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::completionItems(bool& 
 	auto declarations = m_duContext->allDeclarations(CursorInRevision::invalid(), m_duContext->topContext());
 	for(const QPair<Declaration*, int> &decl : declarations)
 	{
+            if(decl.first->topContext() != m_duContext->topContext())
+                continue;
+            if(decl.first->identifier() == globalImportIdentifier() || decl.first->identifier() == globalAliasIdentifier())
+                continue;
 	    items << CompletionTreeItemPointer(new NormalDeclarationCompletionItem(DeclarationPointer(decl.first), 
 										   KSharedPtr<KDevelop::CodeCompletionContext>(), decl.second));
 										  

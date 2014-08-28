@@ -220,7 +220,9 @@
 --This works well
 ( [.^(\" | \\)] | \\.)	->string_internal;
 -- ( [.^(\` | \\)] | \\.)	->string_internal2; --I'm not sure if you can escape backticks
-  ("\"" ({string_internal})* "\"") | ("\`" [.^\`]* "\`")  			STRING;
+  ("\"" ({string_internal})* "\"")  			 STRING;
+  "\`" [: lxSET_RULE_SET(instring); :]                 STRING;
+
   
   
 --broken
@@ -257,7 +259,11 @@
  \n			[: locationTable()->newline(lxCURR_IDX); :]	;
 
  .	;
- 
+ ;
+%lexer "instring" ->
+ \n            [: locationTable()->newline(lxCURR_IDX); :]     ;
+ "\`"          [: lxSET_RULE_SET(start); :] ;
+ .         ;
  ;
 
 ------------------------------------------------------------------------- 

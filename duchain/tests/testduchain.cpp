@@ -204,6 +204,60 @@ void TestDuchain::test_constants_omittedType()
     QCOMPARE(context->findDeclarations(QualifiedIdentifier("const9")).size(), 0);
 }
 
+void TestDuchain::test_indexexpressions_data()
+{
+    QTest::addColumn<QString>("vardecl");
+    QTest::addColumn<QString>("indexexpr");
+    QTest::addColumn<QString>("type");
+    QTest::addColumn<bool>("mapaccess");
+
+    QTest::newRow("array index") << "var array [5]int" << "array[1]" << "int" << false;
+    QTest::newRow("slice index") << "var slice []string" << "slice[4]" << "string" << false;
+    QTest::newRow("array pointer index") << "var array *[5]int" << "array[1]" << "int" << false;
+    QTest::newRow("string index") << "var str string" << "str[4]" << "byte" << false;
+    QTest::newRow("map index") << "var mymap map[int][]string" << "mymap[2*2]" << "string[]" << true;
+    QTest::newRow("map index 2") << "var mymap map[rune]*mytype" << "mymap[\'o\']" << "main::mytype*" << true;
+    QTest::newRow("slice expression") << "var slice []int" << "slice[1:4]" << "int[]" << false;
+    QTest::newRow("slice expression 2") << "var slice []int" << "slice[:4]" << "int[]" << false;
+    QTest::newRow("slice expression 3") << "var slice []int" << "slice[1:]" << "int[]" << false;
+    QTest::newRow("slice expression 4") << "var slice []int" << "slice[:]" << "int[]" << false;
+    QTest::newRow("array expression") << "var array [5-3]bool" << "array[0:2]" << "bool[]" << false;
+    QTest::newRow("string expression") << "var str string" << "str[0:]" << "string" << false;
+    QTest::newRow("array pointer expression") << "var array *[]bool" << "array[0:2]" << "bool[]" << false;
+    QTest::newRow("full slice expression") << "var slice []int" << "slice[1:3:5]" << "int[]" << false;
+    QTest::newRow("full slice expression 2") << "var slice []mytype" << "slice[:3:5]" << "main::mytype[]" << false;
+}
+
+
+void TestDuchain::test_indexexpressions()
+{
+    QFETCH(QString, vardecl);
+    QFETCH(QString, indexexpr);
+    QFETCH(QString, type);
+    QString code(QString("package main; type mytype int; func main() { %1; testvar, ok := %2; }").arg(vardecl).arg(indexexpr));
+    DUContext* context = getMainContext(code);
+    QVERIFY(context);
+    DUChainReadLocker lock;
+    auto decls = context->findDeclarations(QualifiedIdentifier("testvar"));
+    QCOMPARE(decls.size(), 1);
+    Declaration* decl = decls.first();
+    AbstractType::Ptr result = decl->abstractType();
+
+    QCOMPARE(result->toString(), type);
+
+    QFETCH(bool, mapaccess);
+    decls = context->findDeclarations(QualifiedIdentifier("ok"));
+    if(mapaccess)
+    {
+        QCOMPARE(decls.size(), 1);
+        decl = decls.first();
+        result = decl->abstractType();
+        QCOMPARE(result->toString(), QString("bool"));
+    }else
+        QCOMPARE(decls.size(), 0);
+}
+
+
 DUContext* getPackageContext(const QString& code)
 {
     ParseSession session(code.toUtf8(), 0);

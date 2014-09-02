@@ -537,7 +537,7 @@ expression=expression (COMMA (#expressions=expression | 0))* (tripleDot=TRIPLEDO
 { (*yynode)->endToken = tokenStream->index() - 2; return true;} :]
 DOT (selector=identifier | LPAREN typeAssertion=type RPAREN ) (primaryExprResolve=primaryExprResolve | 0 ) )
 --increase lParenCounter within brackets to allow literals within brackets in if clauses
-| LBRACKET [: if(inIfClause) lparenCount++; :] ( ( low=expression (COLON | 0) | COLON ) ( high=expression (COLON max=expression | 0) | 0 ))
+| index=LBRACKET [: if(inIfClause) lparenCount++; :] ( ( low=expression (colon=COLON | 0) | colon=COLON ) ( high=expression (COLON max=expression | 0) | 0 ))
 [: if(inIfClause) lparenCount--; :] RBRACKET (primaryExprResolve=primaryExprResolve | 0)
 | LPAREN [: if(inIfClause) lparenCount++; :] callParam=callParam [: if(inIfClause) lparenCount--; :] RPAREN (primaryExprResolve=primaryExprResolve | 0)
 | [: if(inIfClause && lparenCount <= 0) { (*yynode)->endToken = tokenStream->index() - 2; return true;} :] literalValue=literalValue 

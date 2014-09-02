@@ -20,8 +20,10 @@
 
 #include <language/duchain/types/integraltype.h>
 #include <language/duchain/types/pointertype.h>
+#include <language/duchain/types/arraytype.h>
 #include "types/gointegraltype.h"
 #include "types/gostructuretype.h"
+#include "types/gomaptype.h"
 #include "helper.h"
 
 using namespace KDevelop;
@@ -262,6 +264,54 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
 	    //pushUse(node->id, decl.data());
 	    visitCallParam(node->callParam);
 	}
+    }else if(node->index != -1)
+    {
+        if(lastTypes().size() == 0)
+            return;
+        AbstractType::Ptr type = popTypes().first();
+        go::DefaultVisitor::visitPrimaryExprResolve(node); //build uses
+        //slice expressions(e.g. a[low:high]) return slices and strings
+        if(node->colon != -1)
+        {
+            if(fastCast<PointerType*>(type.constData()))
+            {//pointer to arrays return slices in slice expressions
+                PointerType* ptype = fastCast<PointerType*>(type.constData());
+                pushType(ptype->baseType());
+                return;
+            }
+            pushType(type);
+            return;
+        }
+        if(fastCast<GoIntegralType*>(type.constData()))
+        {
+            GoIntegralType* itype = fastCast<GoIntegralType*>(type.constData());
+            if(itype->dataType() == GoIntegralType::TypeString)
+            {
+                pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeByte)));
+            }
+        }else if(fastCast<ArrayType*>(type.constData()))
+        {
+            ArrayType* atype = fastCast<ArrayType*>(type.constData());
+            pushType(atype->elementType());
+        }else if(fastCast<PointerType*>(type.constData()))
+        {//pointers to array are automatically dereferenced
+            PointerType* ptype = fastCast<PointerType*>(type.constData());
+            if(fastCast<ArrayType*>(ptype->baseType().constData()))
+            {
+                ArrayType* atype = fastCast<ArrayType*>(ptype->baseType().constData());
+                pushType(atype->elementType());
+            }
+        }else if(fastCast<GoMapType*>(type.constData()))
+        {
+            GoMapType* mtype = fastCast<GoMapType*>(type.constData());
+            //TODO check if expression and key type match, open a problem if not
+            pushType(mtype->valueType());
+            addType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeBool)));
+        }else
+        {
+            //unrecognized index expression, return whatever type was before index
+            pushType(type);
+        }
     }
     if(node->primaryExprResolve)
 	visitPrimaryExprResolve(node->primaryExprResolve);

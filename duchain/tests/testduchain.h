@@ -33,6 +33,8 @@ private slots:
     void test_declareVariables();
     void test_constants();
     void test_constants_omittedType();
+    void test_indexexpressions_data();
+    void test_indexexpressions();
 };
 
 

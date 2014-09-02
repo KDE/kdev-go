@@ -31,6 +31,7 @@
 
 #include "types/gointegraltype.h"
 #include "types/gostructuretype.h"
+#include "types/gomaptype.h"
 #include "expressionvisitor.h"
 #include "helper.h"
 
@@ -659,16 +660,13 @@ void DeclarationBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
 
 void DeclarationBuilder::visitMapType(go::MapTypeAst* node)
 {
-    //TODO create real mapType
+    go::GoMapType* type = new go::GoMapType();
     visitType(node->keyType);
-    QString typeName("map["+lastType()->toString()+"]");
+    type->setKeyType(lastType());
     visitType(node->elemType);
-    typeName.append(lastType()->toString());
-    
-    DelayedType::Ptr type = DelayedType::Ptr(new DelayedType());
-    openType<DelayedType>(type);
-    type->setIdentifier(IndexedTypeIdentifier(typeName));
-    closeType();
+    type->setValueType(lastType());
+
+    injectType(AbstractType::Ptr(type));
 }
 
 void DeclarationBuilder::visitChanType(go::ChanTypeAst* node)

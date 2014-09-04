@@ -63,6 +63,7 @@ void DeclarationBuilder::startVisiting(go::AstNode* node)
     {
         DUChainWriteLocker lock;
         topContext()->clearImportedParentContexts();
+        topContext()->updateImportsCache();
     }
 
     return DeclarationBuilderBase::startVisiting(node);
@@ -773,6 +774,8 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
 	topContext()->addImportedParentContext(context.data());
         firstContext = false;
     }
+    DUChainWriteLocker lock;
+    topContext()->updateImportsCache();
 }
 
 void DeclarationBuilder::visitSourceFile(go::SourceFileAst* node)
@@ -785,9 +788,8 @@ void DeclarationBuilder::visitSourceFile(go::SourceFileAst* node)
     packageDeclaration->setInternalContext(currentContext());
     lock.unlock();
     m_thisPackage = identifierForNode(node->packageClause->packageName);
-    //import all files in current directory
-    if(!m_export)
-        importThisPackage();
+    //import package this context belongs to
+    importThisPackage();
     
     go::DefaultVisitor::visitSourceFile(node);
     closeContext();
@@ -796,8 +798,6 @@ void DeclarationBuilder::visitSourceFile(go::SourceFileAst* node)
 
 void DeclarationBuilder::importThisPackage()
 {
-    if(m_export)
-	return;
     QList<ReferencedTopDUContext> contexts = m_session->contextForThisPackage(document());
     if(contexts.empty())
 	return;
@@ -820,6 +820,8 @@ void DeclarationBuilder::importThisPackage()
 	//closeDeclaration();
 	topContext()->addImportedParentContext(context.data());
     }
+    DUChainWriteLocker lock;
+    topContext()->updateImportsCache();
 }
 
 go::GoFunctionDeclaration* DeclarationBuilder::parseSignature(go::SignatureAst* node, bool declareParameters, go::IdentifierAst* name)

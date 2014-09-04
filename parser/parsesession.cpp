@@ -216,8 +216,8 @@ bool ParseSession::scheduleForParsing(const IndexedString& url, int priority, To
 
     //currently recursive imports work really slow, nor they usually needed
     //so disallow recursive imports
-    int levels=0; //allowed levels of recursion
-    if(forExport && m_priority >= BackgroundParser::InitialParsePriority && m_priority <= BackgroundParser::WorstPriority - 2*levels)
+    int levels=1; //allowed levels of recursion
+    if(forExport && priority >= BackgroundParser::InitialParsePriority && priority < BackgroundParser::WorstPriority - 2*levels)
     //if(forExport)
 	return false;
 	
@@ -255,6 +255,13 @@ QList< ReferencedTopDUContext > ParseSession::contextForThisPackage(IndexedStrin
     QDir path(url.directory());
     if(path.exists())
     {
+        int priority = BackgroundParser::WorstPriority;
+        if(!forExport)
+            priority = -1; //import this package as soon as possible
+        else if(m_priority<=-1)
+            priority = BackgroundParser::WorstPriority-2;//all needed files should be scheduled already
+        else
+            priority = m_priority;//currently parsejob does not get created in this cases to reduce recursion
 	 QStringList files = path.entryList(QStringList("*.go"), QDir::Files | QDir::NoSymLinks);
 	 bool shouldReparse=false;
 	 for(QString filename : files)
@@ -263,6 +270,8 @@ QList< ReferencedTopDUContext > ParseSession::contextForThisPackage(IndexedStrin
 	    QFile file(filename);
 	    if(!file.exists())
 		continue;
+            if(forExport && filename.endsWith("_test.go"))
+                continue;
 	
 	    IndexedString url(filename);
 	    DUChainReadLocker lock; 
@@ -272,13 +281,13 @@ QList< ReferencedTopDUContext > ParseSession::contextForThisPackage(IndexedStrin
 		contexts.append(context);
 	    else
 	    {
-		if(scheduleForParsing(url, m_priority-1, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts)))
+		if(scheduleForParsing(url, priority, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts)))
                     shouldReparse=true;
 	    }
 	     
 	 }
 	 if(shouldReparse)
-	     scheduleForParsing(m_document, m_priority, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
+	     scheduleForParsing(m_document, priority+1, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
     }
     return contexts;
 }

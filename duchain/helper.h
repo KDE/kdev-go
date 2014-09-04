@@ -47,6 +47,11 @@ KDEVGODUCHAIN_EXPORT QList<Declaration*> getDeclarations(QualifiedIdentifier id,
 
 KDEVGODUCHAIN_EXPORT DeclarationPointer getFirstDeclaration(DUContext* context, bool searchInParent=true);
 
+/**
+ * Checks if topContext declares package @param id
+ */
+KDEVGODUCHAIN_EXPORT DeclarationPointer checkPackageDeclaration(Identifier id, TopDUContext* context);
+
 }
 
 #endif

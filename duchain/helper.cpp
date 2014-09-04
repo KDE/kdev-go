@@ -20,6 +20,7 @@
 
 #include <language/duchain/duchainlock.h>
 #include <language/duchain/declaration.h>
+#include <language/duchain/topducontext.h>
 
 namespace go
 {
@@ -102,5 +103,15 @@ DeclarationPointer getFirstDeclaration(DUContext* context, bool searchInParent)
 	return DeclarationPointer(declarations.first().first);
     return DeclarationPointer();
 }
+
+DeclarationPointer checkPackageDeclaration(Identifier id, TopDUContext* context)
+{
+    DUChainReadLocker lock;
+    auto declarations = context->findLocalDeclarations(id);
+    if(declarations.size() > 0)
+        return DeclarationPointer(declarations.first());
+    return DeclarationPointer();
+}
+
 
 }

@@ -734,7 +734,7 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
         //don't import itself
         if(context.data() == topContext())
             continue;
-        DeclarationPointer decl = go::getDeclaration(packageName, context);
+        DeclarationPointer decl = go::checkPackageDeclaration(packageName.last(), context);
         if(!decl && firstContext)
         {
             decl = go::getFirstDeclaration(context); //package name differs from directory, so get the real name
@@ -807,7 +807,7 @@ void DeclarationBuilder::importThisPackage()
         if(context.data() == topContext())
             continue;
 	//import only contexts with the same package name
-	DeclarationPointer decl = go::getDeclaration(m_thisPackage, context);
+        DeclarationPointer decl = go::checkPackageDeclaration(m_thisPackage.last(), context);
 	if(!decl)
 	    continue;
 	

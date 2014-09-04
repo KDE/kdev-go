@@ -60,9 +60,11 @@ KDevelop::ReferencedTopDUContext DeclarationBuilder::build(const KDevelop::Index
 
 void DeclarationBuilder::startVisiting(go::AstNode* node)
 {
-    DUChainWriteLocker lock;
-    topContext()->clearImportedParentContexts();
-    
+    {
+        DUChainWriteLocker lock;
+        topContext()->clearImportedParentContexts();
+    }
+
     return DeclarationBuilderBase::startVisiting(node);
 }
 
@@ -411,6 +413,7 @@ void DeclarationBuilder::visitTypeName(go::TypeNameAst* node)
 	DeclarationPointer decl = go::getTypeDeclaration(id, currentContext());
 	if(decl)
 	{
+            DUChainReadLocker lock;
 	    StructureType* type = new StructureType();
 	    type->setDeclaration(decl.data());
 	    injectType<AbstractType>(AbstractType::Ptr(type));
@@ -586,10 +589,13 @@ void DeclarationBuilder::visitFuncDeclaration(go::FuncDeclarationAst* node)
 	return;
     
     DUContext* bodyContext = openContext(node->body, DUContext::ContextType::Function, node->funcName);
-    //import parameters into body context
-    if(decl->internalContext()) currentContext()->addImportedParentContext(decl->internalContext());
-    if(decl->returnArgsContext()) currentContext()->addImportedParentContext(decl->returnArgsContext());
-
+    {//import parameters into body context
+        DUChainWriteLocker lock;
+        if(decl->internalContext())
+            currentContext()->addImportedParentContext(decl->internalContext());
+        if(decl->returnArgsContext())
+            currentContext()->addImportedParentContext(decl->returnArgsContext());
+    }
  
     visitBlock(node->body);
     closeContext();
@@ -626,9 +632,13 @@ void DeclarationBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
 
     DUContext* bodyContext = openContext(node->body, DUContext::ContextType::Function, node->methodName);
 
-    //import parameters into body context
-    if(decl->internalContext()) currentContext()->addImportedParentContext(decl->internalContext());
-    if(decl->returnArgsContext()) currentContext()->addImportedParentContext(decl->returnArgsContext());
+    {//import parameters into body context
+        DUChainWriteLocker lock;
+        if(decl->internalContext())
+            currentContext()->addImportedParentContext(decl->internalContext());
+        if(decl->returnArgsContext())
+            currentContext()->addImportedParentContext(decl->returnArgsContext());
+    }
     
     if(node->methodRecv->type)
     {//declare method receiver variable('this' or 'self' analog in Go)
@@ -675,6 +685,7 @@ void DeclarationBuilder::visitChanType(go::ChanTypeAst* node)
     visitType(node->rtype ? node->rtype : node->stype);
     DelayedType::Ptr type = DelayedType::Ptr(new DelayedType());
     openType<DelayedType>(type);
+    DUChainReadLocker lock;
     type->setIdentifier(IndexedTypeIdentifier(QString("chan ") + lastType()->toString()));
     closeType();
 }
@@ -729,14 +740,15 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
             decl = go::getFirstDeclaration(context); //package name differs from directory, so get the real name
             if(!decl)
                 continue;
+            DUChainReadLocker lock;
             packageName = decl->qualifiedIdentifier();
         }
         if(!decl) //contexts belongs to a different package
             continue;
 	
+        DUChainWriteLocker lock;
         if(firstContext) //only open declarations once per import(others are redundant)
         {
-            DUChainWriteLocker lock;
             if(node->packageName)
             {//create alias for package
                 QualifiedIdentifier id = identifierForNode(node->packageName);
@@ -765,11 +777,13 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
 
 void DeclarationBuilder::visitSourceFile(go::SourceFileAst* node)
 {
+    DUChainWriteLocker lock;
     Declaration* packageDeclaration = openDeclaration<Declaration>(identifierForNode(node->packageClause->packageName), editorFindRange(node->packageClause->packageName, 0));
     packageDeclaration->setKind(Declaration::Namespace);
     openContext(node, editorFindRange(node, 0), DUContext::Namespace, identifierForNode(node->packageClause->packageName));
     
     packageDeclaration->setInternalContext(currentContext());
+    lock.unlock();
     m_thisPackage = identifierForNode(node->packageClause->packageName);
     //import all files in current directory
     if(!m_export)

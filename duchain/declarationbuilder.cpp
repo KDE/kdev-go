@@ -588,7 +588,8 @@ void DeclarationBuilder::visitFuncDeclaration(go::FuncDeclarationAst* node)
     
     if(!node->body)
 	return;
-    
+    //a context will be opened when visiting block, but we still open another one here
+    //so we can import arguments into it.(same goes for methodDeclaration)
     DUContext* bodyContext = openContext(node->body, DUContext::ContextType::Function, node->funcName);
     {//import parameters into body context
         DUChainWriteLocker lock;
@@ -599,12 +600,13 @@ void DeclarationBuilder::visitFuncDeclaration(go::FuncDeclarationAst* node)
     }
  
     visitBlock(node->body);
-    closeContext();
     {
 	DUChainWriteLocker lock;
-	decl->setInternalFunctionContext(bodyContext);
+        lastContext()->setType(DUContext::Function);
+	decl->setInternalFunctionContext(lastContext()); //inner block context
 	decl->setKind(Declaration::Instance);
     }
+    closeContext(); //body wrapper context
 }
 
 void DeclarationBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
@@ -657,13 +659,14 @@ void DeclarationBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
     }
 	
     visitBlock(node->body);
-    closeContext();
     {
 	DUChainWriteLocker lock;
-	decl->setInternalFunctionContext(bodyContext);
+        lastContext()->setType(DUContext::Function);
+	decl->setInternalFunctionContext(lastContext()); //inner block context
 	decl->setKind(Declaration::Instance);
     }
     
+    closeContext(); //body wrapper context
     closeContext();	//namespace
     closeDeclaration();	//namespace declaration
 }

@@ -35,6 +35,8 @@ private slots:
     void test_constants_omittedType();
     void test_indexexpressions_data();
     void test_indexexpressions();
+    void test_ifcontexts();
+    void test_funccontexts();
 };
 
 

@@ -257,6 +257,57 @@ void TestDuchain::test_indexexpressions()
         QCOMPARE(decls.size(), 0);
 }
 
+void TestDuchain::test_ifcontexts()
+{
+    QString code("package main; func main() { var test1 int; if test2:=0; true { var test3 int; } else if false {  } else { var test4 int; } }");
+    DUContext* context = getMainContext(code);
+    DUChainReadLocker lock;
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("test1")).size(), 1);
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("test2")).size(), 0);
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("test3")).size(), 0);
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("test4")).size(), 0);
+    DUContext* childContext = context->findContextAt(CursorInRevision(0, 65)); //if block context
+    QVERIFY(context);
+    QCOMPARE(childContext->findDeclarations(QualifiedIdentifier("test1")).size(), 1);
+    QCOMPARE(childContext->findDeclarations(QualifiedIdentifier("test2")).size(), 1);
+    QCOMPARE(childContext->findDeclarations(QualifiedIdentifier("test3")).size(), 1);
+    QCOMPARE(childContext->findDeclarations(QualifiedIdentifier("test4")).size(), 0);
+    childContext = context->findContextAt(CursorInRevision(0, 97)); //else-if block context
+    QVERIFY(context);
+    QCOMPARE(childContext->findDeclarations(QualifiedIdentifier("test1")).size(), 1);
+    QCOMPARE(childContext->findDeclarations(QualifiedIdentifier("test2")).size(), 1);
+    QCOMPARE(childContext->findDeclarations(QualifiedIdentifier("test3")).size(), 0);
+    QCOMPARE(childContext->findDeclarations(QualifiedIdentifier("test4")).size(), 0);
+    childContext = context->findContextAt(CursorInRevision(0, 116)); //else-else block context
+    QVERIFY(context);
+    QCOMPARE(childContext->findDeclarations(QualifiedIdentifier("test1")).size(), 1);
+    QCOMPARE(childContext->findDeclarations(QualifiedIdentifier("test2")).size(), 1);
+    QCOMPARE(childContext->findDeclarations(QualifiedIdentifier("test3")).size(), 0);
+    QCOMPARE(childContext->findDeclarations(QualifiedIdentifier("test4")).size(), 1);
+}
+
+void TestDuchain::test_funccontexts()
+{
+    QString code("package main; type mytype int; func (i mytype) main(a, b string, c float64) (d, e int) { var f mytype; }");
+    DUContext* context = getPackageContext(code);
+    QVERIFY(context);
+    DUChainReadLocker lock;
+    auto decls = context->findDeclarations(QualifiedIdentifier("mytype::main"));
+    QCOMPARE(decls.size(), 1);
+    AbstractFunctionDeclaration* function = dynamic_cast<AbstractFunctionDeclaration*>(decls.first());
+    QVERIFY(function);
+    context = function->internalFunctionContext();
+    QCOMPARE(context->localDeclarations().size(), 1);
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("i")).size(), 1);
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("a")).size(), 1);
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("b")).size(), 1);
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("c")).size(), 1);
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("d")).size(), 1);
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("e")).size(), 1);
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("f")).size(), 1);
+}
+
+
 
 DUContext* getPackageContext(const QString& code)
 {

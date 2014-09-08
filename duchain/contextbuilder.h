@@ -57,6 +57,8 @@ public:
             = KDevelop::ReferencedTopDUContext());*/
     
     virtual void startVisiting(go::AstNode* node);
+    virtual void visitIfStmt(go::IfStmtAst* node);
+    virtual void visitBlock(go::BlockAst* node);
   
     
     virtual KDevelop::DUContext* contextFromNode(go::AstNode* node);

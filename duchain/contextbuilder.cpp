@@ -111,3 +111,20 @@ ParseSession* ContextBuilder::parseSession()
 {
     return m_session;
 }
+
+void ContextBuilder::visitIfStmt(go::IfStmtAst* node)
+{
+    //we need variables, declared in if pre-condition(if any) be available in if-block
+    //and else-block, but not in parent context. We deal with it by opening another context
+    //containing both if-block and else-block.
+    openContext(node, editorFindRange(node, 0), DUContext::Other);
+    DefaultVisitor::visitIfStmt(node);
+    closeContext();
+}
+
+void ContextBuilder::visitBlock(go::BlockAst* node)
+{
+    openContext(node, editorFindRange(node, 0), DUContext::Other);
+    go::DefaultVisitor::visitBlock(node);
+    closeContext();
+}

@@ -46,6 +46,7 @@ set(goplugin_SRC
     kdevgoplugin.cpp
     golangparsejob.cpp
     gohighlighting.cpp
+    godebug.cpp
     )
     
 add_library(kdevgoplugin MODULE ${goplugin_SRC})

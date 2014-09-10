@@ -34,11 +34,10 @@
 #include "types/gomaptype.h"
 #include "expressionvisitor.h"
 #include "helper.h"
+#include "duchaindebug.h"
 
 using namespace KDevelop;
 
-
-#include <kdebug.h>
 
 DeclarationBuilder::DeclarationBuilder(ParseSession* session, bool forExport) : m_export(forExport), m_preBuilding(false)
 {
@@ -47,10 +46,10 @@ DeclarationBuilder::DeclarationBuilder(ParseSession* session, bool forExport) : 
 
 KDevelop::ReferencedTopDUContext DeclarationBuilder::build(const KDevelop::IndexedString& url, go::AstNode* node, KDevelop::ReferencedTopDUContext updateContext)
 {
-  kDebug() << "DeclarationBuilder start";
+  qCDebug(DUCHAIN) << "DeclarationBuilder start";
   if(!m_preBuilding)
   {
-      kDebug() << "Running prebuilder";
+      qCDebug(DUCHAIN) << "Running prebuilder";
       DeclarationBuilder preBuilder(m_session, m_export);
       preBuilder.m_preBuilding = true;
       updateContext = preBuilder.build(url, node, updateContext);
@@ -420,7 +419,7 @@ void DeclarationBuilder::visitTypeName(go::TypeNameAst* node)
 	    StructureType* type = new StructureType();
 	    type->setDeclaration(decl.data());
 	    injectType<AbstractType>(AbstractType::Ptr(type));
-	    //kDebug() << decl->range();
+	    //qCDebug(DUCHAIN) << decl->range();
 	    return;
 	}
 	DelayedType* unknown = new DelayedType();
@@ -446,7 +445,7 @@ void DeclarationBuilder::visitArrayOrSliceType(go::ArrayOrSliceTypeAst* node)
     //TODO create custom classes GoArrayType and GoSliceType
     //to properly distinguish between go slices and arrays
     ArrayType* array = new ArrayType();
-    //kDebug() << lastType()->toString();
+    //qCDebug(DUCHAIN) << lastType()->toString();
     array->setElementType(lastType());
     injectType<ArrayType>(ArrayType::Ptr(array));
 }
@@ -698,7 +697,7 @@ void DeclarationBuilder::visitChanType(go::ChanTypeAst* node)
 
 void DeclarationBuilder::visitTypeSpec(go::TypeSpecAst* node)
 {
-    //kDebug() << "Type" << identifierForNode(node->name) << " enter";
+    //qCDebug(DUCHAIN) << "Type" << identifierForNode(node->name) << " enter";
     Declaration* decl;
     {
 	DUChainWriteLocker lock;
@@ -712,12 +711,12 @@ void DeclarationBuilder::visitTypeSpec(go::TypeSpecAst* node)
     m_contextIdentifier = identifierForNode(node->name);
     visitType(node->type);
     DUChainWriteLocker lock;
-    //kDebug() << lastType()->toString();
+    //qCDebug(DUCHAIN) << lastType()->toString();
     decl->setType(lastType());
     
     decl->setIsTypeAlias(true);
     closeDeclaration();
-    //kDebug() << "Type" << identifierForNode(node->name) << " exit";
+    //qCDebug(DUCHAIN) << "Type" << identifierForNode(node->name) << " exit";
 }
 
 void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)

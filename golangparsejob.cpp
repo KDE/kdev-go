@@ -33,6 +33,7 @@
 #include "parsesession.h"
 #include "duchain/declarationbuilder.h"
 #include "duchain/usebuilder.h"
+#include "godebug.h"
 
 QList<QString> GoParseJob::m_CachedSearchPaths;
 
@@ -44,7 +45,7 @@ GoParseJob::GoParseJob(const KDevelop::IndexedString& url, KDevelop::ILanguageSu
 
 void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 {
-   kDebug() << "GoParseJob succesfully created for document " << document(); 
+   qCDebug(Go) << "GoParseJob succesfully created for document " << document(); 
 
    UrlParseLock urlLock(document());
 
@@ -83,10 +84,10 @@ void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread
         translateDUChainToRevision(context);
         context->setRange(RangeInRevision(0, 0, INT_MAX, INT_MAX));
     }
-    kDebug() << "Job features: " << minimumFeatures();
-    kDebug() << "Job priority: " << parsePriority();
+    qCDebug(Go) << "Job features: " << minimumFeatures();
+    qCDebug(Go) << "Job priority: " << parsePriority();
 
-    kDebug() << document();
+    qCDebug(Go) << document();
     bool result = session.startParsing();
     //this is useful for testing parser, comment it for actual working
     //Q_ASSERT(result);
@@ -97,7 +98,7 @@ void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread
     bool forExport = false;
     if((minimumFeatures() & TopDUContext::AllDeclarationsContextsAndUses) == TopDUContext::AllDeclarationsAndContexts)
         forExport = true;
-    //kDebug() << contents().contents;
+    //qCDebug(Go) << contents().contents;
 
     session.setIncludePaths(getSearchPaths(forExport));
 
@@ -107,7 +108,7 @@ void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread
 	
 	if(abortRequested())
 	  return abortJob();
-	//kDebug() << QString(contents().contents);
+	//qCDebug(Go) << QString(contents().contents);
 	DeclarationBuilder builder(&session, forExport);
 	context = builder.build(document(), session.ast(), context);
 	
@@ -139,9 +140,9 @@ void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread
     highlightDUChain();
     
     if(result)
-      kDebug() << "===Success===" << document().str();
+      qCDebug(Go) << "===Success===" << document().str();
     else
-      kDebug() << "===Failed===" << document().str();
+      qCDebug(Go) << "===Failed===" << document().str();
 }
 
 QList<QString> GoParseJob::getSearchPaths(bool forExport)
@@ -150,7 +151,7 @@ QList<QString> GoParseJob::getSearchPaths(bool forExport)
     if(!forExport)
     {//try to find path automatically for opened documents
         QDir currentDir(document().toUrl().directory());
-        //kDebug() << currentDir.dirName();
+        //qCDebug(Go) << currentDir.dirName();
         while(currentDir.exists() && currentDir.dirName() != "src")
             if(!currentDir.cdUp())
                 break;

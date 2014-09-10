@@ -53,6 +53,7 @@
 #include "navigation/declarationnavigationcontext.h"
 #include "declarations/functiondeclaration.h"
 #include "types/gofunctiontype.h"
+#include "../duchaindebug.h"
 
 using namespace KDevelop;
 
@@ -354,7 +355,7 @@ void DeclarationNavigationContext::htmlFunction()
 	modifyHtml() += " )";
     }
     //return types
-    kDebug() << type->returnArguments().size();
+    qCDebug(DUCHAIN) << type->returnArguments().size();
     if(type->returnArguments().size() != 0)
     {
 	modifyHtml() += " ";

@@ -25,6 +25,7 @@
 #include "types/gostructuretype.h"
 #include "types/gomaptype.h"
 #include "helper.h"
+#include "duchaindebug.h"
 
 using namespace KDevelop;
 
@@ -116,7 +117,7 @@ void ExpressionVisitor::visitPrimaryExpr(PrimaryExprAst* node)
 		    return;
 		}
 	    }
-	    //kDebug() << "Expression Visitor for "<< id;
+	    //qCDebug(DUCHAIN) << "Expression Visitor for "<< id;
 	
 	    if(node->literalValue)
 	    {
@@ -230,7 +231,7 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
 		if(structure)
 		{//get members
 		    DUContext* context = structure->context();
-		    //kDebug() << context->range() << m_context->range();
+		    //qCDebug(DUCHAIN) << context->range() << m_context->range();
 		    DeclarationPointer decl = getTypeOrVarDeclaration(identifierForNode(node->selector), context);
 		    if(decl)
 		    {

@@ -20,7 +20,7 @@
 
 #include "contextbuilder.h"
 #include "goducontext.h"
-#include <kdebug.h>
+#include "duchaindebug.h"
 
 using namespace KDevelop;
 
@@ -42,7 +42,7 @@ ContextBuilder::~ContextBuilder()
 
 void ContextBuilder::startVisiting(go::AstNode* node)
 {
-    //kDebug() << "Start visiting";
+    //qCDebug(DUCHAIN) << "Start visiting";
     visitNode(node);
 }
 

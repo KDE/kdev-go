@@ -28,6 +28,7 @@
 #include "expressionvisitor.h"
 #include "types/gostructuretype.h"
 #include "helper.h"
+#include "completiondebug.h"
 
 using namespace KDevelop;
 
@@ -45,8 +46,8 @@ CodeCompletionContext::CodeCompletionContext(const KDevelop::DUContextPointer& c
 
 QList< CompletionTreeItemPointer > CodeCompletionContext::completionItems(bool& abort, bool fullCompletion)
 {
-    kDebug() << "Completion items test";
-    kDebug() << m_text;
+    qCDebug(COMPLETION) << "Completion items test";
+    qCDebug(COMPLETION) << m_text;
     QList<CompletionTreeItemPointer> items;
     
     QChar lastChar = m_text.size() > 0 ? m_text.at(m_text.size() - 1) : QLatin1Char('\0');
@@ -217,7 +218,7 @@ QStack< CodeCompletionContext::ExpressionStackEntry > CodeCompletionContext::exp
             // The last operator of every sub-expression is stored on the stack
             // so that "A = foo." can know that attributes of foo having the same
             // type as A should be highlighted.
-	    kDebug() << token.kind;
+	    qCDebug(COMPLETION) << token.kind;
 	    lexer.locationTable()->positionAt(token.begin, &line, &column);
 	    lexer.locationTable()->positionAt(token.end+1, &lineEnd, &columnEnd);
             stack.top().operatorStart = column;
@@ -232,7 +233,7 @@ AbstractType::Ptr CodeCompletionContext::lastType(const QString& expression)
 {
     QStack<ExpressionStackEntry> stack = expressionStack(expression);
     QString lastExpression(expression.mid(stack.top().operatorEnd));
-    kDebug() << lastExpression;
+    qCDebug(COMPLETION) << lastExpression;
 
     ParseSession session(lastExpression.toUtf8(), 0, false);
     ExpressionAst* expressionAst;

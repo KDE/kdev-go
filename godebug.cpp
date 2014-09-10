@@ -16,63 +16,6 @@
 *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA   *
 *************************************************************************************/
 
-#include "kdevgoplugin.h"
-
 #include <godebug.h>
-#include <KPluginFactory>
-#include <KAboutData>
-#include <language/codecompletion/codecompletion.h>
-#include <interfaces/icore.h>
-#include <interfaces/ilanguagecontroller.h>
 
-#include "codecompletion/model.h"
-#include "golangparsejob.h"
-
-K_PLUGIN_FACTORY(GoPluginFactory, registerPlugin<GoPlugin>(); )
-//K_EXPORT_PLUGIN(GoPluginFactory(
-//    KAboutData("kdevgoplugin","kdevgoplugin",
-//               ki18n("Go Plugin"), "0.1", ki18n("Go Language Support for KDevelop"), KAboutData::License_GPL)))
-
-using namespace KDevelop;
-
-
-GoPlugin::GoPlugin(QObject* parent, const QVariantList&)
-    : KDevelop::IPlugin("kdevgoplugin", parent),
-    ILanguageSupport()
-{
-    KDEV_USE_EXTENSION_INTERFACE(ILanguageSupport)
-
-    qCDebug(Go) << "Go Language Plugin is loaded\n";
-
-    CodeCompletionModel* codeCompletion = new go::CodeCompletionModel(this);
-    new KDevelop::CodeCompletion(this, codeCompletion, name());
-
-    m_highlighting = new Highlighting(this);
-}
-
-GoPlugin::~GoPlugin()
-{
-}
-
-KDevelop::ILanguage* GoPlugin::language()
-{
-    return core()->languageController()->language(this->name());
-}
-
-ParseJob* GoPlugin::createParseJob(const IndexedString& url)
-{
-    qCDebug(Go) << "Creating golang parse job\n";
-    return new GoParseJob(url, this); 
-}
-
-QString GoPlugin::name() const
-{
-  return "Golang"; 
-}
-
-KDevelop::ICodeHighlighting* GoPlugin::codeHighlighting() const
-{
-    return m_highlighting;
-}
-
-#include "kdevgoplugin.moc"
+Q_LOGGING_CATEGORY(Go, "kdev-go")

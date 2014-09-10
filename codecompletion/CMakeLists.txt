@@ -9,6 +9,7 @@ set(completion_SRCS
     model.cpp
     worker.cpp
     context.cpp
+    completiondebug.cpp
 )
 
 add_library(kdevgocompletion SHARED ${completion_SRCS})

@@ -19,6 +19,7 @@
 #include "worker.h"
 
 #include "context.h"
+#include "completiondebug.h"
 
 namespace go
 {
@@ -32,7 +33,7 @@ KDevelop::CodeCompletionContext* CodeCompletionWorker::createCompletionContext(K
 									       const QString& followingText, 
 									       const KDevelop::CursorInRevision& position) const
 {
-    kDebug() << "Completion test";
+    qCDebug(COMPLETION) << "Completion test";
     //return go::CodeCompletionWorker::createCompletionContext(context, contextText, followingText, position);
     return new go::CodeCompletionContext(context, contextText, position);
 }

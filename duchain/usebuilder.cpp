@@ -20,6 +20,7 @@
 
 #include "expressionvisitor.h"
 #include "helper.h"
+#include "duchaindebug.h"
 
 using namespace KDevelop;
 
@@ -33,7 +34,7 @@ UseBuilder::UseBuilder(ParseSession* session)
 
 /*ReferencedTopDUContext UseBuilder::build(const IndexedString& url, AstNode* node, ReferencedTopDUContext updateContext)
 {
-    kDebug() << "Uses builder run";
+    qCDebug(DUCHAIN) << "Uses builder run";
     return UseBuilderBase::build(url, node, updateContext);
 }*/
 

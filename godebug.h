@@ -16,43 +16,10 @@
 *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA   *
 *************************************************************************************/
 
-#include "goducontext.h"
+#ifndef GODEBUG_H
+#define GODEBUG_H
 
-#include <language/duchain/topducontext.h>
-#include <language/duchain/duchainregister.h>
-#include <language/duchain/topducontextdata.h>
-#include <language/util/includeitem.h>
+#include <QLoggingCategory>
+Q_DECLARE_LOGGING_CATEGORY(Go)
 
-#include "navigation/navigationwidget.h"
-#include "duchaindebug.h"
-
-
-using namespace KDevelop;
-
-namespace go {
-
-typedef GoDUContext<TopDUContext> GoTopDUContext;
-REGISTER_DUCHAIN_ITEM_WITH_DATA(GoTopDUContext, TopDUContextData);
-
-typedef GoDUContext<DUContext> GoNormalDUContext;
-REGISTER_DUCHAIN_ITEM_WITH_DATA(GoNormalDUContext, DUContextData);
-
-template<>
-QWidget* GoTopDUContext::createNavigationWidget(Declaration* decl, TopDUContext* topContext, const QString& htmlPrefix, const QString& htmlSuffix) const {
-    if (!decl) {
-        qCDebug(DUCHAIN) << "no declaration, not returning navigationwidget";
-        return 0;
-    }
-    return new NavigationWidget(decl, topContext, htmlPrefix, htmlSuffix);
-}
-
-template<>
-QWidget* GoNormalDUContext::createNavigationWidget(Declaration* decl, TopDUContext* topContext, const QString& htmlPrefix, const QString& htmlSuffix) const {
-    if (!decl) {
-        qCDebug(DUCHAIN) << "no declaration, not returning navigationwidget";
-        return 0;
-    }
-    return new NavigationWidget(decl, topContext, htmlPrefix, htmlSuffix);
-}
-
-}
+#endif

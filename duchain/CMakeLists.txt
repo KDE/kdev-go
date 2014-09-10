@@ -12,6 +12,7 @@ set(duchain_SRC
      goducontext.cpp
      expressionvisitor.cpp
      helper.cpp
+     duchaindebug.cpp
      
      types/gointegraltype.cpp
      types/gofunctiontype.cpp

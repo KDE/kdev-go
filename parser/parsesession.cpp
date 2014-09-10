@@ -23,7 +23,6 @@
 #include "parser/goast.h"
 #include "parser/gotokentext.h"
 
-#include <kdebug.h>
 #include <language/duchain/duchainlock.h>
 #include <interfaces/icore.h>
 #include <language/backgroundparser/backgroundparser.h>

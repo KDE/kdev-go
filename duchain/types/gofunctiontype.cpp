@@ -50,9 +50,9 @@ void GoFunctionType::addReturnArgument(AbstractType::Ptr arg)
 {
     Q_ASSERT(arg);
     d_func_dynamic()->m_returnArgsList().append(arg->indexed());
-    //kDebug() << " size check: "<< d_func()->m_returnArgs.size();
+    //qCDebug(DUCHAIN) << " size check: "<< d_func()->m_returnArgs.size();
     //makeDynamic();
-    //kDebug() << "size check: " <<  d_func()->m_returnArguments.size();
+    //qCDebug(DUCHAIN) << "size check: " <<  d_func()->m_returnArguments.size();
 }
     
 QList<AbstractType::Ptr> GoFunctionType::returnArguments() const
@@ -81,14 +81,14 @@ QString GoFunctionType::toString() const
     output = output.append(") ");
     //auto rargs = d_func()->m_returnArgs;
     auto rargs = returnArguments();
-    //kDebug() << "size check again: " << d_func()->m_returnArgs.size();
+    //qCDebug(DUCHAIN) << "size check again: " << d_func()->m_returnArgs.size();
     if(rargs.size() == 0)
 	return output;
     if(rargs.size() == 1)
     {
 	if(!rargs.first())
 	    return output.append("<no type>");
-	//kDebug() << rargs.first().abstractType()->toString();
+	//qCDebug(DUCHAIN) << rargs.first().abstractType()->toString();
 	return output.append(rargs.first()->toString());
     }
     

@@ -65,7 +65,7 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::completionItems(bool& 
             if(decl.first->identifier() == globalImportIdentifier() || decl.first->identifier() == globalAliasIdentifier())
                 continue;
 	    items << CompletionTreeItemPointer(new NormalDeclarationCompletionItem(DeclarationPointer(decl.first), 
-										   KSharedPtr<KDevelop::CodeCompletionContext>(), decl.second));
+										   QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), decl.second));
 										  
 	}
 	
@@ -115,7 +115,7 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::importAndMemberComplet
 			    if(!ident.toString().at(0).isLetter() || (ident.toString().at(0) != ident.toString().at(0).toUpper()))
 				continue;
 			items << CompletionTreeItemPointer(new NormalDeclarationCompletionItem(DeclarationPointer(decl.first), 
-										    KSharedPtr<KDevelop::CodeCompletionContext>(), decl.second));
+										    QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), decl.second));
 		    }
 		}
 	   // }
@@ -136,7 +136,7 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::importAndMemberComplet
 		for(const QPair<Declaration*, int> &decl : declarations)
 		{
 		    items << CompletionTreeItemPointer(new NormalDeclarationCompletionItem(DeclarationPointer(decl.first), 
-										   KSharedPtr<KDevelop::CodeCompletionContext>(), decl.second));
+										   QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), decl.second));
 		}
 	    }
 	    StructureType* identType = fastCast<StructureType*>(lasttype.constData());

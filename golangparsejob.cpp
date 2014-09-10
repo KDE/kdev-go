@@ -42,7 +42,7 @@ GoParseJob::GoParseJob(const KDevelop::IndexedString& url, KDevelop::ILanguageSu
 {
 }
 
-void GoParseJob::run()
+void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 {
    kDebug() << "GoParseJob succesfully created for document " << document(); 
 

@@ -22,13 +22,14 @@
 #include "declarationbuilder.h"
 #include "types/gointegraltype.h"
 
-#include <qtest_kde.h>
+#include <QtTest/QtTest>
+//#include <qtest_kde.h>
 
 #include <tests/testcore.h>
 #include <tests/autotestshell.h>
 #include <tests/testhelpers.h>
 
-QTEST_KDEMAIN(TestDuchain, NoGUI);
+QTEST_MAIN(TestDuchain);
 
 using namespace KDevelop;
 

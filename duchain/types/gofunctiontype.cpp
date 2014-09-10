@@ -74,7 +74,7 @@ QString GoFunctionType::toString() const
     auto args = arguments();
     for(const AbstractType::Ptr& type : args)
     {
-	 output = output.append(type.isNull() ? "<no type>" : type->toString());
+	 output = output.append(!type ? "<no type>" : type->toString());
 	 if(args.back() != type)
 	    output = output.append(", ");
     }
@@ -86,7 +86,7 @@ QString GoFunctionType::toString() const
 	return output;
     if(rargs.size() == 1)
     {
-	if(rargs.first().isNull())
+	if(!rargs.first())
 	    return output.append("<no type>");
 	//kDebug() << rargs.first().abstractType()->toString();
 	return output.append(rargs.first()->toString());
@@ -96,7 +96,7 @@ QString GoFunctionType::toString() const
     foreach(const AbstractType::Ptr& type,  rargs)
     {
 	//auto type = idx.abstractType();
-	output = output.append(type.isNull() ? "<no type>" : type->toString());
+	output = output.append(!type ? "<no type>" : type->toString());
 	if(rargs.back() != type)
 	    output = output.append(", ");
     }

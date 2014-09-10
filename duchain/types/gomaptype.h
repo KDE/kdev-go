@@ -55,7 +55,7 @@ public:
 class KDEVGODUCHAIN_EXPORT GoMapType: public KDevelop::AbstractType
 {
 public:
-    typedef TypePtr<GoMapType> Ptr;
+    typedef KDevelop::TypePtr<GoMapType> Ptr;
 
     /// Default constructor
     GoMapType();

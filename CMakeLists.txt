@@ -1,24 +1,33 @@
 cmake_minimum_required(VERSION 2.8)
 project(kdevgoplugin)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
-                      ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules
-)
+set(VERSION_MAJOR 1)
+set(VERSION_MINOR 90)
+set(VERSION_PATCH 90)
+# KDevplatform dependency version
+set( KDEVPLATFORM_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}" )
 
-find_package(KDE4 REQUIRED)
-find_package(KDevPlatform REQUIRED)
+find_package (ECM 0.0.9 REQUIRED NO_MODULE)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
+
+include(ECMAddTests)
+include(KDEInstallDirs)
+include(KDECMakeSettings)
+include(KDECompilerSettings)
+
+find_package(Qt5 REQUIRED Core Widgets Test)
+find_package(KF5 REQUIRED COMPONENTS KDELibs4Support ThreadWeaver TextEditor I18n)
+find_package(KDevPlatform ${KDEVPLATFORM_VERSION} REQUIRED)
+find_package(KDevelop-PG-Qt REQUIRED)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
 include_directories(
-    ${KDE4_INCLUDES}
-    ${KDEVPLATFORM_INCLUDE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/parser
     )
     
 enable_testing()
@@ -39,15 +48,16 @@ set(goplugin_SRC
     gohighlighting.cpp
     )
     
-kde4_add_plugin(kdevgoplugin ${goplugin_SRC})
+add_library(kdevgoplugin MODULE ${goplugin_SRC})
 target_link_libraries(kdevgoplugin 
-	  ${KDEVPLATFORM_INTERFACES_LIBRARIES} 
-	  ${KDEVPLATFORM_LANGUAGE_LIBRARIES}
-	  ${KDE4_THREADWEAVER_LIBS}
-	  kdevgoparser
-	  kdevgoduchain
-	  kdevgocompletion
-	  )
+        KDev::Interfaces
+        KDev::Language
+        KF5::ThreadWeaver
+        KF5::TextEditor
+        kdevgoparser
+        kdevgoduchain
+        kdevgocompletion
+        )
 
 install(TARGETS kdevgoplugin DESTINATION ${PLUGIN_INSTALL_DIR})
 

@@ -28,15 +28,15 @@
 #include "golangparsejob.h"
 
 K_PLUGIN_FACTORY(GoPluginFactory, registerPlugin<GoPlugin>(); )
-K_EXPORT_PLUGIN(GoPluginFactory(
-    KAboutData("kdevgoplugin","kdevgoplugin",
-               ki18n("Go Plugin"), "0.1", ki18n("Go Language Support for KDevelop"), KAboutData::License_GPL)))
+//K_EXPORT_PLUGIN(GoPluginFactory(
+//    KAboutData("kdevgoplugin","kdevgoplugin",
+//               ki18n("Go Plugin"), "0.1", ki18n("Go Language Support for KDevelop"), KAboutData::License_GPL)))
 
 using namespace KDevelop;
 
 
 GoPlugin::GoPlugin(QObject* parent, const QVariantList&)
-    : KDevelop::IPlugin(GoPluginFactory::componentData(), parent),
+    : KDevelop::IPlugin("kdevgoplugin", parent),
     ILanguageSupport()
 {
     KDEV_USE_EXTENSION_INTERFACE(ILanguageSupport)

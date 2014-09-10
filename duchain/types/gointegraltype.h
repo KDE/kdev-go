@@ -30,7 +30,7 @@ typedef KDevelop::IntegralTypeData GoIntegralTypeData;
 class KDEVGODUCHAIN_EXPORT GoIntegralType : public KDevelop::IntegralType
 {
 public:
-   typedef TypePtr<GoIntegralType> Ptr; 
+    typedef KDevelop::TypePtr<GoIntegralType> Ptr;
     
     /// Default constructor
     GoIntegralType(uint type = TypeNone);

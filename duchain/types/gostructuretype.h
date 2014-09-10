@@ -51,7 +51,7 @@ public:
 class KDEVGODUCHAIN_EXPORT GoStructureType: public KDevelop::AbstractType
 {
 public:
-    typedef TypePtr<GoStructureType> Ptr;
+    typedef KDevelop::TypePtr<GoStructureType> Ptr;
 
     /// Default constructor
     GoStructureType();

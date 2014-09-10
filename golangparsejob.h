@@ -28,7 +28,7 @@ public:
 		 KDevelop::ILanguageSupport* languageSupport);
   
 protected:
-      virtual void run() override;
+    virtual void run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread) override;
 
 private:
     QList<QString> getSearchPaths(bool forExport);

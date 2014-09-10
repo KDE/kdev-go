@@ -19,9 +19,9 @@
 #ifndef KDEVGOLANGPARSESESSION_H
 #define KDEVGOLANGPARSESESSION_H
 
-#include <language/duchain/indexedstring.h>
 #include <language/editor/rangeinrevision.h>
 #include <language/duchain/topducontext.h>
+#include <serialization/indexedstring.h>
 
 #include "goparserexport.h"
 #include "parser/goast.h"
@@ -103,9 +103,9 @@ private:
     go::StartAst* m_ast;
     QByteArray m_contents;
     
+    int m_priority;
     KDevelop::IndexedString m_document;
     KDevelop::TopDUContext::Features m_features;
-    int m_priority;
     bool forExport;
     QList<QString> m_includePaths;
   

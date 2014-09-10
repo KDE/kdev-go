@@ -11,11 +11,11 @@ set(go_parser_lib_SRC
     parsesession.cpp
     )
 
-kde4_add_library(kdevgoparser SHARED ${go_parser_SRC} ${go_parser_lib_SRC})
+add_library(kdevgoparser SHARED ${go_parser_SRC} ${go_parser_lib_SRC})
 
 target_link_libraries( kdevgoparser LINK_PRIVATE
    #${KDE4_KDECORE_LIBS}
-    ${KDEVPLATFORM_LANGUAGE_LIBRARIES}
+    KDev::Language
 )
 
 include_directories(
@@ -24,11 +24,10 @@ include_directories(
 		)
 
 
-kde4_add_executable(go_parser main.cpp)
+add_executable(go_parser main.cpp)
 
 target_link_libraries(go_parser  kdevgoparser
-      ${QT_CORE_LIBRARY}
-      ${KDE4_KTEXTEDITOR_LIBS}
+        KDev::Language
       )
 
 install(TARGETS kdevgoparser DESTINATION ${INSTALL_TARGETS_DEFAULT_ARGS})

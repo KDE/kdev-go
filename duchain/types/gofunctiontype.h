@@ -58,7 +58,7 @@ public:
 class GoFunctionType : public KDevelop::FunctionType
 {
 public:
-    typedef TypePtr<GoFunctionType> Ptr;
+    typedef KDevelop::TypePtr<GoFunctionType> Ptr;
     
     GoFunctionType();
     

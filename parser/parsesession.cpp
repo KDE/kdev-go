@@ -29,6 +29,7 @@
 #include <language/backgroundparser/backgroundparser.h>
 #include <interfaces/ilanguagecontroller.h>
 #include <QProcess>
+#include <QUrl>
 
 #include "kdev-pg-memory-pool.h"
 #include "kdev-pg-token-stream.h"
@@ -251,8 +252,8 @@ void ParseSession::reparseImporters(DUContext* context)
 QList< ReferencedTopDUContext > ParseSession::contextForThisPackage(IndexedString package)
 {
     QList<ReferencedTopDUContext> contexts;
-    KUrl url = package.toUrl();
-    QDir path(url.directory());
+    QUrl url = package.toUrl();
+    QDir path(url.path());
     if(path.exists())
     {
         int priority = BackgroundParser::WorstPriority;

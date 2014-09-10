@@ -248,10 +248,12 @@ void DeclarationBuilder::addArgumentHelper(go::GoFunctionType::Ptr function, Abs
 {
     DUChainWriteLocker lock;
     if(argument)
+    {
 	if(parseArguments)
 	    function->addArgument(argument);
 	else
 	    function->addReturnArgument(argument);
+    }
 }
 
 void DeclarationBuilder::declareParameter(go::IdentifierAst* name, const AbstractType::Ptr& type)

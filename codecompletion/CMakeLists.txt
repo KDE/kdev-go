@@ -11,13 +11,12 @@ set(completion_SRCS
     context.cpp
 )
 
-kde4_add_library(kdevgocompletion SHARED ${completion_SRCS})
+add_library(kdevgocompletion SHARED ${completion_SRCS})
 
 target_link_libraries(kdevgocompletion LINK_PRIVATE
-    ${KDE4_KDECORE_LIBS}
-    ${KDEVPLATFORM_LANGUAGE_LIBRARIES}
-    ${KDEVPLATFORM_INTERFACES_LIBRARIES}
-    ${KDEVPLATFORM_PROJECT_LIBRARIES}
+    KDev::Language
+    KDev::Interfaces
+    KDev::Project
     kdevgoduchain
     kdevgoparser
 )

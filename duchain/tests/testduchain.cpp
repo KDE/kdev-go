@@ -307,6 +307,48 @@ void TestDuchain::test_funccontexts()
     QCOMPARE(context->findDeclarations(QualifiedIdentifier("f")).size(), 1);
 }
 
+void TestDuchain::test_rangeclause_data()
+{
+    QTest::addColumn<QString>("vardecl");
+    QTest::addColumn<QString>("rangeexpr");
+    QTest::addColumn<QString>("type1");
+    QTest::addColumn<QString>("type2");
+
+    QTest::newRow("array range") << "var array [5]int" << "array" << "int" << "int";
+    QTest::newRow("slice range") << "var slice []string" << "slice" << "int" << "string";
+    QTest::newRow("array pointer range") << "var longestshittyname *[]string" << "longestshittyname" << "int" << "string";
+    QTest::newRow("string range") << "var str string" << "str" << "int" << "rune";
+    QTest::newRow("map range") << "var mymap map[int][]string" << "mymap" << "int" << "string[]";
+    QTest::newRow("map range 2") << "var mymap map[rune]*mytype" << "mymap" << "rune" << "main::mytype*";
+}
+
+void TestDuchain::test_rangeclause()
+{
+    QFETCH(QString, vardecl);
+    QFETCH(QString, rangeexpr);
+    QFETCH(QString, type1);
+    QFETCH(QString, type2);
+    QString code(QString("package main; type mytype int; func main() { %1; for test, test2 := range %2 {   } }").arg(vardecl).arg(rangeexpr));
+    DUContext* context = getMainContext(code);
+    QVERIFY(context);
+    DUChainReadLocker lock;
+    context = context->findContextAt(CursorInRevision(0, 78));
+    QVERIFY(context);
+    auto decls = context->findDeclarations(QualifiedIdentifier("test"));
+    QCOMPARE(decls.size(), 1);
+    Declaration* decl = decls.first();
+    AbstractType::Ptr result = decl->abstractType();
+    QCOMPARE(result->toString(), type1);
+    if(type2 != "nil")
+    {
+        decls = context->findDeclarations(QualifiedIdentifier("test2"));
+        QCOMPARE(decls.size(), 1);
+        Declaration* decl = decls.first();
+        result = decl->abstractType();
+        QCOMPARE(result->toString(), type2);
+    }
+}
+
 
 
 DUContext* getPackageContext(const QString& code)

@@ -265,7 +265,7 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
 	    visitCallParam(node->callParam);
 	}
     }else if(node->index != -1)
-    {
+    {//index expression
         if(lastTypes().size() == 0)
             return;
         AbstractType::Ptr type = popTypes().first();
@@ -546,6 +546,52 @@ void ExpressionVisitor::visitTypeName(TypeNameAst* node)
 	    pushUse(node->type_resolve->fullName, decl.data());
 	}else
 	    pushUse(node->name, decl.data());
+    }
+}
+
+void ExpressionVisitor::visitRangeClause(ExpressionAst* node)
+{
+    visitExpression(node);
+    if(lastTypes().size() == 0)
+        return;
+    AbstractType::Ptr type = popTypes().first();
+    //go::DefaultVisitor::visitPrimaryExprResolve(node); //build uses
+    if(fastCast<GoIntegralType*>(type.constData()))
+    {
+        GoIntegralType* itype = fastCast<GoIntegralType*>(type.constData());
+        if(itype->dataType() == GoIntegralType::TypeString)
+        {
+            pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeInt)));
+            addType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeRune)));
+        }
+    }else if(fastCast<ArrayType*>(type.constData()))
+    {
+        ArrayType* atype = fastCast<ArrayType*>(type.constData());
+        pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeInt)));
+        addType(atype->elementType());
+        kDebug() << atype->elementType()->indexed().index();
+        kDebug() << atype->elementType()->indexed().index();
+    }else if(fastCast<PointerType*>(type.constData()))
+    {//pointers to array are automatically dereferenced
+        PointerType::Ptr ptype = PointerType::Ptr(fastCast<PointerType*>(type.constData()));
+        if(fastCast<ArrayType*>(ptype->baseType().constData()))
+        {
+            ArrayType::Ptr atype = ArrayType::Ptr(fastCast<ArrayType*>(ptype->baseType().constData()));
+            pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeInt)));
+            addType(atype->elementType());
+        }
+        kDebug() << ptype->baseType()->indexed().index();
+        kDebug() << ptype->baseType()->indexed().index();
+    }else if(fastCast<GoMapType*>(type.constData()))
+    {
+        GoMapType* mtype = fastCast<GoMapType*>(type.constData());
+        //TODO check if expression and key type match, open a problem if not
+        pushType(mtype->keyType());
+        addType(mtype->valueType());
+    }else
+    {
+        //unrecognized index expression, return whatever type was before index
+        pushType(type);
     }
 }
 

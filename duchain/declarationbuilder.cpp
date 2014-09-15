@@ -94,11 +94,7 @@ void DeclarationBuilder::declareVariablesWithType(go::IdentifierAst* id, go::IdL
     lastType()->setModifiers(declareConstant ? AbstractType::ConstModifier : AbstractType::NoModifiers);
     if(identifierForNode(id).toString() != "_")
     {
-	DUChainWriteLocker lock;
-	Declaration* dec = openDeclaration<Declaration>(identifierForNode(id), editorFindRange(id, 0));
-	dec->setType(lastType());
-	dec->setKind(Declaration::Instance);
-	closeDeclaration();
+        declareVariable(id, lastType());
     }
     if(declareConstant) m_constAutoTypes.append(lastType());
 
@@ -109,11 +105,7 @@ void DeclarationBuilder::declareVariablesWithType(go::IdentifierAst* id, go::IdL
 	{
             if(identifierForNode(iter->element).toString() != "_")
             {
-                DUChainWriteLocker lock;
-                Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
-                dec->setType<AbstractType>(lastType());
-                dec->setKind(Declaration::Instance);
-                closeDeclaration();
+                declareVariable(iter->element, lastType());
             }
 	    if(declareConstant)
                 m_constAutoTypes.append(lastType());
@@ -159,35 +151,37 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
 
     if(identifierForNode(id).toString() != "_")
     {
-	DUChainWriteLocker lock;
-	Declaration* dec = openDeclaration<Declaration>(identifierForNode(id), editorFindRange(id, 0));
-	dec->setType<AbstractType>(types.first());
-	dec->setKind(Declaration::Instance);
-	closeDeclaration();
+        declareVariable(id, types.first());
     }
 
     if(idList)
     {
 	int typeIndex = 1;
-	auto iter = idList->idSequence->front(), end = iter;
-	do
+        auto iter = idList->idSequence->front(), end = iter;
+        do
 	{
 	    if(typeIndex >= types.size()) //not enough types to declare all variables
 		return;
             if(identifierForNode(iter->element).toString() != "_")
             {
-                DUChainWriteLocker lock;
-                Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
-                dec->setType<AbstractType>(types.at(typeIndex));
-                dec->setKind(Declaration::Instance);
-                closeDeclaration();
+                declareVariable(iter->element, types.at(typeIndex));
             }
-	    iter = iter->next;
+            iter = iter->next;
 	    typeIndex++;
 	}
 	while (iter != end);
     }
 }
+
+void DeclarationBuilder::declareVariable(go::IdentifierAst* id, AbstractType::Ptr type)
+{
+    DUChainWriteLocker lock;
+    Declaration* dec = openDeclaration<Declaration>(identifierForNode(id), editorFindRange(id, 0));
+    dec->setType<AbstractType>(type);
+    dec->setKind(Declaration::Instance);
+    closeDeclaration();
+}
+
 
 void DeclarationBuilder::visitConstDecl(go::ConstDeclAst* node)
 {
@@ -210,11 +204,7 @@ void DeclarationBuilder::visitConstSpec(go::ConstSpecAst* node)
 	if(m_constAutoTypes.size() == 0)
 	    return;
 	{
-	    DUChainWriteLocker lock;
-	    Declaration* dec = openDeclaration<Declaration>(identifierForNode(node->id), editorFindRange(node->id, 0));
-	    dec->setType<AbstractType>(m_constAutoTypes.first());
-	    dec->setKind(Declaration::Instance);
-	    closeDeclaration();
+            declareVariable(node->id, m_constAutoTypes.first());
 	}
 
 	if(node->idList)
@@ -226,11 +216,7 @@ void DeclarationBuilder::visitConstSpec(go::ConstSpecAst* node)
 		if(typeIndex >= m_constAutoTypes.size()) //not enough types to declare all constants
 		    return;
 
-		DUChainWriteLocker lock;
-		Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
-		dec->setType<AbstractType>(m_constAutoTypes.at(typeIndex));
-		dec->setKind(Declaration::Instance);
-		closeDeclaration();
+                declareVariable(iter->element, m_constAutoTypes.at(typeIndex));
 		iter = iter->next;
 		typeIndex++;
 	    }
@@ -826,6 +812,37 @@ void DeclarationBuilder::importThisPackage()
     DUChainWriteLocker lock;
     topContext()->updateImportsCache();
 }
+
+void DeclarationBuilder::visitForStmt(go::ForStmtAst* node)
+{
+    if(node->range != -1 && node->autoassign != -1)
+    {//manually infer types
+        go::ExpressionVisitor exprVisitor(m_session, currentContext(), this);
+        exprVisitor.visitRangeClause(node->rangeExpression);
+        auto types = exprVisitor.lastTypes();
+        if(!types.empty())
+        {
+            declareVariable(identifierAstFromExpressionAst(node->expression), types.first());
+            if(types.size() > 1 && node->expressionList)
+            {
+                int typeIndex = 1;
+                auto iter = node->expressionList->expressionsSequence->front(), end = iter;
+                do
+                {
+                    if(typeIndex >= types.size()) //not enough types to declare all variables
+                        break;
+                    declareVariable(identifierAstFromExpressionAst(iter->element), types.at(typeIndex));
+                    iter = iter->next;
+                    typeIndex++;
+                }
+                while (iter != end);
+            }
+        }
+    }
+    //visitBlock(node->block);
+    DeclarationBuilderBase::visitForStmt(node);
+}
+
 
 go::GoFunctionDeclaration* DeclarationBuilder::parseSignature(go::SignatureAst* node, bool declareParameters, go::IdentifierAst* name)
 {

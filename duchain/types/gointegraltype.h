@@ -71,7 +71,7 @@ public:
    
     enum {
         ///TODO: is that value OK?
-        Identity = 78 
+        Identity = 78
     };
     
   //GoIntegralType(uint type = TypeNone) : IntegralType(type) {}

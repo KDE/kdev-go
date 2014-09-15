@@ -70,6 +70,7 @@ public:
     virtual void visitShortVarDecl(go::ShortVarDeclAst* node);
     virtual void visitConstSpec(go::ConstSpecAst* node);
     virtual void visitConstDecl(go::ConstDeclAst* node);
+    virtual void visitForStmt(go::ForStmtAst* node);
   
     
     /*struct GoImport{
@@ -108,6 +109,11 @@ private:
      * declares variables or constants with names from id and idList of type type.
      */
     void declareVariablesWithType(go::IdentifierAst* id, go::IdListAst* idList, go::TypeAst* type, bool declareConstant);
+
+    /**
+     * Declares variable with identifier @param id of type @param type
+     **/
+    void declareVariable(go::IdentifierAst* id, AbstractType::Ptr type);
 
     void importThisPackage();
     bool m_export;

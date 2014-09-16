@@ -32,6 +32,7 @@
 #include "types/gointegraltype.h"
 #include "types/gostructuretype.h"
 #include "types/gomaptype.h"
+#include "types/gochantype.h"
 #include "expressionvisitor.h"
 #include "helper.h"
 
@@ -673,11 +674,16 @@ void DeclarationBuilder::visitChanType(go::ChanTypeAst* node)
 {
     //TODO create real chan type
     visitType(node->rtype ? node->rtype : node->stype);
-    DelayedType::Ptr type = DelayedType::Ptr(new DelayedType());
-    openType<DelayedType>(type);
+    go::GoChanType::Ptr type(new go::GoChanType());
+    if(node->stype)
+        type->setKind(go::GoChanType::Receive);
+    else if(node->send != -1)
+        type->setKind(go::GoChanType::Send);
+    else
+        type->setKind(go::GoChanType::SendAndReceive);
     DUChainReadLocker lock;
-    type->setIdentifier(IndexedTypeIdentifier(QString("chan ") + lastType()->toString()));
-    closeType();
+    type->setValueType(lastType());
+    injectType(type);
 }
 
 void DeclarationBuilder::visitTypeSpec(go::TypeSpecAst* node)

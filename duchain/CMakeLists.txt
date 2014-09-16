@@ -16,6 +16,7 @@ set(duchain_SRC
      types/gofunctiontype.cpp
      types/gostructuretype.cpp
      types/gomaptype.cpp
+     types/gochantype.cpp
      declarations/functiondeclaration.cpp
      
      navigation/navigationwidget.cpp

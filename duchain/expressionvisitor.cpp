@@ -24,6 +24,7 @@
 #include "types/gointegraltype.h"
 #include "types/gostructuretype.h"
 #include "types/gomaptype.h"
+#include "types/gochantype.h"
 #include "helper.h"
 
 using namespace KDevelop;
@@ -584,6 +585,10 @@ void ExpressionVisitor::visitRangeClause(ExpressionAst* node)
         //TODO check if expression and key type match, open a problem if not
         pushType(mtype->keyType());
         addType(mtype->valueType());
+    }else if(fastCast<GoChanType*>(type.constData()))
+    {
+        GoChanType::Ptr ctype(fastCast<GoChanType*>(type.constData()));
+        pushType(ctype->valueType());
     }else
     {
         //unrecognized index expression, return whatever type was before index

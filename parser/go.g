@@ -379,7 +379,7 @@ MAP LBRACKET keyType=type RBRACKET elemType=type
 --Actually grammar here is ambiguous
 --e.g. chan <- chan. Is that channel to sending channel or receiving channel to channel?
 --language associates leftmost <- hence the order of tokens in the next rule:
-CHAN (LEFTCHAN | 0 ) rtype=type
+CHAN (send=LEFTCHAN | 0 ) rtype=type
 | LEFTCHAN CHAN stype=type
 -> chanType;;
 

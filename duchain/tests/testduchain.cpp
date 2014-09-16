@@ -320,6 +320,9 @@ void TestDuchain::test_rangeclause_data()
     QTest::newRow("string range") << "var str string" << "str" << "int" << "rune";
     QTest::newRow("map range") << "var mymap map[int][]string" << "mymap" << "int" << "string[]";
     QTest::newRow("map range 2") << "var mymap map[rune]*mytype" << "mymap" << "rune" << "main::mytype*";
+    QTest::newRow("chan range") << "var mychan chan *mytype" << "mychan" << "main::mytype*" << "nil";
+    QTest::newRow("chan range 2") << "var mychan <- chan []int" << "mychan" << "int[]" << "nil";
+    QTest::newRow("chan range 3") << "var mychan chan <- struct{ b int}" << "mychan" << "struct{ b int}" << "nil";
 }
 
 void TestDuchain::test_rangeclause()
@@ -332,7 +335,7 @@ void TestDuchain::test_rangeclause()
     DUContext* context = getMainContext(code);
     QVERIFY(context);
     DUChainReadLocker lock;
-    context = context->findContextAt(CursorInRevision(0, 78));
+    context = context->findContextAt(CursorInRevision(0, 80));
     QVERIFY(context);
     auto decls = context->findDeclarations(QualifiedIdentifier("test"));
     QCOMPARE(decls.size(), 1);
@@ -346,6 +349,9 @@ void TestDuchain::test_rangeclause()
         Declaration* decl = decls.first();
         result = decl->abstractType();
         QCOMPARE(result->toString(), type2);
+    }else
+    {
+        QCOMPARE(context->findDeclarations(QualifiedIdentifier("test2")).size(), 0);
     }
 }
 

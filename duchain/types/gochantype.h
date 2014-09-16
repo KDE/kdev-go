@@ -48,7 +48,7 @@ public:
 class KDEVGODUCHAIN_EXPORT GoChanType: public KDevelop::AbstractType
 {
 public:
-    typedef TypePtr<GoChanType> Ptr;
+    typedef KDevelop::TypePtr<GoChanType> Ptr;
 
     /// Default constructor
     GoChanType();

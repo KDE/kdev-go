@@ -24,6 +24,7 @@
 #include "types/gointegraltype.h"
 #include "types/gostructuretype.h"
 #include "types/gomaptype.h"
+#include "types/gochantype.h"
 #include "helper.h"
 #include "duchaindebug.h"
 
@@ -135,7 +136,7 @@ void ExpressionVisitor::visitPrimaryExpr(PrimaryExprAst* node)
 		AbstractType::Ptr funcType = resolveTypeAlias(decl->abstractType());//to get actual function type from variables, storing functions
 		if(fastCast<GoFunctionType*>(funcType.constData()))
 		{
-		    GoFunctionType* type = fastCast<GoFunctionType*>(funcType.constData());
+		    GoFunctionType::Ptr type(fastCast<GoFunctionType*>(funcType.constData()));
 		    popTypes();
 		    for(const AbstractType::Ptr& arg : type->returnArguments())
 			addType(arg);
@@ -195,7 +196,7 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
 	if(fastCast<PointerType*>(type.constData()))
 	{
 	    DUChainReadLocker lock;
-	    PointerType* ptype = fastCast<PointerType*>(type.constData());
+	    PointerType::Ptr ptype(fastCast<PointerType*>(type.constData()));
 	    if(ptype->baseType())
 		type = ptype->baseType();
 	}
@@ -227,7 +228,7 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
 	if(!success) {
 	    do {
 		count++;
-		GoStructureType* structure = fastCast<GoStructureType*>(type.constData());
+		GoStructureType::Ptr structure(fastCast<GoStructureType*>(type.constData()));
 		if(structure)
 		{//get members
 		    DUContext* context = structure->context();
@@ -241,7 +242,7 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
 		    }
 		    break;
 		}
-		StructureType* identType = fastCast<StructureType*>(type.constData());
+		StructureType::Ptr identType(fastCast<StructureType*>(type.constData()));
 		if(identType)
 		{
 		    DUChainReadLocker lock;
@@ -258,7 +259,7 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
 	AbstractType::Ptr funcType = resolveTypeAlias(lastTypes().first());//to get actual function type from variables, storing functions
 	if(fastCast<GoFunctionType*>(funcType.constData()))
 	{
-	    GoFunctionType* type = fastCast<GoFunctionType*>(funcType.constData());
+	    GoFunctionType::Ptr type(fastCast<GoFunctionType*>(funcType.constData()));
 	    popTypes();
 	    for(const AbstractType::Ptr& arg : type->returnArguments())
 		addType(arg);
@@ -266,7 +267,7 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
 	    visitCallParam(node->callParam);
 	}
     }else if(node->index != -1)
-    {
+    {//index expression
         if(lastTypes().size() == 0)
             return;
         AbstractType::Ptr type = popTypes().first();
@@ -276,7 +277,7 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
         {
             if(fastCast<PointerType*>(type.constData()))
             {//pointer to arrays return slices in slice expressions
-                PointerType* ptype = fastCast<PointerType*>(type.constData());
+                PointerType::Ptr ptype(fastCast<PointerType*>(type.constData()));
                 pushType(ptype->baseType());
                 return;
             }
@@ -285,26 +286,26 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
         }
         if(fastCast<GoIntegralType*>(type.constData()))
         {
-            GoIntegralType* itype = fastCast<GoIntegralType*>(type.constData());
+            GoIntegralType::Ptr itype(fastCast<GoIntegralType*>(type.constData()));
             if(itype->dataType() == GoIntegralType::TypeString)
             {
                 pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeByte)));
             }
         }else if(fastCast<ArrayType*>(type.constData()))
         {
-            ArrayType* atype = fastCast<ArrayType*>(type.constData());
+            ArrayType::Ptr atype(fastCast<ArrayType*>(type.constData()));
             pushType(atype->elementType());
         }else if(fastCast<PointerType*>(type.constData()))
         {//pointers to array are automatically dereferenced
-            PointerType* ptype = fastCast<PointerType*>(type.constData());
+            PointerType::Ptr ptype(fastCast<PointerType*>(type.constData()));
             if(fastCast<ArrayType*>(ptype->baseType().constData()))
             {
-                ArrayType* atype = fastCast<ArrayType*>(ptype->baseType().constData());
+                ArrayType::Ptr atype(fastCast<ArrayType*>(ptype->baseType().constData()));
                 pushType(atype->elementType());
             }
         }else if(fastCast<GoMapType*>(type.constData()))
         {
-            GoMapType* mtype = fastCast<GoMapType*>(type.constData());
+            GoMapType::Ptr mtype(fastCast<GoMapType*>(type.constData()));
             //TODO check if expression and key type match, open a problem if not
             pushType(mtype->valueType());
             addType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeBool)));
@@ -502,7 +503,7 @@ bool ExpressionVisitor::handleBuiltinFunction(PrimaryExprAst* node)
 	    if(types.size() != 1)
 		return false;
 	    AbstractType::Ptr type = resolveTypeAlias(types.first());
-	    GoIntegralType* itype = fastCast<GoIntegralType*>(type.constData());
+	    GoIntegralType::Ptr itype(fastCast<GoIntegralType*>(type.constData()));
 	    if(itype)
 	    {
 		if(itype->dataType() == GoIntegralType::TypeComplex64)
@@ -547,6 +548,52 @@ void ExpressionVisitor::visitTypeName(TypeNameAst* node)
 	    pushUse(node->type_resolve->fullName, decl.data());
 	}else
 	    pushUse(node->name, decl.data());
+    }
+}
+
+void ExpressionVisitor::visitRangeClause(ExpressionAst* node)
+{
+    visitExpression(node);
+    if(lastTypes().size() == 0)
+        return;
+    AbstractType::Ptr type = popTypes().first();
+    //go::DefaultVisitor::visitPrimaryExprResolve(node); //build uses
+    if(fastCast<GoIntegralType*>(type.constData()))
+    {
+        GoIntegralType::Ptr itype(fastCast<GoIntegralType*>(type.constData()));
+        if(itype->dataType() == GoIntegralType::TypeString)
+        {
+            pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeInt)));
+            addType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeRune)));
+        }
+    }else if(fastCast<ArrayType*>(type.constData()))
+    {
+        ArrayType::Ptr atype(fastCast<ArrayType*>(type.constData()));
+        pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeInt)));
+        addType(atype->elementType());
+    }else if(fastCast<PointerType*>(type.constData()))
+    {//pointers to array are automatically dereferenced
+        PointerType::Ptr ptype = PointerType::Ptr(fastCast<PointerType*>(type.constData()));
+        if(fastCast<ArrayType*>(ptype->baseType().constData()))
+        {
+            ArrayType::Ptr atype = ArrayType::Ptr(fastCast<ArrayType*>(ptype->baseType().constData()));
+            pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeInt)));
+            addType(atype->elementType());
+        }
+    }else if(fastCast<GoMapType*>(type.constData()))
+    {
+        GoMapType::Ptr mtype(fastCast<GoMapType*>(type.constData()));
+        //TODO check if expression and key type match, open a problem if not
+        pushType(mtype->keyType());
+        addType(mtype->valueType());
+    }else if(fastCast<GoChanType*>(type.constData()))
+    {
+        GoChanType::Ptr ctype(fastCast<GoChanType*>(type.constData()));
+        pushType(ctype->valueType());
+    }else
+    {
+        //unrecognized index expression, return whatever type was before index
+        pushType(type);
     }
 }
 

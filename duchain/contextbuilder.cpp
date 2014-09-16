@@ -112,6 +112,14 @@ ParseSession* ContextBuilder::parseSession()
     return m_session;
 }
 
+go::IdentifierAst* ContextBuilder::identifierAstFromExpressionAst(go::ExpressionAst* node)
+{
+    if(node && node->unaryExpression && node->unaryExpression->primaryExpr)
+        return node->unaryExpression->primaryExpr->id;
+    return nullptr;
+}
+
+
 void ContextBuilder::visitIfStmt(go::IfStmtAst* node)
 {
     //we need variables, declared in if pre-condition(if any) be available in if-block
@@ -128,3 +136,5 @@ void ContextBuilder::visitBlock(go::BlockAst* node)
     go::DefaultVisitor::visitBlock(node);
     closeContext();
 }
+
+

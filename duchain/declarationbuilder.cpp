@@ -32,6 +32,7 @@
 #include "types/gointegraltype.h"
 #include "types/gostructuretype.h"
 #include "types/gomaptype.h"
+#include "types/gochantype.h"
 #include "expressionvisitor.h"
 #include "helper.h"
 #include "duchaindebug.h"
@@ -93,11 +94,7 @@ void DeclarationBuilder::declareVariablesWithType(go::IdentifierAst* id, go::IdL
     lastType()->setModifiers(declareConstant ? AbstractType::ConstModifier : AbstractType::NoModifiers);
     if(identifierForNode(id).toString() != "_")
     {
-	DUChainWriteLocker lock;
-	Declaration* dec = openDeclaration<Declaration>(identifierForNode(id), editorFindRange(id, 0));
-	dec->setType(lastType());
-	dec->setKind(Declaration::Instance);
-	closeDeclaration();
+        declareVariable(id, lastType());
     }
     if(declareConstant) m_constAutoTypes.append(lastType());
 
@@ -108,11 +105,7 @@ void DeclarationBuilder::declareVariablesWithType(go::IdentifierAst* id, go::IdL
 	{
             if(identifierForNode(iter->element).toString() != "_")
             {
-                DUChainWriteLocker lock;
-                Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
-                dec->setType<AbstractType>(lastType());
-                dec->setKind(Declaration::Instance);
-                closeDeclaration();
+                declareVariable(iter->element, lastType());
             }
 	    if(declareConstant)
                 m_constAutoTypes.append(lastType());
@@ -158,35 +151,37 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
 
     if(identifierForNode(id).toString() != "_")
     {
-	DUChainWriteLocker lock;
-	Declaration* dec = openDeclaration<Declaration>(identifierForNode(id), editorFindRange(id, 0));
-	dec->setType<AbstractType>(types.first());
-	dec->setKind(Declaration::Instance);
-	closeDeclaration();
+        declareVariable(id, types.first());
     }
 
     if(idList)
     {
 	int typeIndex = 1;
-	auto iter = idList->idSequence->front(), end = iter;
-	do
+        auto iter = idList->idSequence->front(), end = iter;
+        do
 	{
 	    if(typeIndex >= types.size()) //not enough types to declare all variables
 		return;
             if(identifierForNode(iter->element).toString() != "_")
             {
-                DUChainWriteLocker lock;
-                Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
-                dec->setType<AbstractType>(types.at(typeIndex));
-                dec->setKind(Declaration::Instance);
-                closeDeclaration();
+                declareVariable(iter->element, types.at(typeIndex));
             }
-	    iter = iter->next;
+            iter = iter->next;
 	    typeIndex++;
 	}
 	while (iter != end);
     }
 }
+
+void DeclarationBuilder::declareVariable(go::IdentifierAst* id, AbstractType::Ptr type)
+{
+    DUChainWriteLocker lock;
+    Declaration* dec = openDeclaration<Declaration>(identifierForNode(id), editorFindRange(id, 0));
+    dec->setType<AbstractType>(type);
+    dec->setKind(Declaration::Instance);
+    closeDeclaration();
+}
+
 
 void DeclarationBuilder::visitConstDecl(go::ConstDeclAst* node)
 {
@@ -209,11 +204,7 @@ void DeclarationBuilder::visitConstSpec(go::ConstSpecAst* node)
 	if(m_constAutoTypes.size() == 0)
 	    return;
 	{
-	    DUChainWriteLocker lock;
-	    Declaration* dec = openDeclaration<Declaration>(identifierForNode(node->id), editorFindRange(node->id, 0));
-	    dec->setType<AbstractType>(m_constAutoTypes.first());
-	    dec->setKind(Declaration::Instance);
-	    closeDeclaration();
+            declareVariable(node->id, m_constAutoTypes.first());
 	}
 
 	if(node->idList)
@@ -225,11 +216,7 @@ void DeclarationBuilder::visitConstSpec(go::ConstSpecAst* node)
 		if(typeIndex >= m_constAutoTypes.size()) //not enough types to declare all constants
 		    return;
 
-		DUChainWriteLocker lock;
-		Declaration* dec = openDeclaration<Declaration>(identifierForNode(iter->element), editorFindRange(iter->element, 0));
-		dec->setType<AbstractType>(m_constAutoTypes.at(typeIndex));
-		dec->setKind(Declaration::Instance);
-		closeDeclaration();
+                declareVariable(iter->element, m_constAutoTypes.at(typeIndex));
 		iter = iter->next;
 		typeIndex++;
 	    }
@@ -688,11 +675,16 @@ void DeclarationBuilder::visitChanType(go::ChanTypeAst* node)
 {
     //TODO create real chan type
     visitType(node->rtype ? node->rtype : node->stype);
-    DelayedType::Ptr type = DelayedType::Ptr(new DelayedType());
-    openType<DelayedType>(type);
+    go::GoChanType::Ptr type(new go::GoChanType());
+    if(node->stype)
+        type->setKind(go::GoChanType::Receive);
+    else if(node->send != -1)
+        type->setKind(go::GoChanType::Send);
+    else
+        type->setKind(go::GoChanType::SendAndReceive);
     DUChainReadLocker lock;
-    type->setIdentifier(IndexedTypeIdentifier(QString("chan ") + lastType()->toString()));
-    closeType();
+    type->setValueType(lastType());
+    injectType(type);
 }
 
 void DeclarationBuilder::visitTypeSpec(go::TypeSpecAst* node)
@@ -827,6 +819,88 @@ void DeclarationBuilder::importThisPackage()
     DUChainWriteLocker lock;
     topContext()->updateImportsCache();
 }
+
+void DeclarationBuilder::visitForStmt(go::ForStmtAst* node)
+{
+    openContext(node, editorFindRange(node, 0), DUContext::Other); //wrapper context
+    if(node->range != -1 && node->autoassign != -1)
+    {//manually infer types
+        go::ExpressionVisitor exprVisitor(m_session, currentContext(), this);
+        exprVisitor.visitRangeClause(node->rangeExpression);
+        auto types = exprVisitor.lastTypes();
+        if(!types.empty())
+        {
+            declareVariable(identifierAstFromExpressionAst(node->expression), types.first());
+            if(types.size() > 1 && node->expressionList)
+            {
+                int typeIndex = 1;
+                auto iter = node->expressionList->expressionsSequence->front(), end = iter;
+                do
+                {
+                    if(typeIndex >= types.size()) //not enough types to declare all variables
+                        break;
+                    declareVariable(identifierAstFromExpressionAst(iter->element), types.at(typeIndex));
+                    iter = iter->next;
+                    typeIndex++;
+                }
+                while (iter != end);
+            }
+        }
+    }
+    DeclarationBuilderBase::visitForStmt(node);
+    closeContext();
+}
+
+void DeclarationBuilder::visitSwitchStmt(go::SwitchStmtAst* node)
+{
+    openContext(node, editorFindRange(node, 0), DUContext::Other); //wrapper context
+    if(node->typeSwitchStatement && node->typeSwitchStatement->typeSwitchGuard)
+    {
+        go::TypeSwitchGuardAst* typeswitch = node->typeSwitchStatement->typeSwitchGuard;
+        go::ExpressionVisitor expVisitor(m_session, currentContext(), this);
+        expVisitor.visitPrimaryExpr(typeswitch->primaryExpr);
+        if(!expVisitor.lastTypes().empty())
+        {
+            declareVariable(typeswitch->ident, expVisitor.lastTypes().first());
+            m_switchTypeVariable = identifierForNode(typeswitch->ident);
+        }
+    }
+    DeclarationBuilderBase::visitSwitchStmt(node);
+    closeContext(); //wrapper context
+    m_switchTypeVariable.clear();
+}
+
+void DeclarationBuilder::visitTypeCaseClause(go::TypeCaseClauseAst* node)
+{
+    openContext(node, editorFindRange(node, 0), DUContext::Other);
+    const KDevPG::ListNode<go::TypeAst*>* typeIter = 0;
+    if(node->typelistSequence)
+        typeIter = node->typelistSequence->front();
+    if(node->defaultToken == -1 && typeIter && typeIter->next == typeIter)
+    {//if default is not specified and only one type is listed
+        //we open another declaration of listed type
+        visitType(typeIter->element);
+        lastType()->setModifiers(AbstractType::NoModifiers);
+        DUChainWriteLocker lock;
+        if(lastType()->toString() != "nil" && !m_switchTypeVariable.isEmpty())
+        {//in that case we also don't open declaration
+            Declaration* decl = openDeclaration<Declaration>(m_switchTypeVariable, editorFindRange(typeIter->element, 0));
+            decl->setAbstractType(lastType());
+            closeDeclaration();
+        }
+    }
+    go::DefaultVisitor::visitTypeCaseClause(node);
+    closeContext();
+}
+
+void DeclarationBuilder::visitExprCaseClause(go::ExprCaseClauseAst* node)
+{
+    openContext(node, editorFindRange(node, 0), DUContext::Other);
+    go::DefaultVisitor::visitExprCaseClause(node);
+    closeContext();
+}
+
+
 
 go::GoFunctionDeclaration* DeclarationBuilder::parseSignature(go::SignatureAst* node, bool declareParameters, go::IdentifierAst* name)
 {

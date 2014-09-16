@@ -308,7 +308,103 @@ void TestDuchain::test_funccontexts()
     QCOMPARE(context->findDeclarations(QualifiedIdentifier("f")).size(), 1);
 }
 
+void TestDuchain::test_rangeclause_data()
+{
+    QTest::addColumn<QString>("vardecl");
+    QTest::addColumn<QString>("rangeexpr");
+    QTest::addColumn<QString>("type1");
+    QTest::addColumn<QString>("type2");
 
+    QTest::newRow("array range") << "var array [5]int" << "array" << "int" << "int";
+    QTest::newRow("slice range") << "var slice []string" << "slice" << "int" << "string";
+    QTest::newRow("array pointer range") << "var longestshittyname *[]string" << "longestshittyname" << "int" << "string";
+    QTest::newRow("string range") << "var str string" << "str" << "int" << "rune";
+    QTest::newRow("map range") << "var mymap map[int][]string" << "mymap" << "int" << "string[]";
+    QTest::newRow("map range 2") << "var mymap map[rune]*mytype" << "mymap" << "rune" << "main::mytype*";
+    QTest::newRow("chan range") << "var mychan chan *mytype" << "mychan" << "main::mytype*" << "nil";
+    QTest::newRow("chan range 2") << "var mychan <- chan []int" << "mychan" << "int[]" << "nil";
+    QTest::newRow("chan range 3") << "var mychan chan <- struct{ b int}" << "mychan" << "struct{ b int}" << "nil";
+}
+
+void TestDuchain::test_rangeclause()
+{
+    QFETCH(QString, vardecl);
+    QFETCH(QString, rangeexpr);
+    QFETCH(QString, type1);
+    QFETCH(QString, type2);
+    QString code(QString("package main; type mytype int; func main() { %1; for test, test2 := range %2 {   } }").arg(vardecl).arg(rangeexpr));
+    DUContext* context = getMainContext(code);
+    QVERIFY(context);
+    DUChainReadLocker lock;
+    context = context->findContextAt(CursorInRevision(0, 80));
+    QVERIFY(context);
+    auto decls = context->findDeclarations(QualifiedIdentifier("test"));
+    QCOMPARE(decls.size(), 1);
+    Declaration* decl = decls.first();
+    AbstractType::Ptr result = decl->abstractType();
+    QCOMPARE(result->toString(), type1);
+    if(type2 != "nil")
+    {
+        decls = context->findDeclarations(QualifiedIdentifier("test2"));
+        QCOMPARE(decls.size(), 1);
+        Declaration* decl = decls.first();
+        result = decl->abstractType();
+        QCOMPARE(result->toString(), type2);
+    }else
+    {
+        QCOMPARE(context->findDeclarations(QualifiedIdentifier("test2")).size(), 0);
+    }
+}
+
+void TestDuchain::test_typeswitch()
+{
+    QString code("package main; type mytype int; func main() { var test1 int \n  \
+                switch test2:=2; test3:=test1.(type) { case rune: test4:=4. \n \
+                    case func(int) string: test5:=\'a\' \n \
+                    case nil: \n  \
+                    case byte, float32:  \n \
+                    default:  \n } }");
+    DUContext* context = getMainContext(code);
+    QVERIFY(context);
+    DUChainReadLocker lock;
+    //DUContext* ctx = context->findContextAt(CursorInRevision(1, 0)); //
+    QVERIFY(context);
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("test1")).first()->abstractType()->toString(), QString("int"));
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("test2")).size(), 0);
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("test3")).size(), 0);
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("test4")).size(), 0);
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("test5")).size(), 0);
+    DUContext* ctx = context->findContextAt(CursorInRevision(1, 61)); //first case
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test1")).first()->abstractType()->toString(), QString("int"));
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test2")).first()->abstractType()->toString(), QString("int"));
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test3")).first()->abstractType()->toString(), QString("rune"));
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test4")).first()->abstractType()->toString(), QString("float64"));
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test5")).size(), 0);
+    ctx = context->findContextAt(CursorInRevision(2, 30)); //second case
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test1")).first()->abstractType()->toString(), QString("int"));
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test2")).first()->abstractType()->toString(), QString("int"));
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test3")).first()->abstractType()->toString(), QString("function (int) string"));
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test4")).size(), 0);
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test5")).first()->abstractType()->toString(), QString("rune"));
+    ctx = context->findContextAt(CursorInRevision(3, 30)); //third case
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test1")).first()->abstractType()->toString(), QString("int"));
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test2")).first()->abstractType()->toString(), QString("int"));
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test3")).first()->abstractType()->toString(), QString("int"));
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test4")).size(), 0);
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test5")).size(), 0);
+    ctx = context->findContextAt(CursorInRevision(4, 30)); //fourth case
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test1")).first()->abstractType()->toString(), QString("int"));
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test2")).first()->abstractType()->toString(), QString("int"));
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test3")).first()->abstractType()->toString(), QString("int"));
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test4")).size(), 0);
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test5")).size(), 0);
+    ctx = context->findContextAt(CursorInRevision(5, 30)); //fifth case
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test1")).first()->abstractType()->toString(), QString("int"));
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test2")).first()->abstractType()->toString(), QString("int"));
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test3")).first()->abstractType()->toString(), QString("int"));
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test4")).size(), 0);
+    QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test5")).size(), 0);
+}
 
 DUContext* getPackageContext(const QString& code)
 {

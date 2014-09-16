@@ -379,7 +379,7 @@ MAP LBRACKET keyType=type RBRACKET elemType=type
 --Actually grammar here is ambiguous
 --e.g. chan <- chan. Is that channel to sending channel or receiving channel to channel?
 --language associates leftmost <- hence the order of tokens in the next rule:
-CHAN (LEFTCHAN | 0 ) rtype=type
+CHAN (send=LEFTCHAN | 0 ) rtype=type
 | LEFTCHAN CHAN stype=type
 -> chanType;;
 
@@ -705,8 +705,8 @@ COLON statements=statements
 FOR try/rollback( [: lparenCount=0; inIfClause=true; :] ( initStmtOrCondition=simpleStmt | 0)
 ( semicolon=SEMICOLON (condition=expression | 0) SEMICOLON ( postStmt=simpleStmt | 0) --c-style for statement
  | 0 )  [: lparenCount=0; inIfClause=false; :] block=block)
-catch( [: lparenCount=0; inIfClause=true; :] expression=expression (expressionList=expressionList | 0) (ASSIGN | AUTOASSIGN) 
-RANGE rangeExpression=expression [: lparenCount=0; inIfClause=false; :] block=block) 			--range for statement
+catch( [: lparenCount=0; inIfClause=true; :] expression=expression (expressionList=expressionList | 0) (ASSIGN | autoassign=AUTOASSIGN)
+range=RANGE rangeExpression=expression [: lparenCount=0; inIfClause=false; :] block=block) 			--range for statement
 -- block=block
 -> forStmt;;
 

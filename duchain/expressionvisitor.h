@@ -44,6 +44,12 @@ public:
     virtual void visitTypeName(go::TypeNameAst* node);
 
     virtual void visitBlock(go::BlockAst* node);
+    /**
+     * Visits range expression.
+     * There isn't an actual range expression rule in grammar, so you have to manually
+     * find range token and call this function on subsequent expression.
+     **/
+    void visitRangeClause(go::ExpressionAst* node);
 
     /**
      * Delete all stored types and uses

@@ -84,8 +84,14 @@ public:
     ParseSession* parseSession();
     
     Editor* editor() const { return m_editor.data(); }
-    
-    
+
+    /**
+     * Extracts identifier from expression.
+     * Grammar sometimes allows expressions where only identifiers should be allowed to simplify
+     * parsing. This function extracts that identifiers.
+     **/
+    go::IdentifierAst* identifierAstFromExpressionAst(go::ExpressionAst* node);
+
 protected:
   
     ParseSession* m_session;

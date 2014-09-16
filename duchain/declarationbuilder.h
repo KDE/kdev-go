@@ -70,6 +70,10 @@ public:
     virtual void visitShortVarDecl(go::ShortVarDeclAst* node);
     virtual void visitConstSpec(go::ConstSpecAst* node);
     virtual void visitConstDecl(go::ConstDeclAst* node);
+    virtual void visitForStmt(go::ForStmtAst* node);
+    virtual void visitSwitchStmt(go::SwitchStmtAst* node);
+    virtual void visitTypeCaseClause(go::TypeCaseClauseAst* node);
+    virtual void visitExprCaseClause(go::ExprCaseClauseAst* node);
   
     
     /*struct GoImport{
@@ -109,6 +113,11 @@ private:
      */
     void declareVariablesWithType(go::IdentifierAst* id, go::IdListAst* idList, go::TypeAst* type, bool declareConstant);
 
+    /**
+     * Declares variable with identifier @param id of type @param type
+     **/
+    void declareVariable(go::IdentifierAst* id, AbstractType::Ptr type);
+
     void importThisPackage();
     bool m_export;
     
@@ -118,6 +127,7 @@ private:
     bool m_preBuilding;
     QList<AbstractType::Ptr> m_constAutoTypes;
     QualifiedIdentifier m_thisPackage;
+    QualifiedIdentifier m_switchTypeVariable;
 };
 
 #endif

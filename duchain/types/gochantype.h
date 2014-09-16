@@ -16,86 +16,93 @@
 *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA   *
 *************************************************************************************/
 
-#ifndef GOLANGINTTYPE_H
-#define GOLANGINTTYPE_H
+#ifndef GOLANGCHANTYPE_H
+#define GOLANGCHANTYPE_H
 
-#include <language/duchain/types/integraltype.h>
+#include <language/duchain/types/structuretype.h>
+#include <language/duchain/types/typesystem.h>
+#include <language/duchain/types/indexedtype.h>
 
-#include "goduchainexport.h"
+#include "duchain/goduchainexport.h"
 
-namespace go {
-    
-typedef KDevelop::IntegralTypeData GoIntegralTypeData;
+namespace go
+{
 
-class KDEVGODUCHAIN_EXPORT GoIntegralType : public KDevelop::IntegralType
+class GoChanTypeData : public KDevelop::AbstractTypeData
 {
 public:
-    typedef KDevelop::TypePtr<GoIntegralType> Ptr;
-    
-    /// Default constructor
-    GoIntegralType(uint type = TypeNone);
-    /// Copy constructor. \param rhs type to copy
-    GoIntegralType(const GoIntegralType& rhs);
-    /// Constructor using raw data. \param data internal data.
-    GoIntegralType(GoIntegralTypeData& data);
+    GoChanTypeData()
+        : KDevelop::AbstractTypeData()
+    {
+        kind = 0;
+    }
+    GoChanTypeData( const GoChanTypeData& rhs )
+        : KDevelop::AbstractTypeData(rhs),  valueType(rhs.valueType), kind(rhs.kind)
+    {
+    }
 
-    virtual KDevelop::AbstractType* clone() const;
+    KDevelop::IndexedType valueType;
+    uint kind; //channel kind(0 = "chan", 1 = "<-chan", 2 = "chan <-")
+};
+
+class KDEVGODUCHAIN_EXPORT GoChanType: public KDevelop::AbstractType
+{
+public:
+    typedef TypePtr<GoChanType> Ptr;
+
+    /// Default constructor
+    GoChanType();
+    /// Copy constructor. \param rhs type to copy
+    GoChanType(const GoChanType& rhs);
+    /// Constructor using raw data. \param data internal data.
+    GoChanType(GoChanTypeData& data);
+
+    void setValueType(AbstractType::Ptr type);
     
+    void setKind(uint kind);
+
+    AbstractType::Ptr valueType();
+    
+    uint kind();
+
     virtual QString toString() const;
 
-    virtual bool equals(const KDevelop::AbstractType* rhs) const;
+    virtual KDevelop::AbstractType* clone() const;
 
     virtual uint hash() const;
-    
-    enum GoIntegralTypes {
-       TypeUint8=201,
-       TypeUint16,
-       TypeUint32,
-       TypeUint64,
-       TypeInt8,
-       TypeInt16,
-       TypeInt32,
-       TypeInt64,
-       TypeFloat32,
-       TypeFloat64,
-       TypeComplex64,
-       TypeComplex128,
-       TypeRune,
-       TypeUint,
-       TypeInt,
-       TypeUintptr,
-       TypeString,
-       TypeBool,
-       TypeByte
-   };
-   
-    enum {
-        ///TODO: is that value OK?
-        Identity = 78
+
+    virtual bool equals(const AbstractType* rhs) const;
+
+    void accept0(KDevelop::TypeVisitor *v) const;
+
+    enum ChanKind{
+        SendAndReceive=0,
+        Receive=1,
+        Send=2
     };
     
-  //GoIntegralType(uint type = TypeNone) : IntegralType(type) {}
-   
-  typedef KDevelop::IntegralTypeData Data;
-  typedef KDevelop::IntegralType BaseType;
-   
-protected:
-    TYPE_DECLARE_DATA(GoIntegralType);
+    enum {
+        Identity = 106
+    };
 
+    typedef GoChanTypeData Data;
+    typedef KDevelop::AbstractType BaseType;
+
+protected:
+    TYPE_DECLARE_DATA(GoChanType);
 };
 
 }
-
 
 namespace KDevelop
 {
 
 template<>
-inline go::GoIntegralType* fastCast<go::GoIntegralType*>(AbstractType* from) {
-    if ( !from || from->whichType() != AbstractType::TypeIntegral ) {
+inline go::GoChanType* fastCast<go::GoChanType*>(AbstractType* from) {
+    if ( !from || from->whichType() != AbstractType::TypeAbstract ) {
         return 0;
     } else {
-        return dynamic_cast<go::GoIntegralType*>(from);
+        return dynamic_cast<go::GoChanType*>(from);
     }
 }
 

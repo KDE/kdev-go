@@ -71,6 +71,9 @@ public:
     virtual void visitConstSpec(go::ConstSpecAst* node);
     virtual void visitConstDecl(go::ConstDeclAst* node);
     virtual void visitForStmt(go::ForStmtAst* node);
+    virtual void visitSwitchStmt(go::SwitchStmtAst* node);
+    virtual void visitTypeCaseClause(go::TypeCaseClauseAst* node);
+    virtual void visitExprCaseClause(go::ExprCaseClauseAst* node);
   
     
     /*struct GoImport{
@@ -124,6 +127,7 @@ private:
     bool m_preBuilding;
     QList<AbstractType::Ptr> m_constAutoTypes;
     QualifiedIdentifier m_thisPackage;
+    QualifiedIdentifier m_switchTypeVariable;
 };
 
 #endif

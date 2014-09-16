@@ -815,6 +815,7 @@ void DeclarationBuilder::importThisPackage()
 
 void DeclarationBuilder::visitForStmt(go::ForStmtAst* node)
 {
+    openContext(node, editorFindRange(node, 0), DUContext::Other); //wrapper context
     if(node->range != -1 && node->autoassign != -1)
     {//manually infer types
         go::ExpressionVisitor exprVisitor(m_session, currentContext(), this);
@@ -839,9 +840,59 @@ void DeclarationBuilder::visitForStmt(go::ForStmtAst* node)
             }
         }
     }
-    //visitBlock(node->block);
     DeclarationBuilderBase::visitForStmt(node);
+    closeContext();
 }
+
+void DeclarationBuilder::visitSwitchStmt(go::SwitchStmtAst* node)
+{
+    openContext(node, editorFindRange(node, 0), DUContext::Other); //wrapper context
+    if(node->typeSwitchStatement && node->typeSwitchStatement->typeSwitchGuard)
+    {
+        go::TypeSwitchGuardAst* typeswitch = node->typeSwitchStatement->typeSwitchGuard;
+        go::ExpressionVisitor expVisitor(m_session, currentContext(), this);
+        expVisitor.visitPrimaryExpr(typeswitch->primaryExpr);
+        if(!expVisitor.lastTypes().empty())
+        {
+            declareVariable(typeswitch->ident, expVisitor.lastTypes().first());
+            m_switchTypeVariable = identifierForNode(typeswitch->ident);
+        }
+    }
+    DeclarationBuilderBase::visitSwitchStmt(node);
+    closeContext(); //wrapper context
+    m_switchTypeVariable.clear();
+}
+
+void DeclarationBuilder::visitTypeCaseClause(go::TypeCaseClauseAst* node)
+{
+    openContext(node, editorFindRange(node, 0), DUContext::Other);
+    const KDevPG::ListNode<go::TypeAst*>* typeIter = 0;
+    if(node->typelistSequence)
+        typeIter = node->typelistSequence->front();
+    if(node->defaultToken == -1 && typeIter && typeIter->next == typeIter)
+    {//if default is not specified and only one type is listed
+        //we open another declaration of listed type
+        visitType(typeIter->element);
+        lastType()->setModifiers(AbstractType::NoModifiers);
+        DUChainWriteLocker lock;
+        if(lastType()->toString() != "nil" && !m_switchTypeVariable.isEmpty())
+        {//in that case we also don't open declaration
+            Declaration* decl = openDeclaration<Declaration>(m_switchTypeVariable, editorFindRange(typeIter->element, 0));
+            decl->setAbstractType(lastType());
+            closeDeclaration();
+        }
+    }
+    go::DefaultVisitor::visitTypeCaseClause(node);
+    closeContext();
+}
+
+void DeclarationBuilder::visitExprCaseClause(go::ExprCaseClauseAst* node)
+{
+    openContext(node, editorFindRange(node, 0), DUContext::Other);
+    go::DefaultVisitor::visitExprCaseClause(node);
+    closeContext();
+}
+
 
 
 go::GoFunctionDeclaration* DeclarationBuilder::parseSignature(go::SignatureAst* node, bool declareParameters, go::IdentifierAst* name)

@@ -39,6 +39,8 @@ private slots:
     void test_funccontexts();
     void test_rangeclause_data();
     void test_rangeclause();
+    //void test_typeswitch_data();
+    void test_typeswitch();
 };
 
 

@@ -54,11 +54,6 @@ GoPlugin::~GoPlugin()
 {
 }
 
-KDevelop::ILanguage* GoPlugin::language()
-{
-    return core()->languageController()->language(this->name());
-}
-
 ParseJob* GoPlugin::createParseJob(const IndexedString& url)
 {
     qCDebug(Go) << "Creating golang parse job\n";

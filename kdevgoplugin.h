@@ -46,8 +46,6 @@ class GoPlugin : public KDevelop::IPlugin, public KDevelop::ILanguageSupport
     
     virtual ~GoPlugin();
     
-    virtual KDevelop::ILanguage* language() override;
-    
     virtual KDevelop::ParseJob* createParseJob(const KDevelop::IndexedString& url) override;
     virtual QString name() const override;
     

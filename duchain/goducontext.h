@@ -41,22 +41,13 @@ public:
     }
   
     ///Parameters will be reached to the base-class
-    template<class Param1, class Param2>
-    GoDUContext(const Param1& p1, const Param2& p2, bool isInstantiationContext) : BaseContext(p1, p2, isInstantiationContext) {
+    template<typename... Params>
+    GoDUContext(Params... params) : BaseContext(params...) {
         static_cast<KDevelop::DUChainBase*>(this)->d_func_dynamic()->setClassId(this);
     }
 
-    ///Both parameters will be reached to the base-class. This fits TopDUContext.
-    template<class Param1, class Param2, class Param3>
-    GoDUContext(const Param1& p1, const Param2& p2, const Param3& p3) : BaseContext(p1, p2, p3) {
-        static_cast<KDevelop::DUChainBase*>(this)->d_func_dynamic()->setClassId(this);
-    }
-    template<class Param1, class Param2>
-    GoDUContext(const Param1& p1, const Param2& p2) : BaseContext(p1, p2) {
-        static_cast<KDevelop::DUChainBase*>(this)->d_func_dynamic()->setClassId(this);
-    }
-
-    virtual QWidget* createNavigationWidget(KDevelop::Declaration* decl, KDevelop::TopDUContext* topContext, const QString& htmlPrefix, const QString& htmlSuffix) const;
+    virtual QWidget* createNavigationWidget(KDevelop::Declaration* decl, KDevelop::TopDUContext* topContext,
+                                            const QString& htmlPrefix, const QString& htmlSuffix) const override;
 
     enum {
         Identity = BaseContext::Identity + 51

@@ -150,7 +150,7 @@ QList<QString> GoParseJob::getSearchPaths(bool forExport)
     QList<QString> paths;
     if(!forExport)
     {//try to find path automatically for opened documents
-        QDir currentDir(document().toUrl().directory());
+        QDir currentDir(document().toUrl().adjusted(QUrl::RemoveFilename).path());
         //qCDebug(Go) << currentDir.dirName();
         while(currentDir.exists() && currentDir.dirName() != "src")
             if(!currentDir.cdUp())

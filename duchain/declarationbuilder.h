@@ -97,7 +97,6 @@ private:
     
     void addArgumentHelper(go::GoFunctionType::Ptr function, KDevelop::AbstractType::Ptr argument, bool parseArguments);
     go::TypeNameAst* typeNameFromIdentifier(go::IdentifierAst* id, go::IdentifierAst* fullname=0);
-    void declareParameter(go::IdentifierAst* name, const AbstractType::Ptr& type);
 
     /**
      * Deduces types of expression with ExpressionVisitor and declares variables
@@ -116,7 +115,7 @@ private:
     /**
      * Declares variable with identifier @param id of type @param type
      **/
-    void declareVariable(go::IdentifierAst* id, AbstractType::Ptr type);
+    void declareVariable(go::IdentifierAst* id, const AbstractType::Ptr& type);
 
     void importThisPackage();
     bool m_export;

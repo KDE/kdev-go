@@ -405,6 +405,50 @@ void TestDuchain::test_typeswitch()
     QCOMPARE(ctx->findDeclarations(QualifiedIdentifier("test5")).size(), 0);
 }
 
+void TestDuchain::test_funcparams_data()
+{
+    QTest::addColumn<QString>("params");
+    QTest::addColumn<QString>("result");
+
+    QTest::newRow("zero params") << "()" << "function () ";
+    QTest::newRow("simple param") << "(a int)" << "function (int) ";
+    QTest::newRow("unnamed param") << "(int)" << "function (int) ";
+    QTest::newRow("unknown param") << "(unknown)" << "function (unknown) ";
+    QTest::newRow("complex param") << "([]int)" << "function (int[]) ";
+    QTest::newRow("complex params") << "(*int, [10]rune)" << "function (int*, rune[]) ";
+    QTest::newRow("two separate params") << "(a int, b float32)" << "function (int, float32) ";
+    QTest::newRow("two combined params") << "(a, b rune)" << "function (rune, rune) ";
+    QTest::newRow("two complex params") << "(a, b chan <- rune)" << "function (chan <- rune, chan <- rune) ";
+    QTest::newRow("three params") << "(_, c, d float32)" << "function (float32, float32, float32) ";
+    QTest::newRow("three separate params") << "(a []uint8, b *rune, c interface{})" << "function (uint8[], rune*, interface{}) ";
+    QTest::newRow("return param") << "(test []mytype) *byte" << "function (main::mytype[]) byte*";
+    QTest::newRow("multiple return params") << "(chan mytype) (b, e string)" << "function (chan main::mytype) (string, string)";
+    QTest::newRow("multiple return params") << "(<- chan func (string)) (mytype, mytype)"
+                << "function (<- chan function (string) ) (main::mytype, main::mytype)";
+    QTest::newRow("three types") << "(a, b, int)" << "function (a, b, int) ";
+    QTest::newRow("three types 2") << "(a, b, []int)" << "function (a, b, int[]) ";
+    QTest::newRow("three types 3") << "(a, _ int, z float32) bool" << "function (int, int, float32) bool";
+    QTest::newRow("return func type") << "(n int) func(p *T)" << "function (int) function (T*) ";
+    QTest::newRow("variadic param") << "(a ...int) mytype" << "function (int[]) main::mytype";
+    QTest::newRow("variadic param 2") << "(a, b int, z float64, opt ...interface{}) (success bool)"
+                << "function (int, int, float64, interface{}[]) bool";
+}
+
+void TestDuchain::test_funcparams()
+{
+    QFETCH(QString, params);
+    QFETCH(QString, result);
+    QString code(QString("package main; type mytype int; func main%1 {  }").arg(params));
+    DUContext* context = getPackageContext(code);
+    QVERIFY(context);
+    DUChainReadLocker lock;
+    Declaration* decl = context->findDeclarations(QualifiedIdentifier("main::main")).first();
+    QVERIFY(decl);
+    go::GoFunctionType::Ptr func = decl->abstractType().cast<go::GoFunctionType>();
+    QVERIFY(func);
+    QCOMPARE(func->toString(), result);
+}
+
 DUContext* getPackageContext(const QString& code)
 {
     ParseSession session(code.toUtf8(), 0);

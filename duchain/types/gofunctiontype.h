@@ -23,6 +23,7 @@
 #include <language/duchain/types/typesystemdata.h>
 //#include <language/duchain/types/abstracttype.h>
 #include <language/duchain/types/indexedtype.h>
+#include <duchain/goduchainexport.h>
 
 using namespace KDevelop;
 
@@ -55,7 +56,7 @@ public:
     END_APPENDED_LISTS(GoFunctionTypeData, m_returnArgs);
 };
 
-class GoFunctionType : public KDevelop::FunctionType
+class KDEVGODUCHAIN_EXPORT GoFunctionType : public KDevelop::FunctionType
 {
 public:
     typedef TypePtr<GoFunctionType> Ptr;

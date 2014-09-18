@@ -46,6 +46,7 @@
 #include "language/duchain/types/referencetype.h"
 #include "language/duchain/types/typeutils.h"
 #include "language/duchain/persistentsymboltable.h"
+#include "language/duchain/types/arraytype.h"
 
 
 #include <QtGui/QTextDocument>
@@ -342,8 +343,20 @@ void DeclarationNavigationContext::htmlFunction()
 	    }
 
 	    if(type->modifiers() == go::GoFunctionType::VariadicArgument && currentArgNum == decls.size()-1)
+            {
 		modifyHtml() += "...";
-	    eventuallyMakeTypeLinks( argType );
+                if(fastCast<ArrayType*>(argType.constData()))
+                {//show only element type in variadic parameter
+                    eventuallyMakeTypeLinks(fastCast<ArrayType*>(argType.constData())->elementType());
+                }else
+                {//this shouldn't happen
+                    kDebug() << "Variadic type was not resolved to slice type";
+                    eventuallyMakeTypeLinks( argType );
+                }
+            }else
+            {
+                eventuallyMakeTypeLinks( argType );
+            }
 
 	    /*if( currentArgNum >= firstDefaultParam )
 		modifyHtml() += " = " + Qt::escape(function->defaultParameters()[ currentArgNum - firstDefaultParam ].str());*/
@@ -369,6 +382,8 @@ void DeclarationNavigationContext::htmlFunction()
 	
 	if(type->returnArguments().size() == 1)
 	{
+            if(decls.size() != 0) //show declaration if one exists
+                modifyHtml() += nameHighlight(Qt::escape(decls[0]->identifier().toString())) + " ";
 	    eventuallyMakeTypeLinks(type->returnArguments().front());
 	    //modifyHtml() += ' ' + nameHighlight(Qt::escape(decls[currentArgNum]->identifier().toString()));
 	}else

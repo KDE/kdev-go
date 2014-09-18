@@ -174,7 +174,7 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
     }
 }
 
-void DeclarationBuilder::declareVariable(go::IdentifierAst* id, AbstractType::Ptr type)
+void DeclarationBuilder::declareVariable(go::IdentifierAst* id, const AbstractType::Ptr& type)
 {
     DUChainWriteLocker lock;
     Declaration* dec = openDeclaration<Declaration>(identifierForNode(id), editorFindRange(id, 0));
@@ -241,16 +241,6 @@ void DeclarationBuilder::addArgumentHelper(go::GoFunctionType::Ptr function, Abs
 	    function->addReturnArgument(argument);
 }
 
-void DeclarationBuilder::declareParameter(go::IdentifierAst* name, const AbstractType::Ptr& type)
-{
-    DUChainWriteLocker lock;
-    Declaration* decl = openDeclaration<Declaration>(identifierForNode(name), editorFindRange(name, 0));
-    decl->setType(type);
-    decl->setKind(Declaration::Instance);
-    closeDeclaration();
-}
-
-
 void DeclarationBuilder::parseParameters(go::ParametersAst* node, bool parseArguments, bool declareParameters)
 {
     //code below is a bit ugly because of problems with parsing go parameter list(see details at parser/go.g:331)
@@ -263,7 +253,12 @@ void DeclarationBuilder::parseParameters(go::ParametersAst* node, bool parseArgu
 	visitParameter(param);
 	//variadic arguments
 	if(param->unnamedvartype || param->vartype)
+        {
 	    function->setModifiers(go::GoFunctionType::VariadicArgument);
+            ArrayType* atype = new ArrayType();
+            atype->setElementType(lastType());
+            injectType(AbstractType::Ptr(atype));
+        }
 	if(!param->complexType && !param->parenType && !param->unnamedvartype && 
 	    !param->type && !param->vartype && !param->fulltype)
 	    paramNames.append(param->idOrType); //we only have an identifier
@@ -272,7 +267,7 @@ void DeclarationBuilder::parseParameters(go::ParametersAst* node, bool parseArgu
 	    addArgumentHelper(function, lastType(), parseArguments);
 	    //if we have a parameter name(but it's not part of fullname) open declaration
 	    if(param->idOrType && !param->fulltype && declareParameters)
-		declareParameter(param->idOrType, lastType());
+		declareVariable(param->idOrType, lastType());
 	}
 	
 	if(node->parameterListSequence)
@@ -284,7 +279,12 @@ void DeclarationBuilder::parseParameters(go::ParametersAst* node, bool parseArgu
 		visitParameter(param);
 		//variadic arguments
 		if(param->unnamedvartype || param->vartype)
+                {
 		    function->setModifiers(go::GoFunctionType::VariadicArgument);
+                    ArrayType* atype = new ArrayType();
+                    atype->setElementType(lastType());
+                    injectType(AbstractType::Ptr(atype));
+                }
 		if(param->complexType || param->parenType || param->unnamedvartype || param->fulltype)
 		{//we have a unnamed parameter list of types
 		    AbstractType::Ptr lType = lastType();
@@ -304,10 +304,10 @@ void DeclarationBuilder::parseParameters(go::ParametersAst* node, bool parseArgu
 		    for(auto id : paramNames)
 		    {
 			addArgumentHelper(function, lastType(), parseArguments);
-			if(declareParameters) declareParameter(id, lastType());
+			if(declareParameters) declareVariable(id, lastType());
 		    }
 		    addArgumentHelper(function, lastType(), parseArguments);
-		    if(declareParameters) declareParameter(param->idOrType, lastType());
+		    if(declareParameters) declareVariable(param->idOrType, lastType());
 		    paramNames.clear();
 		}
 		if(elem->hasNext())

@@ -24,15 +24,12 @@
 
 #include "goduchainexport.h"
 #include "contextbuilder.h"
+#include "typebuilder.h"
 #include "parser/parsesession.h"
 #include "parser/goast.h"
-#include "types/gofunctiontype.h"
-#include "declarations/functiondeclaration.h"
 
 
-
-typedef KDevelop::AbstractTypeBuilder<go::AstNode, go::IdentifierAst, ContextBuilder> TypeBuilder;
-typedef KDevelop::AbstractDeclarationBuilder<go::AstNode, go::IdentifierAst, TypeBuilder> DeclarationBuilderBase;
+typedef KDevelop::AbstractDeclarationBuilder<go::AstNode, go::IdentifierAst, go::TypeBuilder> DeclarationBuilderBase;
 
 class KDEVGODUCHAIN_EXPORT DeclarationBuilder : public DeclarationBuilderBase
 {
@@ -43,33 +40,16 @@ public:
                                                    go::AstNode* node,
                                                    KDevelop::ReferencedTopDUContext updateContext = KDevelop::ReferencedTopDUContext());
     virtual void startVisiting(go::AstNode* node);
-    
-    //virtual void visitVarDecl(go::VarDeclAst* node);
+
     virtual void visitVarSpec(go::VarSpecAst* node);
-    //virtual void visitType(go::TypeAst* node);
-    virtual void visitTypeName(go::TypeNameAst* node);
-    virtual void visitArrayOrSliceType(go::ArrayOrSliceTypeAst* node);
-    virtual void visitFunctionType(go::FunctionTypeAst* node);
-    //virtual void visitSignature(go::SignatureAst* node);
-    //virtual void visitParameters(go::ParametersAst* node);
-    virtual void visitParameter(go::ParameterAst* node);
-    virtual void visitFuncDeclaration(go::FuncDeclarationAst* node);
-    virtual void visitMethodDeclaration(go::MethodDeclarationAst* node);
-    virtual void visitPointerType(go::PointerTypeAst* node);
-    virtual void visitStructType(go::StructTypeAst* node);
-    virtual void visitFieldDecl(go::FieldDeclAst* node);
-    virtual void visitInterfaceType(go::InterfaceTypeAst* node);
-    virtual void visitMethodSpec(go::MethodSpecAst* node);
-    virtual void visitMapType(go::MapTypeAst* node);
-    virtual void visitChanType(go::ChanTypeAst* node);
-    
-    virtual void visitTypeSpec(go::TypeSpecAst* node);
-    
-    virtual void visitImportSpec(go::ImportSpecAst* node);
-    virtual void visitSourceFile(go::SourceFileAst* node);
     virtual void visitShortVarDecl(go::ShortVarDeclAst* node);
     virtual void visitConstSpec(go::ConstSpecAst* node);
     virtual void visitConstDecl(go::ConstDeclAst* node);
+    virtual void visitFuncDeclaration(go::FuncDeclarationAst* node);
+    virtual void visitMethodDeclaration(go::MethodDeclarationAst* node);
+    virtual void visitTypeSpec(go::TypeSpecAst* node);
+    virtual void visitImportSpec(go::ImportSpecAst* node);
+    virtual void visitSourceFile(go::SourceFileAst* node);
     virtual void visitForStmt(go::ForStmtAst* node);
     virtual void visitSwitchStmt(go::SwitchStmtAst* node);
     virtual void visitTypeCaseClause(go::TypeCaseClauseAst* node);
@@ -81,22 +61,8 @@ public:
 	bool anonymous;
 	KDevelop::TopDUContext* context;
     };*/
-    
-    /**
-     * This function exists because ExpressionVisitor needs to evaluate types of nodes when it encounters 
-     * builtin functions like "make". I guess there should be TypeBuilder class for that, but when building
-     * struct types we also need to open declarations, so it's a bit tricky to separate DeclarationBuilder and TypeBuilder
-     * Think how to do it properly.
-     */
-    AbstractType::Ptr buildType(go::TypeAst* node);
-    AbstractType::Ptr buildType(go::IdentifierAst* node, go::IdentifierAst* fullname=0);
-    
+
 private:
-    go::GoFunctionDeclaration* parseSignature(go::SignatureAst* node, bool declareParameters, go::IdentifierAst* name=0);
-    void parseParameters(go::ParametersAst* node, bool parseParameters=true, bool declareParameters=false);
-    
-    void addArgumentHelper(go::GoFunctionType::Ptr function, KDevelop::AbstractType::Ptr argument, bool parseArguments);
-    go::TypeNameAst* typeNameFromIdentifier(go::IdentifierAst* id, go::IdentifierAst* fullname=0);
 
     /**
      * Deduces types of expression with ExpressionVisitor and declares variables
@@ -115,14 +81,19 @@ private:
     /**
      * Declares variable with identifier @param id of type @param type
      **/
-    void declareVariable(go::IdentifierAst* id, const AbstractType::Ptr& type);
+    virtual void declareVariable(go::IdentifierAst* id, const AbstractType::Ptr& type) override;
+
+    /**
+     * Declares GoFunction and assigns contexts to it.
+     * Called from typebuilder when building functions and methods
+     **/
+    virtual go::GoFunctionDeclaration* declareFunction(go::IdentifierAst* id, const go::GoFunctionType::Ptr& type, DUContext* paramContext, DUContext* retparamContext) override;
 
     void importThisPackage();
     bool m_export;
     
     //QHash<QString, TopDUContext*> m_anonymous_imports;
     
-    QualifiedIdentifier m_contextIdentifier;
     bool m_preBuilding;
     QList<AbstractType::Ptr> m_constAutoTypes;
     QualifiedIdentifier m_thisPackage;

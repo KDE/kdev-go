@@ -7,6 +7,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}
 set(duchain_SRC
      declarationbuilder.cpp
      contextbuilder.cpp
+     typebuilder.cpp
      usebuilder.cpp
      goducontext.cpp
      expressionvisitor.cpp

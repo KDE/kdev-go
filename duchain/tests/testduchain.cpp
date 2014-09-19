@@ -19,7 +19,7 @@
 #include "testduchain.h"
 
 #include "parser/parsesession.h"
-#include "declarationbuilder.h"
+#include "builders/declarationbuilder.h"
 #include "types/gointegraltype.h"
 
 #include <qtest_kde.h>

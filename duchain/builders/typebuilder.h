@@ -21,9 +21,9 @@
 
 #include <language/duchain/builders/abstracttypebuilder.h>
 #include "contextbuilder.h"
-#include "goduchainexport.h"
-#include "declarations/functiondeclaration.h"
-#include "types/gofunctiontype.h"
+#include "duchain/goduchainexport.h"
+#include "duchain/declarations/functiondeclaration.h"
+#include "duchain/types/gofunctiontype.h"
 
 namespace go
 {

@@ -24,7 +24,7 @@
 #include "parser/goast.h"
 #include "parser/godefaultvisitor.h"
 #include "parser/parsesession.h"
-#include "goduchainexport.h"
+#include "duchain/goduchainexport.h"
 
 
 

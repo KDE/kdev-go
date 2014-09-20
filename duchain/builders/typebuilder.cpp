@@ -35,8 +35,13 @@ namespace go
 
 void TypeBuilder::visitTypeName(go::TypeNameAst* node)
 {
+    buildTypeName(node->name, node->type_resolve->fullName);
+}
+
+void TypeBuilder::buildTypeName(IdentifierAst* typeName, IdentifierAst* fullName)
+{
     uint type = IntegralType::TypeNone;
-    QualifiedIdentifier id = identifierForNode(node->name);
+    QualifiedIdentifier id = identifierForNode(typeName);
     QString name = id.toString();
     //Builtin types
     if(name == "uint8")
@@ -82,9 +87,9 @@ void TypeBuilder::visitTypeName(go::TypeNameAst* node)
     {
         //in Go one can create variable of package type, like 'fmt fmt'
         //TODO support such declarations
-        QualifiedIdentifier id(identifierForNode(node->name));
-        if(node->type_resolve->fullName)
-            id.push(identifierForNode(node->type_resolve->fullName));
+        QualifiedIdentifier id(identifierForNode(typeName));
+        if(fullName)
+            id.push(identifierForNode(fullName));
         DeclarationPointer decl = go::getTypeDeclaration(id, currentContext());
         if(decl)
         {
@@ -181,7 +186,7 @@ void TypeBuilder::visitFieldDecl(go::FieldDeclAst* node)
         }
     }else
     {
-        visitTypeName(typeNameFromIdentifier(node->varid, node->fullname));
+        buildTypeName(node->varid, node->fullname);
         go::IdentifierAst* id = node->fullname ? node->fullname : node->varid;
         names.append(id);
     }
@@ -225,7 +230,7 @@ void TypeBuilder::visitMethodSpec(go::MethodSpecAst* node)
     {
         parseSignature(node->signature, true, node->methodName);
     }else{
-        visitTypeName(typeNameFromIdentifier(node->methodName, node->fullName));
+        buildTypeName(node->methodName, node->fullName);
         go::IdentifierAst* id = node->fullName ? node->fullName : node->methodName;
         {
             declareVariable(id, lastType());
@@ -272,7 +277,7 @@ void TypeBuilder::visitParameter(go::ParameterAst* node)
     //also if type is just identifier it is impossible to say right now whether it is really a type
     //or a identifier. This will be decided in parseParameres method
     if(node->idOrType && node->fulltype)
-        visitTypeName(typeNameFromIdentifier(node->idOrType, node->fulltype));
+        buildTypeName(node->idOrType, node->fulltype);
     TypeBuilderBase::visitParameter(node);
 }
 
@@ -367,7 +372,7 @@ void TypeBuilder::parseParameters(go::ParametersAst* node, bool parseArguments, 
                     AbstractType::Ptr lType = lastType();
                     for(auto id : paramNames)
                     {
-                        visitTypeName(typeNameFromIdentifier(id));
+                        buildTypeName(id);
                         addArgumentHelper(function, lastType(), parseArguments);
                     }
                     addArgumentHelper(function, lType, parseArguments);
@@ -397,7 +402,7 @@ void TypeBuilder::parseParameters(go::ParametersAst* node, bool parseArguments, 
                 //foreach(auto id, paramNames)
                 for(auto id : paramNames)
                 {
-                    visitTypeName(typeNameFromIdentifier(id));
+                    buildTypeName(id);
                     addArgumentHelper(function, lastType(), parseArguments);
                 }
                 paramNames.clear();
@@ -406,7 +411,7 @@ void TypeBuilder::parseParameters(go::ParametersAst* node, bool parseArguments, 
         }else if(!paramNames.empty())
         {
             //one identifier that we have is a type
-            visitTypeName(typeNameFromIdentifier(param->idOrType));
+            buildTypeName(param->idOrType);
             addArgumentHelper(function, lastType(), parseArguments);
         }
     }
@@ -423,41 +428,5 @@ void TypeBuilder::addArgumentHelper(go::GoFunctionType::Ptr function, AbstractTy
             function->addReturnArgument(argument);
     }
 }
-
-
-go::TypeNameAst* TypeBuilder::typeNameFromIdentifier(go::IdentifierAst* id, go::IdentifierAst* fullname)
-{
-    //TODO handle memory leaks
-    //(create buildTypeName(id, fullName) method and call it from visitTypeName and all places
-    //this method gets called from)
-    go::TypeNameAst* newnode = new go::TypeNameAst();
-    go::Type_resolveAst* res = new go::Type_resolveAst();
-    newnode->kind = go::TypeNameAst::KIND;
-    res->kind = go::Type_resolveAst::KIND;
-    if(fullname)
-        res->fullName = fullname;
-    newnode->name = id;
-    newnode->type_resolve = res;
-    newnode->startToken = id->startToken;
-    if(fullname)
-        newnode->endToken = newnode->type_resolve->endToken;
-    else
-        newnode->endToken = id->endToken;
-    return newnode;
-}
-
-
-AbstractType::Ptr TypeBuilder::buildType(go::TypeAst* node)
-{
-    visitType(node);
-    return lastType();
-}
-
-AbstractType::Ptr TypeBuilder::buildType(go::IdentifierAst* node, go::IdentifierAst* fullname)
-{
-    visitTypeName(typeNameFromIdentifier(node, fullname));
-    return lastType();
-}
-
 
 }

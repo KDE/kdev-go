@@ -452,7 +452,8 @@ bool ExpressionVisitor::handleBuiltinFunction(PrimaryExprAst* node)
 	if((builtinFunction == "make" || builtinFunction == "append") && node->callOrBuiltinParam->type)
 	{//for make first argument must be slice, map or channel type
 	    //TODO check types and open problem if they not what they should be
-	    AbstractType::Ptr type = m_builder->buildType(node->callOrBuiltinParam->type);
+            m_builder->visitType(node->callOrBuiltinParam->type);
+            AbstractType::Ptr type = m_builder->getLastType();
 	    visitCallOrBuiltinParam(node->callOrBuiltinParam);
 	    pushType(type);
 	    return true;
@@ -474,14 +475,16 @@ bool ExpressionVisitor::handleBuiltinFunction(PrimaryExprAst* node)
 			IdentifierAst* fullname=0;
 			if(exp->unaryExpression->primaryExpr->primaryExprResolve && exp->unaryExpression->primaryExpr->primaryExprResolve->selector)
 			    fullname = exp->unaryExpression->primaryExpr->primaryExprResolve->selector;
-			type = m_builder->buildType(exp->unaryExpression->primaryExpr->id, fullname);
+                        m_builder->buildTypeName(exp->unaryExpression->primaryExpr->id, fullname);
+                        type = m_builder->getLastType();
 		    }
 		    break;
 		}
 		if(!type) return false;
 	    }else
 	    {
-		type = m_builder->buildType(node->callOrBuiltinParam->type);
+                m_builder->visitType(node->callOrBuiltinParam->type);
+                type = m_builder->getLastType();
 	    }
 	    visitCallOrBuiltinParam(node->callOrBuiltinParam);
 	    if(type)

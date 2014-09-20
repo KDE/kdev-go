@@ -45,13 +45,16 @@ public:
     virtual void visitFunctionType(go::FunctionTypeAst* node);
     virtual void visitParameter(go::ParameterAst* node);
 
+    /**
+     * When building named types we often have IdentifierAst instead of TypeNameAst,
+     * so it makes sense to have this convenience function
+     **/
+    void buildTypeName(go::IdentifierAst* typeName, go::IdentifierAst* fullName = 0);
 
     /**
-     * Interface through which ExpressionVisitor can build type of encountered expressions
-     * TODO: replace with one method returning lastType()
+     * Used by external classes like ExpressionVisitor after building a type.
      */
-    AbstractType::Ptr buildType(go::TypeAst* node);
-    AbstractType::Ptr buildType(go::IdentifierAst* node, go::IdentifierAst* fullname=0);
+    AbstractType::Ptr getLastType() { return lastType(); }
 
 protected:
 
@@ -88,11 +91,6 @@ protected:
      * Convenience function that adds argument to function params or output params
      **/
     void addArgumentHelper(go::GoFunctionType::Ptr function, KDevelop::AbstractType::Ptr argument, bool parseArguments);
-
-    /**
-     * Constructs TypeNameAst from IdentifierAst
-     **/
-    go::TypeNameAst* typeNameFromIdentifier(go::IdentifierAst* id, go::IdentifierAst* fullname=0);
 
     KDevelop::QualifiedIdentifier m_contextIdentifier;
 

@@ -285,7 +285,7 @@ void DeclarationBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
     
     if(node->methodRecv->type)
     {//declare method receiver variable('this' or 'self' analog in Go)
-	visitTypeName(typeNameFromIdentifier(node->methodRecv->type));
+        buildTypeName(node->methodRecv->type);
 	if(node->methodRecv->star!= -1)
 	{
 	    PointerType* ptype = new PointerType();

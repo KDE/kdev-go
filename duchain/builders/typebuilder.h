@@ -52,6 +52,11 @@ public:
     void buildTypeName(go::IdentifierAst* typeName, go::IdentifierAst* fullName = 0);
 
     /**
+     * A shortcut for ExpressionVisitor to build function type
+     **/
+    void buildFunction(go::SignatureAst* node) { parseSignature(node, true); }
+
+    /**
      * Used by external classes like ExpressionVisitor after building a type.
      */
     AbstractType::Ptr getLastType() { return lastType(); }

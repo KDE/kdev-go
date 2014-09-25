@@ -42,6 +42,8 @@ private slots:
     void test_typeswitch();
     void test_funcparams_data();
     void test_funcparams();
+    void test_literals_data();
+    void test_literals();
 };
 
 

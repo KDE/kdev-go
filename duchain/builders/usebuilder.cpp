@@ -72,6 +72,8 @@ void UseBuilder::visitPrimaryExpr(PrimaryExprAst* node)
 	return;
     for(int i=0; i<ids.size(); ++i)
 	newUse(ids.at(i), decls.at(i));
+    //build uses in subexpressions
+    go::DefaultVisitor::visitPrimaryExpr(node);
 }
 
 

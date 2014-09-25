@@ -42,6 +42,13 @@ public:
     virtual void visitCallOrBuiltinParam(go::CallOrBuiltinParamAst* node);
     virtual void visitCallParam(go::CallParamAst* node);
     virtual void visitTypeName(go::TypeNameAst* node);
+    virtual void visitStructType(go::StructTypeAst* node);
+    virtual void visitMapType(go::MapTypeAst* node);
+    virtual void visitSignature(go::SignatureAst* node);
+    virtual void visitPointerType(go::PointerTypeAst* node);
+    virtual void visitInterfaceType(go::InterfaceTypeAst* node);
+    virtual void visitChanType(go::ChanTypeAst* node);
+    virtual void visitParenType(go::ParenTypeAst* node);
 
     virtual void visitBlock(go::BlockAst* node);
     /**
@@ -74,6 +81,12 @@ private:
 
     bool handleComplexLiterals(PrimaryExprResolveAst* node, Declaration* decl);
     bool handleBuiltinFunction(PrimaryExprAst* node);
+
+    /**
+     * Handles stuff like basic literals(3.1415, 'strings', ...), type conversions( interface{}(variable) ... ),
+     * anonymous functions ( func() { callMe(); } ) and so on.
+     **/
+    void handleLiteralsAndConversions(PrimaryExprAst* node);
 
     DeclarationBuilder* m_builder;
     ParseSession* m_session;

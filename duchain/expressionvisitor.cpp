@@ -35,7 +35,6 @@ namespace go
 ExpressionVisitor::ExpressionVisitor(ParseSession* session, DUContext* context, DeclarationBuilder* builder) : 
 					m_session(session), m_context(context), m_builder(builder)
 {
-
 }
 
 
@@ -91,8 +90,21 @@ void ExpressionVisitor::visitUnaryExpression(UnaryExpressionAst* node)
 	    PointerType* type = new PointerType();
 	    type->setBaseType(types.first());
 	    pushType(AbstractType::Ptr(type));
-	}
-	
+	}else if(node->unsafe_unary_op && node->unsafe_unary_op->leftchan != -1)
+        {
+            auto types = lastTypes();
+            if(types.size() == 0)
+            {
+                pushType(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
+                return;
+            }
+            if(fastCast<GoChanType*>(types.first().constData()))
+            {
+                GoChanType::Ptr ctype(fastCast<GoChanType*>(types.first().constData()));
+                pushType(ctype->valueType());
+                addType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeBool)));
+            }
+        }
     }
 }
 
@@ -114,21 +126,23 @@ void ExpressionVisitor::visitPrimaryExpr(PrimaryExprAst* node)
 		decl = go::getDeclaration(id, m_context);
 		if(!decl)
 		{
+                    DelayedType* unknown = new DelayedType();
+                    unknown->setIdentifier(IndexedTypeIdentifier(identifierForNode(node->id)));
+                    pushType(AbstractType::Ptr(unknown));
 		    return;
 		}
 	    }
 	    //kDebug() << "Expression Visitor for "<< id;
 	
-	    if(node->literalValue)
+            //this handles stuff like mytype{}, mytype(), (mytype){}
+	    if(/*(node->literalValue || node->callOrBuiltinParam) && */decl->isTypeAlias())
 	    {
-		if(decl->isTypeAlias())//type aliases are custom types
-		{
-		    pushUse(node->id, decl.data());
-		    StructureType* type = new StructureType();
-		    DUChainReadLocker lock;
-		    type->setDeclaration(decl.data());
-		    pushType(AbstractType::Ptr( type ));
-		}
+		//type aliases are custom types
+                pushUse(node->id, decl.data());
+                StructureType* type = new StructureType();
+                DUChainReadLocker lock;
+                type->setDeclaration(decl.data());
+                pushType(AbstractType::Ptr( type ));
 	    }else if(node->callOrBuiltinParam)
 	    {
 		//TODO properly check arguments to handle overloads
@@ -157,13 +171,16 @@ void ExpressionVisitor::visitPrimaryExpr(PrimaryExprAst* node)
 		}
 	    } 
 	}
-    }
-    else 
+    }else if(node->expression)
     {
-	DefaultVisitor::visitPrimaryExpr(node);
+        visitExpression(node->expression);
+    }else
+    {
+        handleLiteralsAndConversions(node);
+	//DefaultVisitor::visitPrimaryExpr(node);
     }
     if(node->primaryExprResolve)
-	visitPrimaryExprResolve(node->primaryExprResolve);
+        visitPrimaryExprResolve(node->primaryExprResolve);
 }
 
 void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
@@ -265,6 +282,7 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
 	    //pushUse(node->id, decl.data());
 	    visitCallParam(node->callParam);
 	}
+	//NOTE this also handles some type conversions ( (mytype)(myvar) )
     }else if(node->index != -1)
     {//index expression
         if(lastTypes().size() == 0)
@@ -352,6 +370,122 @@ void ExpressionVisitor::visitBasicLit(BasicLitAst* node)
     else if(node->string != -1)
 	pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeString)));
 }
+
+void ExpressionVisitor::visitStructType(StructTypeAst* node)
+{
+    if(m_builder)
+    {
+        m_builder->visitStructType(node);
+        pushType(m_builder->getLastType());
+    }
+}
+
+void ExpressionVisitor::visitMapType(MapTypeAst* node)
+{
+    if(m_builder)
+    {
+        m_builder->visitMapType(node);
+        pushType(m_builder->getLastType());
+    }
+}
+
+void ExpressionVisitor::visitSignature(SignatureAst* node)
+{
+    if(m_builder)
+    {
+        m_builder->buildFunction(node);
+        pushType(m_builder->getLastType());
+    }
+}
+
+void ExpressionVisitor::visitPointerType(PointerTypeAst* node)
+{
+    if(m_builder)
+    {
+        m_builder->visitPointerType(node);
+        pushType(m_builder->getLastType());
+    }
+}
+
+void ExpressionVisitor::visitInterfaceType(InterfaceTypeAst* node)
+{
+    if(m_builder)
+    {
+        m_builder->visitInterfaceType(node);
+        pushType(m_builder->getLastType());
+    }
+}
+
+void ExpressionVisitor::visitChanType(ChanTypeAst* node)
+{
+    if(m_builder)
+    {
+        m_builder->visitChanType(node);
+        pushType(m_builder->getLastType());
+    }
+}
+
+void ExpressionVisitor::visitParenType(ParenTypeAst* node)
+{
+    if(m_builder)
+    {
+        m_builder->visitParenType(node);
+        pushType(m_builder->getLastType());
+    }
+}
+
+void ExpressionVisitor::handleLiteralsAndConversions(PrimaryExprAst* node)
+{
+    if(!node)
+        return;
+    //build uses
+    if(node->literalValue)
+        visitLiteralValue(node->literalValue);
+    if(node->convArg)
+        visitConversionArgument(node->convArg);
+
+    if(node->basicLit)
+        visitBasicLit(node->basicLit);
+    else if(node->structType)
+        visitStructType(node->structType);
+    else if(node->mapType)
+        visitMapType(node->mapType);
+    else if(node->signature)
+    {
+        if(node->body && m_builder)
+            m_builder->visitBlock(node->body);
+        visitSignature(node->signature);
+    }
+    else if(node->pointerType)
+        visitPointerType(node->pointerType);
+    else if(node->interfaceType)
+        visitInterfaceType(node->interfaceType);
+    else if(node->chanType)
+        visitChanType(node->chanType);
+    else if(node->parenType)
+        visitParenType(node->parenType);
+    else if(node->array != -1)
+    {
+        if(m_builder)
+        {
+            if(node->tripledot != -1)
+            {
+                m_builder->visitType(node->element);
+            }else
+            {
+                if(node->arrayOrSliceResolve->array)
+                    m_builder->visitType(node->arrayOrSliceResolve->array);
+                else if(node->arrayOrSliceResolve->slice)
+                    m_builder->visitType(node->arrayOrSliceResolve->slice);
+            }
+            ArrayType* array = new ArrayType();
+            array->setElementType(m_builder->getLastType());
+            pushType(AbstractType::Ptr(array));
+        }
+    }
+}
+
+
 
 void ExpressionVisitor::visitBlock(BlockAst* node)
 {
@@ -498,6 +632,7 @@ bool ExpressionVisitor::handleBuiltinFunction(PrimaryExprAst* node)
 	{
 	    visitCallOrBuiltinParam(node->callOrBuiltinParam);
 	    pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeInt)));
+            return true;
 	}else if((builtinFunction == "imag" || builtinFunction == "real") && node->callOrBuiltinParam->expression)
 	{
 	    visitExpression(node->callOrBuiltinParam->expression);

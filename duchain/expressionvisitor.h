@@ -79,7 +79,11 @@ private:
 
     QualifiedIdentifier identifierForNode(IdentifierAst* node);
 
-    bool handleComplexLiterals(PrimaryExprResolveAst* node, Declaration* decl);
+    /**
+     * Converts complex type literals or conversions (imp.imptype{} or imp.imptype(1))
+     * to identified types.
+     **/
+    bool handleComplexLiteralsAndConversions(PrimaryExprResolveAst* node, Declaration* decl);
     bool handleBuiltinFunction(PrimaryExprAst* node);
 
     /**

@@ -185,7 +185,7 @@ void ExpressionVisitor::visitPrimaryExpr(PrimaryExprAst* node)
 
 void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
 {
-    if(node->selector)
+   if(node->selector)
     {
 	QList<AbstractType::Ptr> types = lastTypes();
 	if(types.size() == 0)
@@ -229,7 +229,7 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
 		DeclarationPointer decl = getTypeOrVarDeclaration(id, m_context);
 		if(decl)
 		{
-		    if(!handleComplexLiterals(node, decl.data())) //handle things like imp.mytype{2}
+		    if(!handleComplexLiteralsAndConversions(node, decl.data())) //handle things like imp.mytype{2}
 		    {
 			pushUse(node->selector, decl.data());
 			pushType(decl->abstractType());
@@ -554,10 +554,10 @@ QualifiedIdentifier ExpressionVisitor::identifierForNode(IdentifierAst* node)
     return QualifiedIdentifier(m_session->symbol(node->id));
 }
 
-bool ExpressionVisitor::handleComplexLiterals(PrimaryExprResolveAst* node, Declaration* decl)
+bool ExpressionVisitor::handleComplexLiteralsAndConversions(PrimaryExprResolveAst* node, Declaration* decl)
 {
     //we have to separately handle expressions like imp.mytype{3} because of the way grammar was written
-    if(node->primaryExprResolve && node->primaryExprResolve->literalValue && decl->isTypeAlias())
+    if(node->primaryExprResolve && (node->primaryExprResolve->literalValue || node->primaryExprResolve->callParam) && decl->isTypeAlias())
     {
 	pushUse(node->selector, decl);
 	StructureType* type = new StructureType();

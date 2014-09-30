@@ -19,7 +19,7 @@
 #include "testduchain.h"
 
 #include "parser/parsesession.h"
-#include "declarationbuilder.h"
+#include "builders/declarationbuilder.h"
 #include "types/gointegraltype.h"
 
 #include <QtTest/QtTest>
@@ -449,6 +449,59 @@ void TestDuchain::test_funcparams()
     QVERIFY(func);
     QCOMPARE(func->toString(), result);
 }
+
+void TestDuchain::test_literals_data()
+{
+    QTest::addColumn<QString>("expr");
+    QTest::addColumn<QString>("type");
+
+    QTest::newRow("basic literal") << "1" << "int";
+    QTest::newRow("basic literal 2") << ".2" << "float64";
+    QTest::newRow("basic literal 3") << "1E6i" << "complex128";
+    QTest::newRow("basic literal 4") << "\'y\'" << "rune";
+    QTest::newRow("basic literal 5") << "\"str\"" << "string";
+    QTest::newRow("named type literal") << "mytype{2}" << "main::mytype";
+    QTest::newRow("named type conversion") << "mytype(2)" << "main::mytype"; //not call
+    QTest::newRow("named type conversion 2") << "(mytype)(2)" << "main::mytype";//not paren expression with resolve
+    QTest::newRow("named type literal 2") << "unknown{2}" << "unknown";
+    QTest::newRow("struct type literal") << "struct { a int }{2}" << "struct { a int }";
+    QTest::newRow("struct type literal 2") << "struct { f func(); b rune }{f:main, b:3}" << "struct { f func(); b rune }";
+    QTest::newRow("struct type conversion") << "struct { mytype }(100)" << "struct { mytype }";
+    QTest::newRow("struct type access") << "struct { c rune }{}.c" << "rune";
+    QTest::newRow("array type literal") << "[10]int{1, 2, 3}" << "int[]";
+    QTest::newRow("slice type conversion") << "[]mytype(anotherslice)" << "main::mytype[]";
+    QTest::newRow("slice special form") << "[...]float32{-1., 0., 1.}" << "float32[]";
+    QTest::newRow("map type literal") << "map[int]rune{}" << "map[int]rune";
+    QTest::newRow("map type conversion") << "(map[int]rune)(f)" << "map[int]rune";
+    QTest::newRow("map type conversion access") << "(map[int]rune)(f)[0]" << "rune";
+    QTest::newRow("func type literal") << "func() int { return 0; }" << "function () int";
+    QTest::newRow("func type literal 2") << "func(a, b mytype) (b bool) { c := 2; return true; }" << "function (main::mytype, main::mytype) bool";
+    QTest::newRow("func type conversion") << "(func())(main) " << "function () ";
+    QTest::newRow("func type conversion 2") << "func() (i int)(main) " << "function () int";
+    QTest::newRow("func type call") << "func(f []int) float64 {} ( []int{1, 2} )" << "float64";
+    QTest::newRow("pointer") << "*mytype(&v) " << "main::mytype*";
+    QTest::newRow("pointer type conversion") << "(*mytype)(v) " << "main::mytype*";
+    QTest::newRow("pointer type conversion") << "(*unnamed)(v) " << "unnamed*";
+    QTest::newRow("interface type conversion") << "interface{}(main) " << "interface{}";
+    QTest::newRow("interface type conversion 2") << "interface{ Read(a int) string }(Reader) " << "interface{ Read(a int) string }";
+    QTest::newRow("chan") << "<-chan int(c) " << "int";
+    QTest::newRow("chan conversion") << "(<-chan int)(c) " << "<- chan int";
+    QTest::newRow("chan conversion 2") << "chan<- mytype(tt) " << "chan <- main::mytype";
+}
+
+void TestDuchain::test_literals()
+{
+    QFETCH(QString, expr);
+    QFETCH(QString, type);
+    QString code(QString("package main; type mytype int; func main() { test := %1 }").arg(expr));
+    DUContext* context = getMainContext(code);
+    QVERIFY(context);
+    DUChainReadLocker lock;
+    auto decls = context->findDeclarations(QualifiedIdentifier("test"));
+    QCOMPARE(decls.size(), 1);
+    QCOMPARE(decls.first()->abstractType()->toString(), type);
+}
+
 
 DUContext* getPackageContext(const QString& code)
 {

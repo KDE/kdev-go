@@ -498,8 +498,8 @@ id=identifier ( ?[: !inIfClause || (inIfClause && lparenCount > 0) :] literalVal
    ( primaryExprResolve=primaryExprResolve | 0 ) 			--named literal
 | basicLit=basicLit ( primaryExprResolve=primaryExprResolve | 0 ) --(primaryExprResolve=primaryExprResolve | 0)	not sure why I wrote this twice	--basic literal
 | structType=structType ( literalValue=literalValue | convArg=conversionArgument )	(primaryExprResolve=primaryExprResolve | 0)	--struct conversion/literal
-| LBRACKET ( arrayOrSliceResolve=arraySliceResolve  (literalValue=literalValue | convArg=conversionArgument)
- | TRIPLEDOT RBRACKET element=type literalValue=literalValue )(primaryExprResolve=primaryExprResolve | 0)				--array/slice conversion/literal
+| array=LBRACKET ( arrayOrSliceResolve=arraySliceResolve  (literalValue=literalValue | convArg=conversionArgument)
+ | tripledot=TRIPLEDOT RBRACKET element=type literalValue=literalValue )(primaryExprResolve=primaryExprResolve | 0)    --array/slice conversion/literal
 | mapType=mapType ( literalValue=literalValue | convArg=conversionArgument )(primaryExprResolve=primaryExprResolve | 0)	--map type conversion/literal
 | FUNC signature=signature (body=block | convArg=conversionArgument )(primaryExprResolve=primaryExprResolve | 0) 		--func type conversion/literal
 | pointerType=pointerType convArg=conversionArgument (primaryExprResolve=primaryExprResolve | 0) 		--pointer type conversion
@@ -551,8 +551,9 @@ DOT (selector=identifier | LPAREN typeAssertion=type RPAREN ) (primaryExprResolv
 unaryExpression=unaryExpression ( binary_op=binary_op expression=expression | 0)
 -> expression;;
 
-try/rollback( primaryExpr=primaryExpr | unary_op=unary_op unaryExpression=unaryExpression )
-catch (unsafe_unary_op=unsafe_unary_op unaryExpression=unaryExpression )
+-- * and <- should be parsed first as operators
+try/rollback (unsafe_unary_op=unsafe_unary_op unaryExpression=unaryExpression )
+catch( primaryExpr=primaryExpr | unary_op=unary_op unaryExpression=unaryExpression )
 -> unaryExpression;;
 
 plus=PLUS | minus=MINUS | bang=BANG | hat=HAT | ampersand=AMPERSAND

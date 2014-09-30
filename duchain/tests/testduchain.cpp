@@ -51,9 +51,10 @@ void TestDuchain::sanityCheck()
 {
     QString code("package main; func main() {}");
     ParseSession session(code.toUtf8(), 0);
+    session.setCurrentDocument(IndexedString("file:///temp/1"));
     QVERIFY(session.startParsing());
     DeclarationBuilder builder(&session, false);
-    ReferencedTopDUContext context =  builder.build(IndexedString(""), session.ast());
+    ReferencedTopDUContext context =  builder.build(session.currentDocument(), session.ast());
     QVERIFY(context.data());
 
     DUChainReadLocker lock;
@@ -506,10 +507,12 @@ void TestDuchain::test_literals()
 DUContext* getPackageContext(const QString& code)
 {
     ParseSession session(code.toUtf8(), 0);
+    static int testNumber = 0;
+    session.setCurrentDocument(IndexedString(QString("file:///temp/%1").arg(testNumber++)));
     if(!session.startParsing())
 	return 0;
     DeclarationBuilder builder(&session, false);
-    ReferencedTopDUContext context =  builder.build(IndexedString(""), session.ast());
+    ReferencedTopDUContext context =  builder.build(session.currentDocument(), session.ast());
     if(!context)
 	return 0;
 

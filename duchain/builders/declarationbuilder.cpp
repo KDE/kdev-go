@@ -116,6 +116,7 @@ void DeclarationBuilder::declareVariablesWithType(go::IdentifierAst* id, go::IdL
 void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* idList, go::ExpressionAst* expression,
 					    go::ExpressionListAst* expressionList, bool declareConstant)
 {
+    m_contextIdentifier = identifierForNode(id);
     QList<AbstractType::Ptr> types;
     if(!expression)
 	return;

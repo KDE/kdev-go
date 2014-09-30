@@ -429,4 +429,26 @@ void TypeBuilder::addArgumentHelper(go::GoFunctionType::Ptr function, AbstractTy
     }
 }
 
+//TODO call this from DeclarationBuilder::visitFunctionDecl
+void TypeBuilder::buildFunction(SignatureAst* node, BlockAst* block)
+{
+    go::GoFunctionDeclaration* decl = parseSignature(node, true);
+    AbstractType::Ptr type = lastType();
+    if(block)
+    {
+        DUContext* bodyContext = openContext(block, DUContext::ContextType::Function);
+        {//import parameters into body context
+            DUChainWriteLocker lock;
+            if(decl->internalContext())
+                currentContext()->addImportedParentContext(decl->internalContext());
+            if(decl->returnArgsContext())
+                currentContext()->addImportedParentContext(decl->returnArgsContext());
+        }
+        visitBlock(block);
+        closeContext(); //wrapper context
+        injectType(type);
+    }
+}
+
+
 }

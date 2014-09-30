@@ -54,7 +54,7 @@ public:
     /**
      * A shortcut for ExpressionVisitor to build function type
      **/
-    void buildFunction(go::SignatureAst* node) { parseSignature(node, true); }
+    void buildFunction(go::SignatureAst* node, go::BlockAst* block=0);
 
     /**
      * Used by external classes like ExpressionVisitor after building a type.

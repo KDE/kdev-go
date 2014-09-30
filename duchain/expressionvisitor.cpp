@@ -389,15 +389,6 @@ void ExpressionVisitor::visitMapType(MapTypeAst* node)
     }
 }
 
-void ExpressionVisitor::visitSignature(SignatureAst* node)
-{
-    if(m_builder)
-    {
-        m_builder->buildFunction(node);
-        pushType(m_builder->getLastType());
-    }
-}
-
 void ExpressionVisitor::visitPointerType(PointerTypeAst* node)
 {
     if(m_builder)
@@ -452,9 +443,11 @@ void ExpressionVisitor::handleLiteralsAndConversions(PrimaryExprAst* node)
         visitMapType(node->mapType);
     else if(node->signature)
     {
-        if(node->body && m_builder)
-            m_builder->visitBlock(node->body);
-        visitSignature(node->signature);
+        if(m_builder)
+        {
+            m_builder->buildFunction(node->signature, node->body);
+            pushType(m_builder->getLastType());
+        }
     }
     else if(node->pointerType)
         visitPointerType(node->pointerType);

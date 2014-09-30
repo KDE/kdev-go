@@ -475,6 +475,7 @@ void TestDuchain::test_literals_data()
     QTest::newRow("map type conversion access") << "(map[int]rune)(f)[0]" << "rune";
     QTest::newRow("func type literal") << "func() int { return 0; }" << "function () int";
     QTest::newRow("func type literal 2") << "func(a, b mytype) (b bool) { c := 2; return true; }" << "function (main::mytype, main::mytype) bool";
+    QTest::newRow("func type literal 3") << "func() int { var b int; }" << "function () int";
     QTest::newRow("func type conversion") << "(func())(main) " << "function () ";
     QTest::newRow("func type conversion 2") << "func() (i int)(main) " << "function () int";
     QTest::newRow("func type call") << "func(f []int) float64 {} ( []int{1, 2} )" << "float64";

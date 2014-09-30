@@ -44,7 +44,6 @@ public:
     virtual void visitTypeName(go::TypeNameAst* node);
     virtual void visitStructType(go::StructTypeAst* node);
     virtual void visitMapType(go::MapTypeAst* node);
-    virtual void visitSignature(go::SignatureAst* node);
     virtual void visitPointerType(go::PointerTypeAst* node);
     virtual void visitInterfaceType(go::InterfaceTypeAst* node);
     virtual void visitChanType(go::ChanTypeAst* node);

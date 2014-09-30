@@ -252,7 +252,7 @@ QList< ReferencedTopDUContext > ParseSession::contextForThisPackage(IndexedStrin
 {
     QList<ReferencedTopDUContext> contexts;
     QUrl url = package.toUrl();
-    QDir path(url.path());
+    QDir path(url.adjusted(QUrl::RemoveFilename).path());
     if(path.exists())
     {
         int priority = BackgroundParser::WorstPriority;

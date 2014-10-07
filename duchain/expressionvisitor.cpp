@@ -47,15 +47,16 @@ QList< AbstractType::Ptr > ExpressionVisitor::lastTypes()
 void ExpressionVisitor::visitExpression(ExpressionAst* node)
 {
     if(node->binary_op)
-	if( (node->binary_op->logicaland != -1) || (node->binary_op->logicalor != -1) || node->binary_op->rel_op )
-	{//if we have relation operator then result will always be boolean
-	    //however we still visit subexpressions to build uses
-	    //TODO should we always do that?
-	    visitUnaryExpression(node->unaryExpression);
-	    visitExpression(node->expression);
-	    pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeBool)));
-	    return;
-	}
+    {
+        if( (node->binary_op->logicaland != -1) || (node->binary_op->logicalor != -1) || node->binary_op->rel_op )
+        {//if we have relation operator then result will always be boolean
+            //however we still visit subexpressions to build uses
+            visitUnaryExpression(node->unaryExpression);
+            visitExpression(node->expression);
+            pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeBool)));
+            return;
+        }
+    }
 	    
     visitUnaryExpression(node->unaryExpression);
     if(node->binary_op)
@@ -107,6 +108,9 @@ void ExpressionVisitor::visitUnaryExpression(UnaryExpressionAst* node)
             PointerType* ptype = new PointerType();
             ptype->setBaseType(type);
             pushType(AbstractType::Ptr(ptype));
+        }else if(node->unary_op && node->unary_op->bang != -1)
+        {
+            pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeBool)));
         }
     }
 }

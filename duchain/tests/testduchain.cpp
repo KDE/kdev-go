@@ -515,6 +515,7 @@ void TestDuchain::test_unaryOps_data()
     QTest::newRow("address 2") << "mytype{2}" << "&pointer" << "main::mytype*";
     QTest::newRow("chan") << "make(chan rune)" << "<- pointer" << "rune";
     QTest::newRow("chan 2") << "make(<- chan []mytype)" << "<-pointer" << "main::mytype[]";
+    QTest::newRow("not") << "1 != 2" << "! pointer" << "bool";
 
     QTest::newRow("func test") << "func () float32 { return 1; }" << "(pointer)()" << "float32";
     QTest::newRow("func test 2") << "func (a float64) float64 { return a; }" << "(pointer)(2.0)" << "float64";

@@ -481,9 +481,8 @@ void TestDuchain::test_literals_data()
     QTest::newRow("func type conversion") << "(func())(main) " << "function () ";
     QTest::newRow("func type conversion 2") << "func() (i int)(main) " << "function () int";
     QTest::newRow("func type call") << "func(f []int) float64 {} ( []int{1, 2} )" << "float64";
-    QTest::newRow("pointer") << "*mytype(&v) " << "main::mytype*";
     QTest::newRow("pointer type conversion") << "(*mytype)(v) " << "main::mytype*";
-    QTest::newRow("pointer type conversion") << "(*unnamed)(v) " << "unnamed*";
+    QTest::newRow("pointer type conversion 2") << "(*unnamed)(v) " << "unnamed*";
     QTest::newRow("interface type conversion") << "interface{}(main) " << "interface{}";
     QTest::newRow("interface type conversion 2") << "interface{ Read(a int) string }(Reader) " << "interface{ Read(a int) string }";
     QTest::newRow("chan") << "<-chan int(c) " << "int";
@@ -502,6 +501,38 @@ void TestDuchain::test_literals()
     auto decls = context->findDeclarations(QualifiedIdentifier("test"));
     QCOMPARE(decls.size(), 1);
     QCOMPARE(decls.first()->abstractType()->toString(), type);
+}
+
+void TestDuchain::test_unaryOps_data()
+{
+    QTest::addColumn<QString>("pointer");
+    QTest::addColumn<QString>("expr");
+    QTest::addColumn<QString>("result");
+
+    QTest::newRow("pointer") << "new(int)" << "*pointer" << "int";
+    QTest::newRow("pointer 2") << "new(mytype)" << "*pointer" << "main::mytype";
+    QTest::newRow("address") << "int(2)" << "&pointer" << "int*";
+    QTest::newRow("address 2") << "mytype{2}" << "&pointer" << "main::mytype*";
+    QTest::newRow("chan") << "make(chan rune)" << "<- pointer" << "rune";
+    QTest::newRow("chan 2") << "make(<- chan []mytype)" << "<-pointer" << "main::mytype[]";
+
+    QTest::newRow("func test") << "func () float32 { return 1; }" << "(pointer)()" << "float32";
+    QTest::newRow("func test 2") << "func (a float64) float64 { return a; }" << "(pointer)(2.0)" << "float64";
+    QTest::newRow("func test 3") << "func (a, b float64) float64 { return a; }" << "(pointer)(2.0, 3)" << "float64";
+}
+
+void TestDuchain::test_unaryOps()
+{
+    QFETCH(QString, pointer);
+    QFETCH(QString, expr);
+    QFETCH(QString, result);
+    QString code(QString("package main; type mytype int; func main() { pointer := %1; test := %2 }").arg(pointer).arg(expr));
+    DUContext* context = getMainContext(code);
+    QVERIFY(context);
+    DUChainReadLocker lock;
+    auto decls = context->findDeclarations(QualifiedIdentifier("test"));
+    QCOMPARE(decls.size(), 1);
+    QCOMPARE(decls.first()->abstractType()->toString(), result);
 }
 
 

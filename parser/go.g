@@ -493,6 +493,8 @@ expValue=expression
 --TODO should I add lparenCount++ after LBRACKET in array/slice conversion/literal?
 --that may mess up things like: if [mystruct{3}]int{10} { } 
 
+--(parenType convArgument) can accidentaly parse things like (funcname)(single_argument) where funcname is function name instead of type
+
 id=identifier ( ?[: !inIfClause || (inIfClause && lparenCount > 0) :] literalValue=literalValue 
   |  LPAREN [: if(inIfClause) lparenCount++; :] callOrBuiltinParam=callOrBuiltinParam [: if(inIfClause) lparenCount--; :] RPAREN | 0)
    ( primaryExprResolve=primaryExprResolve | 0 ) 			--named literal
@@ -505,8 +507,8 @@ id=identifier ( ?[: !inIfClause || (inIfClause && lparenCount > 0) :] literalVal
 | pointerType=pointerType convArg=conversionArgument (primaryExprResolve=primaryExprResolve | 0) 		--pointer type conversion
 | interfaceType=interfaceType convArg=conversionArgument  (primaryExprResolve=primaryExprResolve | 0)		--interface type conversion
 | chanType=chanType convArg=conversionArgument (primaryExprResolve=primaryExprResolve | 0)			--chan type conversion
-| try/rollback(LPAREN [: if(inIfClause) lparenCount++; :] expression=expression [: if(inIfClause) lparenCount--; :] RPAREN ) 		--@TODO is this useless?(change order)
- catch([: if(inIfClause) lparenCount--; :] parenType=parenType convArg=conversionArgument ) (primaryExprResolve=primaryExprResolve | 0)		--parenthesized type conversion
+| try/rollback( parenType=parenType convArg=conversionArgument )                                                --parenthesized type conversion
+ catch(LPAREN [: if(inIfClause) lparenCount++; :] expression=expression [: if(inIfClause) lparenCount--; :] RPAREN )  (primaryExprResolve=primaryExprResolve | 0)
 -> primaryExpr;;
 
 LPAREN [: if(inIfClause) lparenCount++; :] expression=expression (COMMA | 0) [: if(inIfClause) lparenCount--; :] RPAREN

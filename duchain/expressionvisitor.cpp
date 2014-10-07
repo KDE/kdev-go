@@ -80,30 +80,32 @@ void ExpressionVisitor::visitUnaryExpression(UnaryExpressionAst* node)
     DefaultVisitor::visitUnaryExpression(node);
     if(node->unary_op || node->unsafe_unary_op )
     {
-	if(node->unsafe_unary_op && node->unsafe_unary_op->star != -1)
-	{
-	    auto types = popTypes();
-	    if(types.size() == 0) {
-		pushType(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
-		return;
-	    }
-	    PointerType* type = new PointerType();
-	    type->setBaseType(types.first());
-	    pushType(AbstractType::Ptr(type));
-	}else if(node->unsafe_unary_op && node->unsafe_unary_op->leftchan != -1)
+        if(lastTypes().size() == 0)
         {
-            auto types = lastTypes();
-            if(types.size() == 0)
+            pushType(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
+            return;
+        }
+        AbstractType::Ptr type = lastTypes().first();
+        if(node->unsafe_unary_op && node->unsafe_unary_op->star != -1)
+        {//dereferencing
+            if(fastCast<PointerType*>(type.constData()))
             {
-                pushType(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
-                return;
+                PointerType::Ptr ptype(fastCast<PointerType*>(type.constData()));
+                pushType(ptype->baseType());
             }
-            if(fastCast<GoChanType*>(types.first().constData()))
+        }else if(node->unsafe_unary_op && node->unsafe_unary_op->leftchan != -1)
+        {//chan retrieval
+            if(fastCast<GoChanType*>(type.constData()))
             {
-                GoChanType::Ptr ctype(fastCast<GoChanType*>(types.first().constData()));
+                GoChanType::Ptr ctype(fastCast<GoChanType*>(type.constData()));
                 pushType(ctype->valueType());
                 addType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeBool)));
             }
+        }else if(node->unary_op && node->unary_op->ampersand != -1)
+        {//taking an address
+            PointerType* ptype = new PointerType();
+            ptype->setBaseType(type);
+            pushType(AbstractType::Ptr(ptype));
         }
     }
 }
@@ -134,8 +136,8 @@ void ExpressionVisitor::visitPrimaryExpr(PrimaryExprAst* node)
 	    }
 	    //kDebug() << "Expression Visitor for "<< id;
 	
-            //this handles stuff like mytype{}, mytype(), (mytype){}
-	    if(/*(node->literalValue || node->callOrBuiltinParam) && */decl->isTypeAlias())
+            //this handles stuff like mytype{}, mytype()
+	    if((node->literalValue || node->callOrBuiltinParam) && decl->isTypeAlias())
 	    {
 		//type aliases are custom types
                 pushUse(node->id, decl.data());
@@ -282,7 +284,6 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
 	    //pushUse(node->id, decl.data());
 	    visitCallParam(node->callParam);
 	}
-	//NOTE this also handles some type conversions ( (mytype)(myvar) )
     }else if(node->index != -1)
     {//index expression
         if(lastTypes().size() == 0)
@@ -421,6 +422,26 @@ void ExpressionVisitor::visitParenType(ParenTypeAst* node)
     if(m_builder)
     {
         m_builder->visitParenType(node);
+        if(node->type->typeName && fastCast<DelayedType*>(m_builder->getLastType().constData()))
+        {//if we haven't found type it could be parenthesized function call '(funcname)(argument)'
+            QualifiedIdentifier id(identifierForNode(node->type->typeName->name));
+            if(node->type->typeName->type_resolve->fullName)
+                id.push(identifierForNode(node->type->typeName->type_resolve->fullName));
+	    DeclarationPointer decl = go::getTypeOrVarDeclaration(id, m_context);
+            if(!decl)
+                return;
+            AbstractType::Ptr funcType = resolveTypeAlias(decl->abstractType());//to get actual function type from variables, storing functions
+            if(fastCast<GoFunctionType*>(funcType.constData()))
+            {
+                GoFunctionType::Ptr type(fastCast<GoFunctionType*>(funcType.constData()));
+                popTypes();
+                for(const AbstractType::Ptr& arg : type->returnArguments())
+                    addType(arg);
+                pushUse(node->type->typeName->name, decl.data());
+                return;
+            }
+            //TODO there also can be builtin functions '(new)(int)'
+        }
         pushType(m_builder->getLastType());
     }
 }

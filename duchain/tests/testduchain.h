@@ -44,6 +44,8 @@ private slots:
     void test_funcparams();
     void test_literals_data();
     void test_literals();
+    void test_unaryOps_data();
+    void test_unaryOps();
 };
 
 

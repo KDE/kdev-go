@@ -9,6 +9,7 @@ set(completion_SRCS
     model.cpp
     worker.cpp
     context.cpp
+    items/functionitem.cpp
 )
 
 kde4_add_library(kdevgocompletion SHARED ${completion_SRCS})

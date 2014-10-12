@@ -16,48 +16,42 @@
 *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA   *
 *************************************************************************************/
 
-#ifndef GOLANGCOMPLETIONCONTEXT_H
-#define GOLANGCOMPLETIONCONTEXT_H
+#include "functionitem.h"
 
-#include <language/codecompletion/codecompletioncontext.h>
-#include <language/codecompletion/codecompletionitem.h>
-
-#include "gocompletionexport.h"
-#include <QStack>
+#include <KTextEditor/View>
+#include <KTextEditor/Document>
 #include <language/duchain/declaration.h>
+
+#include "types/gofunctiontype.h"
 
 namespace go
 {
-    
-class GOLANGCOMPLETION_EXPORT CodeCompletionContext : public KDevelop::CodeCompletionContext
-{
-public:
-    CodeCompletionContext(const KDevelop::DUContextPointer& context, const QString& text,
-                          const KDevelop::CursorInRevision& position, int depth = 0);
-    
-    virtual QList<KDevelop::CompletionTreeItemPointer> completionItems(bool& abort, bool fullCompletion = true);
-    
-    
-private:
-    //See QmlJS plugin completion for details
-    struct ExpressionStackEntry {
-        int startPosition;
-        int operatorStart;
-        int operatorEnd;
-        int commas;
-    };
-    
-    QStack<ExpressionStackEntry> expressionStack(const QString& expression);
-    
-    KDevelop::AbstractType::Ptr lastType(const QString& expression);
-    
-    QList<KDevelop::CompletionTreeItemPointer> importAndMemberCompletion();
 
-    /**
-     * Return completion item for declaration.
-     **/
-    KDevelop::CompletionTreeItemPointer itemForDeclaration(QPair<KDevelop::Declaration*, int> declaration);
-};
+FunctionCompletionItem::FunctionCompletionItem(DeclarationPointer decl,
+                                               QExplicitlySharedDataPointer< CodeCompletionContext > context, int inheritanceDepth): NormalDeclarationCompletionItem(decl, context, inheritanceDepth)
+{
+
 }
 
-#endif
+void FunctionCompletionItem::executed(KTextEditor::View* view, const KTextEditor::Range& word)
+{
+    KTextEditor::Document* document = view->document();
+    QString suffix = "()";
+    KTextEditor::Range checkSuffix(word.end().line(), word.end().column(), word.end().line(), document->lineLength(word.end().line()));
+    if(document->text(checkSuffix).startsWith('('))
+    {
+        suffix.clear();
+    }
+    document->replaceText(word, declaration()->identifier().toString() + suffix);
+    AbstractType::Ptr type = declaration()->abstractType();
+    if(fastCast<GoFunctionType*>(type.constData()))
+    {
+        GoFunctionType* ftype = fastCast<GoFunctionType*>(type.constData());
+        //put cursor inside parentheses if function takes arguments
+        if(ftype->arguments().size() > 0)
+            view->setCursorPosition(KTextEditor::Cursor(word.end().line(), word.end().column() + 1));
+    }
+}
+
+
+}

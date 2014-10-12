@@ -16,48 +16,29 @@
 *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA   *
 *************************************************************************************/
 
-#ifndef GOLANGCOMPLETIONCONTEXT_H
-#define GOLANGCOMPLETIONCONTEXT_H
+#ifndef GOLANGFUNCTIONITEM_H
+#define GOLANGFUNCTIONITEM_H
 
-#include <language/codecompletion/codecompletioncontext.h>
-#include <language/codecompletion/codecompletionitem.h>
+#include <language/codecompletion/normaldeclarationcompletionitem.h>
 
-#include "gocompletionexport.h"
-#include <QStack>
-#include <language/duchain/declaration.h>
+using namespace KDevelop;
 
 namespace go
 {
-    
-class GOLANGCOMPLETION_EXPORT CodeCompletionContext : public KDevelop::CodeCompletionContext
+
+class FunctionCompletionItem : public NormalDeclarationCompletionItem
 {
 public:
-    CodeCompletionContext(const KDevelop::DUContextPointer& context, const QString& text,
-                          const KDevelop::CursorInRevision& position, int depth = 0);
-    
-    virtual QList<KDevelop::CompletionTreeItemPointer> completionItems(bool& abort, bool fullCompletion = true);
-    
-    
-private:
-    //See QmlJS plugin completion for details
-    struct ExpressionStackEntry {
-        int startPosition;
-        int operatorStart;
-        int operatorEnd;
-        int commas;
-    };
-    
-    QStack<ExpressionStackEntry> expressionStack(const QString& expression);
-    
-    KDevelop::AbstractType::Ptr lastType(const QString& expression);
-    
-    QList<KDevelop::CompletionTreeItemPointer> importAndMemberCompletion();
+    FunctionCompletionItem(KDevelop::DeclarationPointer decl = KDevelop::DeclarationPointer(),
+                                    QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext> context =
+                                    QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(),
+                                    int inheritanceDepth = 0);
 
-    /**
-     * Return completion item for declaration.
-     **/
-    KDevelop::CompletionTreeItemPointer itemForDeclaration(QPair<KDevelop::Declaration*, int> declaration);
+
+    virtual void executed(KTextEditor::View* view, const KTextEditor::Range& word) override;
+
 };
+
 }
 
 #endif

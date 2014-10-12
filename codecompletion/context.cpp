@@ -27,6 +27,7 @@
 #include "parser/goparser.h"
 #include "expressionvisitor.h"
 #include "types/gostructuretype.h"
+#include "items/functionitem.h"
 #include "helper.h"
 #include "completiondebug.h"
 
@@ -65,8 +66,7 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::completionItems(bool& 
                 continue;
             if(decl.first->identifier() == globalImportIdentifier() || decl.first->identifier() == globalAliasIdentifier())
                 continue;
-	    items << CompletionTreeItemPointer(new NormalDeclarationCompletionItem(DeclarationPointer(decl.first), 
-										   QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), decl.second));
+	    items << itemForDeclaration(decl);
 										  
 	}
 	
@@ -115,8 +115,7 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::importAndMemberComplet
 			if(m_duContext->topContext() != declaration->topContext())
 			    if(!ident.toString().at(0).isLetter() || (ident.toString().at(0) != ident.toString().at(0).toUpper()))
 				continue;
-			items << CompletionTreeItemPointer(new NormalDeclarationCompletionItem(DeclarationPointer(decl.first), 
-										    QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), decl.second));
+			items << itemForDeclaration(decl);
 		    }
 		}
 	   // }
@@ -136,8 +135,7 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::importAndMemberComplet
 		lock.unlock();
 		for(const QPair<Declaration*, int> &decl : declarations)
 		{
-		    items << CompletionTreeItemPointer(new NormalDeclarationCompletionItem(DeclarationPointer(decl.first), 
-										   QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), decl.second));
+		    items << itemForDeclaration(decl);
 		}
 	    }
 	    StructureType* identType = fastCast<StructureType*>(lasttype.constData());
@@ -250,6 +248,15 @@ AbstractType::Ptr CodeCompletionContext::lastType(const QString& expression)
     }
 
     return AbstractType::Ptr();
+}
+
+CompletionTreeItemPointer CodeCompletionContext::itemForDeclaration(QPair<Declaration*, int > declaration)
+{
+    if(declaration.first->isFunctionDeclaration())
+        return CompletionTreeItemPointer(new FunctionCompletionItem(DeclarationPointer(declaration.first),
+                                                          QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), declaration.second));
+    return CompletionTreeItemPointer(new NormalDeclarationCompletionItem(DeclarationPointer(declaration.first),
+                                                        QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), declaration.second));
 }
 
 

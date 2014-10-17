@@ -64,6 +64,11 @@ public:
 
     QList<DeclarationPointer> allDeclarations();
     QList<IdentifierAst*> allIds();
+
+    /**
+     * TODO Currently only codecompletion needs declarations
+     **/
+    DeclarationPointer lastDeclaration() { return m_declaration; }
  
 private:
     void pushType(AbstractType::Ptr type);
@@ -100,6 +105,7 @@ private:
     QList<IdentifierAst*> m_ids;
     QList<DeclarationPointer> m_declarations;
     QList<AbstractType::Ptr> m_types;
+    DeclarationPointer m_declaration;
 
 };
 

@@ -22,6 +22,8 @@
 #include "parser/parsesession.h"
 #include "builders/declarationbuilder.h"
 
+#include <language/codecompletion/codecompletionmodel.h>
+#include <QStandardItemModel>
 #include <QtTest/QtTest>
 
 #include <tests/testcore.h>
@@ -31,6 +33,13 @@
 using namespace KDevelop;
 
 QTEST_MAIN(TestCompletion);
+
+QStandardItemModel& fakeModel() {
+  static QStandardItemModel model;
+  model.setColumnCount(10);
+  model.setRowCount(10);
+  return model;
+}
 
 DUContext* getPackageContext(const QString& code)
 {
@@ -71,19 +80,39 @@ QList<CompletionTreeItemPointer> getCompletions(QString code)
     return completion->completionItems(abort, true);
 }
 
-bool containsDeclaration(QString declaration, const QList<CompletionTreeItemPointer>& completions)
+void debugPrint(const QList<CompletionTreeItemPointer>& completions)
 {
+    qDebug() << "Completions debug print";
+    QModelIndex prefixIdx = fakeModel().index(0, KDevelop::CodeCompletionModel::Prefix);
+    QModelIndex nameIdx = fakeModel().index(0, KDevelop::CodeCompletionModel::Name);
+    QModelIndex argsIdx = fakeModel().index(0, KDevelop::CodeCompletionModel::Arguments);
     for(const CompletionTreeItemPointer item : completions)
     {
-        if(item->declaration()->toString() == declaration)
+        QStringList name;
+        name << item->data(prefixIdx, Qt::DisplayRole, nullptr).toString();
+        name << item->data(nameIdx, Qt::DisplayRole, nullptr).toString();
+        name << item->data(argsIdx, Qt::DisplayRole, nullptr).toString();
+        qDebug() << name.join(' ');
+    }
+}
+
+bool containsDeclaration(QString declaration, const QList<CompletionTreeItemPointer>& completions, int depth=-1)
+{
+    QModelIndex prefixIdx = fakeModel().index(0, KDevelop::CodeCompletionModel::Prefix);
+    QModelIndex nameIdx = fakeModel().index(0, KDevelop::CodeCompletionModel::Name);
+    QModelIndex argsIdx = fakeModel().index(0, KDevelop::CodeCompletionModel::Arguments);
+    for(const CompletionTreeItemPointer item : completions)
+    {
+        //if(item->declaration()->toString() == declaration)
+        QStringList name;
+        name << item->data(prefixIdx, Qt::DisplayRole, nullptr).toString();
+        name << item->data(nameIdx, Qt::DisplayRole, nullptr).toString();
+        name << item->data(argsIdx, Qt::DisplayRole, nullptr).toString();
+        if(name.join(' ') == declaration && (depth == -1 || item->argumentHintDepth() == depth))
             return true;
     }
     //print completions if we haven't found anything
-    qDebug() << "Completions debug print";
-    for(const CompletionTreeItemPointer item : completions)
-    {
-        qDebug() << item->declaration()->toString();
-    }
+    debugPrint(completions);
     return false;
 }
 
@@ -104,6 +133,50 @@ void TestCompletion::test_basicCompletion()
     auto completions = getCompletions(code);
     QCOMPARE(completions.size(), 3);
     QVERIFY(containsDeclaration(" main ()", completions)); //function
-    QVERIFY(containsDeclaration("<notype> main", completions)); //package TODO fix <notype>
-    QVERIFY(containsDeclaration("int a", completions)); //variable
+    QVERIFY(containsDeclaration("namespace main ", completions)); //package
+    QVERIFY(containsDeclaration("int a ", completions)); //variable
 }
+
+void TestCompletion::test_functionCallTips_data()
+{
+    QTest::addColumn<QString>("declaration");
+    QTest::addColumn<QString>("expression");
+    QTest::addColumn<QString>("result");
+    QTest::addColumn<int>("depth");
+    QTest::addColumn<int>("size");
+
+    QTest::newRow("normal") << "func myfunc() {};" << "myfunc(%CURSOR)" << " myfunc ()" << 1 << 4;
+    QTest::newRow("args") << "func myfunc(a int) {};" << "myfunc(%CURSOR)" << " myfunc (int a)" << 1 << 4;
+    QTest::newRow("args 2") << "type mytype int; func myfunc(a, b rune, c mytype) {};" << "myfunc(%CURSOR)"
+        << " myfunc (rune a, rune b, main::mytype c)" << 1 << 5;
+    QTest::newRow("rargs") << "func myfunc(a int) float32 {};" << "myfunc(%CURSOR)" << "float32 myfunc (int a)" << 1 << 4;
+    QTest::newRow("rargs 2") << "func myfunc(a int) (float32, bool) {};" << "myfunc(%CURSOR)" << "float32, bool myfunc (int a)" << 1 << 4;
+    QTest::newRow("rargs 3") << "func myfunc(a int) (r rune, b bool) {};" << "myfunc(%CURSOR)" << "rune r, bool b myfunc (int a)" << 1 << 4;
+    QTest::newRow("variadic args") << "func myfunc(a ...int) {};" << "myfunc(%CURSOR)" << " myfunc (int... a)" << 1 << 4;
+    QTest::newRow("variadic args 2") << "func myfunc(a int, i ...interface{}) {};" << "myfunc(%CURSOR)" << " myfunc (int a, interface{}... i)" << 1 << 4;
+    QTest::newRow("var") << "var myvar func(a int);" << "myvar(%CURSOR)" << " myvar (int)" << 1 << 4;
+    QTest::newRow("var 2") << "func functest(t int) rune;" << "myvar := functest; myvar(%CURSOR)" << "rune myvar (int)" << 1 << 5;
+    QTest::newRow("struct") << "type mytype struct { f func(t int) rune; };" << "var myvar mytype; myvar.f(%CURSOR)" << "rune f (int)" << 1 << 5;
+    QTest::newRow("method") << "type mytype int; func (m mytype) myfunc(c rune) {};" << "var myvar mytype; myvar.myfunc(%CURSOR)" << " myfunc (rune c)" << 1 << 6;
+    QTest::newRow("paren") << "func myfunc(a int) {};" << "(myfunc)(%CURSOR)" << " myfunc (int a)" << 1 << 4;
+    QTest::newRow("nested") << "func myfunc(a int) {};" << "f := myfunc; myfunc(f(%CURSOR))" << " myfunc (int a)" << 2 << 6;
+    QTest::newRow("nested 2") << "func myfunc(a int) {};" << "f := myfunc; myfunc(f(%CURSOR))" << " f (int)" << 1 << 6;
+    //TODO these don't work yet(they still pass, but they're wrong)
+    QTest::newRow("lambda") << "" << "f := func() int { \n}(%CURSOR)" << "int <unknown> ()" << 0 << 4;
+    QTest::newRow("multiple lines") << "func myfunc(a, b int) {};" << "myfunc(5, \n %CURSOR)" << " myfunc (int a, int b)" << 0 << 3;
+}
+
+void TestCompletion::test_functionCallTips()
+{
+    QFETCH(QString, declaration);
+    QFETCH(QString, expression);
+    QFETCH(QString, result);
+    QFETCH(int, depth);
+    QFETCH(int, size);
+    QString code(QString("package main; %1  func main() { %2 }").arg(declaration).arg(expression));
+    auto completions = getCompletions(code);
+    //debugPrint(completions);
+    QCOMPARE(completions.size(), size);
+    QVERIFY(containsDeclaration(result, completions, depth));
+}
+

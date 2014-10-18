@@ -27,6 +27,7 @@
 #include "parser/goparser.h"
 #include "expressionvisitor.h"
 #include "types/gostructuretype.h"
+#include "items/completionitem.h"
 #include "items/functionitem.h"
 #include "helper.h"
 #include "completiondebug.h"
@@ -305,7 +306,7 @@ CompletionTreeItemPointer CodeCompletionContext::itemForDeclaration(QPair<Declar
 {
     if(declaration.first->isFunctionDeclaration())
         return CompletionTreeItemPointer(new FunctionCompletionItem(DeclarationPointer(declaration.first)));
-    return CompletionTreeItemPointer(new NormalDeclarationCompletionItem(DeclarationPointer(declaration.first),
+    return CompletionTreeItemPointer(new go::CompletionItem(DeclarationPointer(declaration.first),
                                                         QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), declaration.second));
 }
 

@@ -16,38 +16,41 @@
 *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA   *
 *************************************************************************************/
 
-#ifndef GOLANGFUNCTIONITEM_H
-#define GOLANGFUNCTIONITEM_H
-
 #include "completionitem.h"
 
-using namespace KDevelop;
+#include <language/duchain/declaration.h>
+#include <language/codecompletion/codecompletionmodel.h>
+#include <language/duchain/duchainlock.h>
 
 namespace go
 {
 
-class FunctionCompletionItem : public CompletionItem
+CompletionItem::CompletionItem(KDevelop::DeclarationPointer decl, QExplicitlySharedDataPointer< KDevelop::CodeCompletionContext > context, int inheritanceDepth):
+    NormalDeclarationCompletionItem(decl, QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), 0),
+    m_prefix("")
 {
-public:
-    FunctionCompletionItem(KDevelop::DeclarationPointer decl = KDevelop::DeclarationPointer(),
-                                    int depth=0, int atArgument=-1);
-
-
-    virtual void executed(KTextEditor::View* view, const KTextEditor::Range& word) override;
-    virtual QVariant data(const QModelIndex& index, int role, const KDevelop::CodeCompletionModel* model) const;
-    virtual KTextEditor::CodeCompletionModel::CompletionProperties completionProperties() const;
-    virtual int argumentHintDepth() const;
-    virtual int inheritanceDepth() const;
-
-private:
-    int m_depth;
-    int m_atArgument;
-    int m_currentArgStart;
-    int m_currentArgEnd;
-    QString m_prefix;
-    QString m_arguments;
-};
-
+    DUChainReadLocker lock;
+    if(!decl)
+        return;
+    //NormalDeclarationCompletionItem fails to get a meaningful prefix in these cases
+    if(decl->abstractType() && decl->abstractType()->whichType() == KDevelop::AbstractType::TypeFunction)
+        m_prefix = decl->abstractType()->toString();
+    if(decl->kind() == KDevelop::Declaration::Import || decl->kind() == KDevelop::Declaration::NamespaceAlias)
+        m_prefix = "namespace";
 }
 
-#endif
+QVariant CompletionItem::data(const QModelIndex& index, int role, const KDevelop::CodeCompletionModel* model) const
+{
+    switch(role)
+    {
+        case Qt::DisplayRole:
+        {
+            if (index.column() == CodeCompletionModel::Prefix && m_prefix != "") {
+                return m_prefix;
+            }
+            break;
+        }
+    }
+    return NormalDeclarationCompletionItem::data(index, role, model);
+}
+}

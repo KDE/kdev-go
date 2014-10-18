@@ -30,7 +30,7 @@ namespace go
 {
 
 FunctionCompletionItem::FunctionCompletionItem(DeclarationPointer decl, int depth, int atArgument):
-                                               NormalDeclarationCompletionItem(decl, QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), 0),
+                                               CompletionItem(decl, QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), 0),
                                                m_depth(depth), m_atArgument(atArgument)
 {
     auto function = decl.dynamicCast<GoFunctionDeclaration>();
@@ -183,7 +183,7 @@ QVariant FunctionCompletionItem::data(const QModelIndex& index, int role, const 
             }
         }
     }
-    return NormalDeclarationCompletionItem::data(index, role, model);
+    return CompletionItem::data(index, role, model);
 }
 
 CodeCompletionModel::CompletionProperties FunctionCompletionItem::completionProperties() const

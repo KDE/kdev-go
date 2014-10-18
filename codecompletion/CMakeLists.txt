@@ -9,6 +9,7 @@ set(completion_SRCS
     model.cpp
     worker.cpp
     context.cpp
+    items/completionitem.cpp
     items/functionitem.cpp
     completiondebug.cpp
 )

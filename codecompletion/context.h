@@ -34,10 +34,11 @@ class GOLANGCOMPLETION_EXPORT CodeCompletionContext : public KDevelop::CodeCompl
 public:
     CodeCompletionContext(const KDevelop::DUContextPointer& context, const QString& text,
                           const KDevelop::CursorInRevision& position, int depth = 0);
-    
+
     virtual QList<KDevelop::CompletionTreeItemPointer> completionItems(bool& abort, bool fullCompletion = true);
-    
-    
+
+    KDevelop::AbstractType::Ptr typeToMatch() { return m_typeToMatch; }
+
 private:
     //See QmlJS plugin completion for details
     struct ExpressionStackEntry {
@@ -57,6 +58,9 @@ private:
 
     QList<KDevelop::CompletionTreeItemPointer> normalCompletion();
 
+    /**
+     * Creates FunctionCallTips and sets m_typeToMatch
+     **/
     QList<KDevelop::CompletionTreeItemPointer> functionCallTips();
 
 
@@ -64,6 +68,8 @@ private:
      * Return completion item for declaration.
      **/
     KDevelop::CompletionTreeItemPointer itemForDeclaration(QPair<KDevelop::Declaration*, int> declaration);
+
+    KDevelop::AbstractType::Ptr m_typeToMatch;
 };
 }
 

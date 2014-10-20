@@ -79,7 +79,8 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::normalCompletion()
     {
         if(decl.first->topContext() != m_duContext->topContext())
             continue;
-        if(decl.first->identifier() == globalImportIdentifier() || decl.first->identifier() == globalAliasIdentifier())
+        if(decl.first->identifier() == globalImportIdentifier() || decl.first->identifier() == globalAliasIdentifier()
+            || decl.first->identifier() == Identifier())
             continue;
         items << itemForDeclaration(decl);
     }
@@ -91,17 +92,48 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::functionCallTips()
     QStack<ExpressionStackEntry> stack = expressionStack(m_text);
     QList<CompletionTreeItemPointer> items;
     int depth = 1;
+    bool isTopOfStack = true;
     while(!stack.empty())
     {
         ExpressionStackEntry entry = stack.pop();
-        DeclarationPointer function = lastDeclaration(m_text.left(entry.startPosition - 1));
-        qCDebug(COMPLETION) << m_text.left(entry.startPosition - 1);
-        if(function && fastCast<go::GoFunctionType*>(function->abstractType().constData()))
+        if(isTopOfStack && entry.operatorStart > entry.startPosition)
         {
-            FunctionCompletionItem* item = new FunctionCompletionItem(function, depth, entry.commas);
-            depth++;
-            items << CompletionTreeItemPointer(item);
+            //for type matching in things like a = %CURSOR
+            //see kdev-qmljs for details
+            //TODO type matching in multiple assignments e.g. "a, b = c, %CURSOR"
+
+            //don't show matching in var declarations e.g. "a := b"
+            //and expression lists e.g. "a(), b()
+            if(m_text.mid(entry.operatorStart, entry.operatorEnd-entry.operatorStart) != "," &&
+                m_text.mid(entry.operatorStart, entry.operatorEnd-entry.operatorStart) != ":=")
+            {
+                AbstractType::Ptr type = lastType(m_text.left(entry.operatorStart));
+                if(type)
+                    m_typeToMatch = type;
+            }
         }
+        if (entry.startPosition > 0 && m_text.at(entry.startPosition - 1) == QLatin1Char('('))
+        {
+            DeclarationPointer function = lastDeclaration(m_text.left(entry.startPosition - 1));
+            if(function && fastCast<go::GoFunctionType*>(function->abstractType().constData()))
+            {
+                FunctionCompletionItem* item = new FunctionCompletionItem(function, depth, entry.commas);
+                depth++;
+                items << CompletionTreeItemPointer(item);
+
+                if(isTopOfStack && !m_typeToMatch)
+                {
+                    GoFunctionType::Ptr ftype(fastCast<GoFunctionType*>(function->abstractType().constData()));
+                    auto args = ftype->arguments();
+                    if(args.count() != 0)
+                    {
+                        int argument = entry.commas >= args.count() ? args.count()-1 : entry.commas;
+                        m_typeToMatch = args.at(argument);
+                    }
+                }
+            }
+        }
+        isTopOfStack = false;
     }
     return items;
 }

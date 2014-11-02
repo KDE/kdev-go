@@ -16,20 +16,37 @@
 *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA   *
 *************************************************************************************/
 
-#ifndef KDEVGOLANGPARSEJOB_H
-#define KDEVGOLANGPARSEJOB_H
+#include "importcompletionitem.h"
 
-#include <language/backgroundparser/parsejob.h>
+#include <KTextEditor/View>
+#include <KTextEditor/Document>
+#include <language/codecompletion/codecompletionmodel.h>
 
-class GoParseJob : public KDevelop::ParseJob
+namespace go
 {
-public:
-     GoParseJob(const KDevelop::IndexedString& url, 
-		 KDevelop::ILanguageSupport* languageSupport);
-  
-protected:
-    virtual void run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread) override;
 
-};
+ImportCompletionItem::ImportCompletionItem(QString packagename): KDevelop::NormalDeclarationCompletionItem(KDevelop::DeclarationPointer(),
+                                                                  QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), 0), m_packageName(packagename)
+{
+}
 
-#endif
+QVariant ImportCompletionItem::data(const QModelIndex& index, int role, const KDevelop::CodeCompletionModel* model) const
+{
+    if(role == Qt::DisplayRole && (index.column() == CodeCompletionModel::Name))
+        return m_packageName;
+    if(role == Qt::DisplayRole && (index.column() == CodeCompletionModel::Prefix))
+        return "package";
+    return NormalDeclarationCompletionItem::data(index, role, model);
+}
+
+void ImportCompletionItem::execute(KTextEditor::View* view, const KTextEditor::Range& word)
+{
+    KTextEditor::Document* document = view->document();
+    KTextEditor::Range checkSuffix(word.end().line(), word.end().column(), word.end().line(), document->lineLength(word.end().line()));
+    QString suffix = "\"";
+    if(document->text(checkSuffix).startsWith('"'))
+        suffix.clear();
+    document->replaceText(word, m_packageName + suffix);
+}
+
+}

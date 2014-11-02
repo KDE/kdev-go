@@ -16,20 +16,27 @@
 *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA   *
 *************************************************************************************/
 
-#ifndef KDEVGOLANGPARSEJOB_H
-#define KDEVGOLANGPARSEJOB_H
+#ifndef GOLANGIMPORTITEM_H
+#define GOLANGIMPORTITEM_H
 
-#include <language/backgroundparser/parsejob.h>
+#include <language/codecompletion/normaldeclarationcompletionitem.h>
 
-class GoParseJob : public KDevelop::ParseJob
+using namespace KDevelop;
+
+namespace go
+{
+
+class ImportCompletionItem : public KDevelop::NormalDeclarationCompletionItem
 {
 public:
-     GoParseJob(const KDevelop::IndexedString& url, 
-		 KDevelop::ILanguageSupport* languageSupport);
-  
-protected:
-    virtual void run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread) override;
+    ImportCompletionItem(QString packagename);
+    virtual QVariant data(const QModelIndex& index, int role, const KDevelop::CodeCompletionModel* model) const;
+    void execute(KTextEditor::View* view, const KTextEditor::Range& word) override;
 
+private:
+    QString m_packageName;
 };
+
+}
 
 #endif

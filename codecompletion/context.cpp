@@ -29,6 +29,7 @@
 #include "types/gostructuretype.h"
 #include "items/completionitem.h"
 #include "items/functionitem.h"
+#include "items/importcompletionitem.h"
 #include "helper.h"
 #include "completiondebug.h"
 #include "types/gofunctiontype.h"
@@ -49,12 +50,18 @@ CodeCompletionContext::CodeCompletionContext(const KDevelop::DUContextPointer& c
 
 QList< CompletionTreeItemPointer > CodeCompletionContext::completionItems(bool& abort, bool fullCompletion)
 {
-    qCDebug(COMPLETION) << "Completion items test";
     qCDebug(COMPLETION) << m_text;
     QList<CompletionTreeItemPointer> items;
     //We shouldn't need anything before last semicolon (previous statements)
     if(m_text.lastIndexOf(';') != -1)
         m_text = m_text.mid(m_text.lastIndexOf(';'));
+
+    //"import" + [optional package alias] + [opening double quote] + [cursor at EOL]
+    if(m_text.contains(QRegExp("import[^\"]*\"[^\"]*$")))
+    {
+        items << importCompletion();
+        return items;
+    }
 
     items << functionCallTips();
     
@@ -212,6 +219,40 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::importAndMemberComplet
 		break;
 	    
 	}while(lasttype && count<100);
+    }
+    return items;
+}
+
+QList<CompletionTreeItemPointer> CodeCompletionContext::importCompletion()
+{
+    auto searchPaths = Helper::getSearchPaths();
+    QList<CompletionTreeItemPointer> items;
+    QString fullPath = m_text.mid(m_text.lastIndexOf('"')+1);
+
+    //import "parentPackage/childPackage"
+    QStringList pathChain = fullPath.split('/', QString::SkipEmptyParts);
+    qCDebug(COMPLETION) << pathChain;
+    for(const QString& path : searchPaths)
+    {
+        QDir dir(path);
+        if(dir.exists())
+        {
+            bool isValid = true;
+            for(const QString& nextDir : pathChain)
+            {
+                isValid = dir.cd(nextDir);
+                if(!isValid)
+                    break;
+            }
+            if(!dir.exists() || !isValid)
+                continue;
+            for(const QString& package : dir.entryList(QDir::Dirs))
+            {
+                if(package.startsWith('.'))
+                    continue;
+                items << CompletionTreeItemPointer(new ImportCompletionItem(package));
+            }
+        }
     }
     return items;
 }

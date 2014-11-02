@@ -22,8 +22,59 @@
 #include <language/duchain/declaration.h>
 #include <language/duchain/topducontext.h>
 
+#include <QReadLocker>
+#include <QProcess>
+
 namespace go
 {
+
+QList<QString> Helper::m_CachedSearchPaths;
+
+QList< QString > Helper::getSearchPaths(QUrl document)
+{
+    QList<QString> paths;
+    if(document != QUrl())
+    {//try to find path automatically for opened documents
+        QDir currentDir(document.adjusted(QUrl::RemoveFilename).path());
+        //qCDebug(Go) << currentDir.dirName();
+        while(currentDir.exists() && currentDir.dirName() != "src")
+            if(!currentDir.cdUp())
+                break;
+        if(currentDir.exists() && currentDir.dirName() == "src")
+            paths.append(currentDir.absolutePath());
+    }
+
+    if(Helper::m_CachedSearchPaths.empty())
+    {
+        //check $GOPATH env var
+        QByteArray result = qgetenv("GOPATH");
+        if(!result.isEmpty())
+        {
+            QDir path(result);
+            if(path.exists() && path.cd("src") && path.exists())
+                m_CachedSearchPaths.append(path.absolutePath());
+        }
+        //then check $GOROOT
+        //these days most people don't set GOROOT manually
+        //instead go tool can find correct value for GOROOT on its own
+        //in order for this to work go exec must be in $PATH
+        QProcess p;
+        p.start("go env GOROOT");
+        p.waitForFinished();
+        result = p.readAllStandardOutput();
+        if(result.endsWith("\n"))
+            result.remove(result.length()-1, 1);
+        if(!result.isEmpty())
+        {
+            QDir path = QDir(result);
+            if(path.exists() && path.cd("src") && path.cd("pkg") && path.exists())
+                m_CachedSearchPaths.append(path.absolutePath());
+        }
+    }
+    paths.append(m_CachedSearchPaths);
+    return paths;
+}
+
 
 DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext* context, bool searchInParent)
 {

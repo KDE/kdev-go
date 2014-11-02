@@ -63,6 +63,7 @@ private:
      **/
     QList<KDevelop::CompletionTreeItemPointer> functionCallTips();
 
+    QList<KDevelop::CompletionTreeItemPointer> importCompletion();
 
     /**
      * Return completion item for declaration.

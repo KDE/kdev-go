@@ -20,6 +20,7 @@
 #define GOLANGHELPER_H
 
 #include <language/duchain/ducontext.h>
+#include <QUrl>
 
 #include "goduchainexport.h"
 
@@ -27,6 +28,14 @@ using namespace KDevelop;
 
 namespace go
 {
+
+class KDEVGODUCHAIN_EXPORT Helper
+{
+public:
+    static QList<QString> getSearchPaths(QUrl document=QUrl());
+private:
+    static QList<QString> m_CachedSearchPaths;
+};
 
 KDEVGODUCHAIN_EXPORT DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext* context, bool searchInParent=true);
 

@@ -33,9 +33,8 @@
 #include "parsesession.h"
 #include "duchain/builders/declarationbuilder.h"
 #include "duchain/builders/usebuilder.h"
+#include "duchain/helper.h"
 #include "godebug.h"
-
-QList<QString> GoParseJob::m_CachedSearchPaths;
 
 using namespace KDevelop;
 
@@ -100,7 +99,10 @@ void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread
         forExport = true;
     //qCDebug(Go) << contents().contents;
 
-    session.setIncludePaths(getSearchPaths(forExport));
+    if(!forExport)
+        session.setIncludePaths(go::Helper::getSearchPaths(document().toUrl()));
+    else
+        session.setIncludePaths(go::Helper::getSearchPaths());
 
     if(result)
     {
@@ -145,47 +147,3 @@ void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread
       qCDebug(Go) << "===Failed===" << document().str();
 }
 
-QList<QString> GoParseJob::getSearchPaths(bool forExport)
-{
-    QList<QString> paths;
-    if(!forExport)
-    {//try to find path automatically for opened documents
-        QDir currentDir(document().toUrl().adjusted(QUrl::RemoveFilename).path());
-        //qCDebug(Go) << currentDir.dirName();
-        while(currentDir.exists() && currentDir.dirName() != "src")
-            if(!currentDir.cdUp())
-                break;
-        if(currentDir.exists() && currentDir.dirName() == "src")
-            paths.append(currentDir.absolutePath());
-    }
-
-    if(GoParseJob::m_CachedSearchPaths.empty())
-    {
-        //check $GOPATH env var
-        QByteArray result = qgetenv("GOPATH");
-        if(!result.isEmpty())
-        {
-            QDir path(result);
-            if(path.exists() && path.cd("src") && path.exists())
-                m_CachedSearchPaths.append(path.absolutePath());
-        }
-        //then check $GOROOT
-        //these days most people don't set GOROOT manually
-        //instead go tool can find correct value for GOROOT on its own
-        //in order for this to work go exec must be in $PATH
-        QProcess p;
-        p.start("go env GOROOT");
-        p.waitForFinished();
-        result = p.readAllStandardOutput();
-        if(result.endsWith("\n"))
-            result.remove(result.length()-1, 1);
-        if(!result.isEmpty())
-        {
-            QDir path = QDir(result);
-            if(path.exists() && path.cd("src") && path.cd("pkg") && path.exists())
-                m_CachedSearchPaths.append(path.absolutePath());
-        }
-    }
-    paths.append(m_CachedSearchPaths);
-    return paths;
-}

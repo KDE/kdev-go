@@ -70,7 +70,13 @@ private:
      **/
     KDevelop::CompletionTreeItemPointer itemForDeclaration(QPair<KDevelop::Declaration*, int> declaration);
 
+    /**
+     * returns true if cursor is in comment and completion is not needed
+     **/
+    bool isInsideCommentOrString();
+
     KDevelop::AbstractType::Ptr m_typeToMatch;
+    QString m_fullText;
 };
 }
 

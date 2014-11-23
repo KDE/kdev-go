@@ -76,6 +76,9 @@ void UseBuilder::visitPrimaryExpr(PrimaryExprAst* node)
     go::DefaultVisitor::visitPrimaryExpr(node);
 }
 
-
+void UseBuilder::visitBlock(BlockAst* node)
+{
+    go::DefaultVisitor::visitBlock(node);
+}
 
 }

@@ -238,7 +238,6 @@ void TypeBuilder::visitMethodSpec(go::MethodSpecAst* node)
     }
 }
 
-
 void TypeBuilder::visitMapType(go::MapTypeAst* node)
 {
     go::GoMapType* type = new go::GoMapType();
@@ -282,7 +281,7 @@ void TypeBuilder::visitParameter(go::ParameterAst* node)
 }
 
 
-go::GoFunctionDeclaration* TypeBuilder::parseSignature(go::SignatureAst* node, bool declareParameters, go::IdentifierAst* name)
+go::GoFunctionDeclaration* TypeBuilder::parseSignature(go::SignatureAst* node, bool declareParameters, go::IdentifierAst* name, const QByteArray& comment)
 {
     go::GoFunctionType::Ptr type(new go::GoFunctionType());
     openType<go::GoFunctionType>(type);
@@ -318,7 +317,7 @@ go::GoFunctionDeclaration* TypeBuilder::parseSignature(go::SignatureAst* node, b
 
     if(declareParameters)
     {
-        return declareFunction(name, type, parametersContext, returnArgsContext);
+        return declareFunction(name, type, parametersContext, returnArgsContext, comment);
     }
     return 0;
 }

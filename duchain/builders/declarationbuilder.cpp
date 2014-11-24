@@ -36,7 +36,7 @@
 using namespace KDevelop;
 
 
-DeclarationBuilder::DeclarationBuilder(ParseSession* session, bool forExport) : m_export(forExport), m_preBuilding(false)
+DeclarationBuilder::DeclarationBuilder(ParseSession* session, bool forExport) : m_export(forExport), m_preBuilding(false), m_lastTypeComment(), m_lastConstComment()
 {
     setParseSession(session);
 }
@@ -172,6 +172,8 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
 
 void DeclarationBuilder::declareVariable(go::IdentifierAst* id, const AbstractType::Ptr& type)
 {
+    if(type->modifiers() & AbstractType::ConstModifier)
+        setComment(m_lastConstComment);
     DUChainWriteLocker lock;
     Declaration* dec = openDeclaration<Declaration>(identifierForNode(id), editorFindRange(id, 0));
     dec->setType<AbstractType>(type);
@@ -183,7 +185,11 @@ void DeclarationBuilder::declareVariable(go::IdentifierAst* id, const AbstractTy
 void DeclarationBuilder::visitConstDecl(go::ConstDeclAst* node)
 {
     m_constAutoTypes.clear();
+    m_lastConstComment = m_session->commentBeforeToken(node->startToken);
+    //adding const declaration code, just like in GoDoc
+    m_lastConstComment.append(m_session->textForNode(node).toUtf8());
     go::DefaultVisitor::visitConstDecl(node);
+    m_lastConstComment = QByteArray();
 }
 
 
@@ -224,8 +230,7 @@ void DeclarationBuilder::visitConstSpec(go::ConstSpecAst* node)
 
 void DeclarationBuilder::visitFuncDeclaration(go::FuncDeclarationAst* node)
 {
-    go::GoFunctionDeclaration* decl = parseSignature(node->signature, true, node->funcName);
-    
+    go::GoFunctionDeclaration* decl = parseSignature(node->signature, true, node->funcName, m_session->commentBeforeToken(node->startToken-1));
     if(!node->body)
 	return;
     //a context will be opened when visiting block, but we still open another one here
@@ -267,8 +272,7 @@ void DeclarationBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
 	openContext(node, editorFindRange(node, 0), DUContext::Namespace, identifierForNode(actualtype));
 	declaration->setInternalContext(currentContext());
     }
-    
-    go::GoFunctionDeclaration* decl = parseSignature(node->signature, true, node->methodName);
+    go::GoFunctionDeclaration* decl = parseSignature(node->signature, true, node->methodName, m_session->commentBeforeToken(node->startToken-1));
     
     if(!node->body)
 	return;
@@ -313,7 +317,12 @@ void DeclarationBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
 
 void DeclarationBuilder::visitTypeSpec(go::TypeSpecAst* node)
 {
-    //qCDebug(DUCHAIN) << "Type" << identifierForNode(node->name) << " enter";
+    //first try setting comment before type name
+    //if it doesn't exists, set comment before type declaration
+    QByteArray comment = m_session->commentBeforeToken(node->startToken);
+    if(comment.size() == 0)
+        comment = m_lastTypeComment;
+    setComment(comment);
     Declaration* decl;
     {
 	DUChainWriteLocker lock;
@@ -370,6 +379,7 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
         DUChainWriteLocker lock;
         if(firstContext) //only open declarations once per import(others are redundant)
         {
+            setComment(decl->comment());
             if(node->packageName)
             {//create alias for package
                 QualifiedIdentifier id = identifierForNode(node->packageName);
@@ -400,6 +410,7 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
 
 void DeclarationBuilder::visitSourceFile(go::SourceFileAst* node)
 {
+    setComment(m_session->commentBeforeToken(node->startToken));
     DUChainWriteLocker lock;
     Declaration* packageDeclaration = openDeclaration<Declaration>(identifierForNode(node->packageClause->packageName), editorFindRange(node->packageClause->packageName, 0));
     packageDeclaration->setKind(Declaration::Namespace);
@@ -430,6 +441,9 @@ void DeclarationBuilder::importThisPackage()
         DeclarationPointer decl = go::checkPackageDeclaration(m_thisPackage.last(), context);
 	if(!decl)
 	    continue;
+        //if our package doesn't have comment, but some file in out package does, copy it
+        if(currentDeclaration<Declaration>()->comment().size() == 0 && decl->comment().size() != 0)
+            currentDeclaration<Declaration>()->setComment(decl->comment());
 	
 	DUChainWriteLocker lock;
 	//TODO Since package names are identical duchain should find declarations without namespace alias, right?
@@ -524,8 +538,18 @@ void DeclarationBuilder::visitExprCaseClause(go::ExprCaseClauseAst* node)
     closeContext();
 }
 
-go::GoFunctionDeclaration* DeclarationBuilder::declareFunction(go::IdentifierAst* id, const go::GoFunctionType::Ptr& type, DUContext* paramContext, DUContext* retparamContext)
+void DeclarationBuilder::visitTypeDecl(go::TypeDeclAst* node)
 {
+    m_lastTypeComment = m_session->commentBeforeToken(node->startToken);
+    go::DefaultVisitor::visitTypeDecl(node);
+    m_lastTypeComment = QByteArray();
+}
+
+
+go::GoFunctionDeclaration* DeclarationBuilder::declareFunction(go::IdentifierAst* id, const go::GoFunctionType::Ptr& type,
+                                                               DUContext* paramContext, DUContext* retparamContext, const QByteArray& comment)
+{
+    setComment(comment);
     DUChainWriteLocker lock;
     go::GoFunctionDeclaration* dec = openDefinition<go::GoFunctionDeclaration>(identifierForNode(id), editorFindRange(id, 0));
     dec->setType<go::GoFunctionType>(type);

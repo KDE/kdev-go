@@ -76,14 +76,14 @@ protected:
      * declared here as pure virtual so we can use that when building functions
      **/
     virtual GoFunctionDeclaration* declareFunction(go::IdentifierAst* id, const GoFunctionType::Ptr& type,
-                                                   DUContext* paramContext, DUContext* retparamContext) = 0;
+                                                   DUContext* paramContext, DUContext* retparamContext, const QByteArray& comment=QByteArray()) = 0;
 
 
 
     /**
      * opens GoFunctionType, parses it's parameters and return declaration if @param declareParameters is true.
      **/
-    go::GoFunctionDeclaration* parseSignature(go::SignatureAst* node, bool declareParameters, go::IdentifierAst* name=0);
+    go::GoFunctionDeclaration* parseSignature(go::SignatureAst* node, bool declareParameters, go::IdentifierAst* name=0, const QByteArray& comment=QByteArray());
 
     /**
      * Convenience function that parses function parameters.

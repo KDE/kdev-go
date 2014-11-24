@@ -54,6 +54,8 @@ public:
     virtual void visitSwitchStmt(go::SwitchStmtAst* node);
     virtual void visitTypeCaseClause(go::TypeCaseClauseAst* node);
     virtual void visitExprCaseClause(go::ExprCaseClauseAst* node);
+
+    virtual void visitTypeDecl(go::TypeDeclAst* node);
   
     
     /*struct GoImport{
@@ -87,7 +89,8 @@ private:
      * Declares GoFunction and assigns contexts to it.
      * Called from typebuilder when building functions and methods
      **/
-    virtual go::GoFunctionDeclaration* declareFunction(go::IdentifierAst* id, const go::GoFunctionType::Ptr& type, DUContext* paramContext, DUContext* retparamContext) override;
+    virtual go::GoFunctionDeclaration* declareFunction(go::IdentifierAst* id, const go::GoFunctionType::Ptr& type,
+                                                       DUContext* paramContext, DUContext* retparamContext, const QByteArray& comment=QByteArray()) override;
 
     void importThisPackage();
     bool m_export;
@@ -98,6 +101,7 @@ private:
     QList<AbstractType::Ptr> m_constAutoTypes;
     QualifiedIdentifier m_thisPackage;
     QualifiedIdentifier m_switchTypeVariable;
+    QByteArray m_lastTypeComment, m_lastConstComment;
 };
 
 #endif

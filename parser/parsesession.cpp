@@ -309,4 +309,82 @@ void ParseSession::setIncludePaths(const QList<QString>& paths)
     m_includePaths = paths;
 }
 
+QByteArray ParseSession::commentBeforeToken(qint64 token)
+{
+    int commentEnd = m_lexer->at(token).begin;
+    int commentStart = 0;
+    if(token - 1 >= 0)
+        commentStart = m_lexer->at(token-1).end+1;
+    QString comment = m_contents.mid(commentStart, commentEnd-commentStart);
+
+    //in lexer, when we insert semicolons after newline
+    //inserted token's end contains '\n' position
+    //so in order not to lose this newline we prepend it
+    if(commentStart > 0 && m_contents[commentStart-1] == '\n')
+        comment.prepend('\n');
+
+    //any comment must have at least single '/'
+    if(comment.indexOf('/') == -1)
+        return QByteArray();
+    int i = 0;
+    int start=-1, end=-1, lineStart=-1, lineEnd=-1;
+    int currentLine = 0;
+    //this flag is true when multiple single-lined comments have been encountered in a row
+    bool contigiousComments = false;
+    while(i < comment.length())
+    {
+       if(comment[i] == '\n')
+       {
+           contigiousComments = false;
+           currentLine++; i++;
+       }
+       else if(comment[i].isSpace())
+       {
+           i++;
+       }else if(comment[i] == '/')
+       {
+           if(i + 1 < comment.length() && comment[i+1] == '/')
+           {
+               if(!contigiousComments)
+               {
+                   start = i+2; lineStart = currentLine; contigiousComments = true;
+               }
+               i += 2;
+               while(i<comment.length() && comment[i] != '\n')
+                   ++i;
+               end = i; lineEnd = currentLine; currentLine++;
+               ++i;
+               //if comment does not start at first line in a file but it is a first line in comment
+               //then this comment is not a documentation
+               if(commentStart!= 0 && lineStart == 0)
+               {
+                   start = -1; end = -1, lineStart = -1; lineEnd = -1; contigiousComments = false;
+               }
+           }else if(i + 1 < comment.length() && comment[i+1] == '*')
+           {
+               start = i+2; lineStart = currentLine; contigiousComments = false;
+               i += 2;
+               while(i+1<comment.length() && !(comment[i] == '*' && comment[i+1] == '/'))
+               {
+                   if(comment[i] == '\n')
+                       currentLine++;
+                   ++i;
+               }
+               end = i-1; lineEnd = currentLine;
+               i += 2;
+               if(commentStart!= 0 && lineStart == 0)
+               {
+                   start = -1; end = -1, lineStart = -1; lineEnd = -1; contigiousComments = false;
+               }
+           }else //this shouldn't happen
+               return QByteArray();
+       }else
+       {
+            return QByteArray();
+       }
+    }
+    if(start != -1 && end != -1 && lineStart  != -1 && lineEnd != -1 && lineEnd == currentLine - 1)
+        return comment.mid(start, end-start+1).replace(QRegExp("\n\\s*//"), "\n").toUtf8();
+    return QByteArray();
+}
 

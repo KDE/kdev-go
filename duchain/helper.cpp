@@ -67,9 +67,15 @@ QList< QString > Helper::getSearchPaths(QUrl document)
             result.remove(result.length()-1, 1);
         if(!result.isEmpty())
         {
+            //since Go 1.4 stdlib packages are stored in $GOROOT/src/
+            //but we also support old layout $GOROOT/src/pkg/
             QDir path = QDir(result);
-            if(path.exists() && path.cd("src") && path.cd("pkg") && path.exists())
+            if(path.exists() && path.cd("src") && path.exists())
+            {
                 m_CachedSearchPaths.append(path.absolutePath());
+                if(path.cd("pkg") && path.exists())
+                    m_CachedSearchPaths.append(path.absolutePath());
+            }
         }
     }
     paths.append(m_CachedSearchPaths);

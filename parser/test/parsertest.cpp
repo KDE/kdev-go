@@ -23,6 +23,7 @@
 #include "parser/goparser.h"
 #include "parser/godebugvisitor.h"
 #include "parser/gotokentext.h"
+#include "parsesession.h"
 
 
 QTEST_MAIN(go::ParserTest)
@@ -228,6 +229,14 @@ void ParserTest::testFuncTypes()
     //go::DebugVisitor visitor(&lexer, code);
     //visitor.visitNode(ast);
 }
+
+void ParserTest::testForRangeLoop()
+{
+    QString code = "package main; func main() { str := \"string\"; for range str { c := 2 } } ";
+    ParseSession session(code.toUtf8(), 0, true);
+    QVERIFY(session.startParsing());
+}
+
 
 
 //add this tests:

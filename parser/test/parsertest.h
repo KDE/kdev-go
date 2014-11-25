@@ -37,6 +37,7 @@ private slots:
   void testBasicTypes();
   void testIfClause();
   void testFuncTypes();
+  void testForRangeLoop();
   
 };
 

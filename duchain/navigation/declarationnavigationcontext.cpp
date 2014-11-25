@@ -102,7 +102,7 @@ QString DeclarationNavigationContext::html(bool shorten)
         modifyHtml() += i18n("enumerator ");
       
       if( !m_declaration->isTypeAlias()) 
-	  modifyHtml() += ' ' + nameHighlight(Qt::escape(declarationName(m_declaration))) + " ";
+          modifyHtml() += ' ' + identifierHighlight(declarationName(m_declaration).toHtmlEscaped(), m_declaration) + " ";
 
       AbstractType::Ptr useType = m_declaration->abstractType();
       if(m_declaration->isTypeAlias()) {
@@ -120,12 +120,12 @@ QString DeclarationNavigationContext::html(bool shorten)
         htmlClass();
       }
       if ( m_declaration->kind() == Declaration::Namespace ) {
-        modifyHtml() += i18n("namespace %1 ", nameHighlight(Qt::escape(m_declaration->qualifiedIdentifier().toString())));
+        modifyHtml() += i18n("namespace %1 ", identifierHighlight(m_declaration->qualifiedIdentifier().toString().toHtmlEscaped(), m_declaration));
       }
 
       if(m_declaration->type<EnumerationType>()) {
         EnumerationType::Ptr enumeration = m_declaration->type<EnumerationType>();
-        modifyHtml() += i18n("enumeration %1 ", Qt::escape(m_declaration->identifier().toString()) );
+        modifyHtml() += i18n("enumeration %1 ", identifierHighlight(m_declaration->identifier().toString().toHtmlEscaped(), m_declaration));
       }
 
       if(m_declaration->isForwardDeclaration()) {
@@ -188,7 +188,7 @@ QString DeclarationNavigationContext::html(bool shorten)
     } else {
       QualifiedIdentifier parent = identifier;
       parent.pop();
-      modifyHtml() += labelHighlight(i18n("Scope: %1 ", typeHighlight(Qt::escape(parent.toString()))));
+      modifyHtml() += labelHighlight(i18n("Scope: %1 ", typeHighlight(parent.toString().toHtmlEscaped())));
     }
   }
   
@@ -201,13 +201,13 @@ QString DeclarationNavigationContext::html(bool shorten)
     comment.replace('\n', " ");
     comment.replace("<br />", " ");
     comment.replace("<br/>", " ");
-    modifyHtml() += commentHighlight(Qt::escape(comment)) + "   ";
+    modifyHtml() += commentHighlight(comment.toHtmlEscaped()) + "   ";
   }
   
 
   QString access = stringFromAccess(m_declaration);
   if( !access.isEmpty() )
-    modifyHtml() += labelHighlight(i18n("Access: %1 ", propertyHighlight(Qt::escape(access))));
+    modifyHtml() += labelHighlight(i18n("Access: %1 ", propertyHighlight(access.toHtmlEscaped())));
 
 
   ///@todo Enumerations
@@ -227,11 +227,11 @@ QString DeclarationNavigationContext::html(bool shorten)
   QString kind = declarationKind(m_declaration);
   if( !kind.isEmpty() ) {
     if( !detailsHtml.isEmpty() )
-      modifyHtml() += labelHighlight(i18n("Kind: %1 %2 ", importantHighlight(Qt::escape(kind)), detailsHtml));
+      modifyHtml() += labelHighlight(i18n("Kind: %1 %2 ", importantHighlight(kind.toHtmlEscaped()), detailsHtml));
     else
-      modifyHtml() += labelHighlight(i18n("Kind: %1 ", importantHighlight(Qt::escape(kind))));
+      modifyHtml() += labelHighlight(i18n("Kind: %1 ", importantHighlight(kind.toHtmlEscaped())));
   } else if( !detailsHtml.isEmpty() ) {
-    modifyHtml() += labelHighlight(i18n("Modifiers: %1 ",  importantHighlight(Qt::escape(kind))));
+    modifyHtml() += labelHighlight(i18n("Modifiers: %1 ",  importantHighlight(kind.toHtmlEscaped())));
   }
 
   modifyHtml() += "<br />";
@@ -277,7 +277,7 @@ QString DeclarationNavigationContext::html(bool shorten)
       }
     } else if(!comment.isEmpty()) {
       comment.replace(QRegExp("<br */>"), "\n"); //do not escape html newlines within the comment
-      comment = Qt::escape(comment);
+      comment = comment.toHtmlEscaped();
       comment.replace('\n', "<br />"); //Replicate newlines in html
       modifyHtml() += commentHighlight(comment);
       modifyHtml() += "<br />";
@@ -318,7 +318,7 @@ void DeclarationNavigationContext::htmlFunction()
 	eventuallyMakeTypeLinks( type->returnType() );
     }*/
 
-    modifyHtml() += ' ' + nameHighlight(Qt::escape(prettyIdentifier(m_declaration).toString()));
+    modifyHtml() += ' ' + identifierHighlight(prettyIdentifier(m_declaration).toString().toHtmlEscaped(), m_declaration);
 
     if( type->indexedArgumentsSize() == 0 )
     {
@@ -340,7 +340,7 @@ void DeclarationNavigationContext::htmlFunction()
 	    first = false;
 
 	    if (currentArgNum < decls.size()) {
-		modifyHtml() += nameHighlight(Qt::escape(decls[currentArgNum]->identifier().toString())) + " ";
+		modifyHtml() += identifierHighlight(decls[currentArgNum]->identifier().toString().toHtmlEscaped(), m_declaration) + " ";
 	    }
 
 	    if(type->modifiers() == go::GoFunctionType::VariadicArgument && currentArgNum == decls.size()-1)
@@ -384,7 +384,7 @@ void DeclarationNavigationContext::htmlFunction()
 	if(type->returnArguments().size() == 1)
 	{
             if(decls.size() != 0) //show declaration if one exists
-                modifyHtml() += nameHighlight(Qt::escape(decls[0]->identifier().toString())) + " ";
+                modifyHtml() += identifierHighlight(decls[0]->identifier().toString().toHtmlEscaped(), m_declaration) + " ";
 	    eventuallyMakeTypeLinks(type->returnArguments().front());
 	    //modifyHtml() += ' ' + nameHighlight(Qt::escape(decls[currentArgNum]->identifier().toString()));
 	}else
@@ -397,7 +397,7 @@ void DeclarationNavigationContext::htmlFunction()
 
 	    //TODO fix parameter names
 	    if (currentArgNum < decls.size()) {
-		modifyHtml() += nameHighlight(Qt::escape(decls[currentArgNum]->identifier().toString())) + " ";
+		modifyHtml() += identifierHighlight(decls[currentArgNum]->identifier().toString().toHtmlEscaped(), m_declaration) + " ";
 	    }
 	    eventuallyMakeTypeLinks( argType );
 	    ++currentArgNum;
@@ -412,7 +412,7 @@ void DeclarationNavigationContext::htmlFunction()
 void DeclarationNavigationContext::eventuallyMakeTypeLinks(AbstractType::Ptr type)
 {
     if( !type) {
-	modifyHtml() += typeHighlight(Qt::escape("<no type>"));
+	modifyHtml() += typeHighlight(QString("<no type>").toHtmlEscaped());
 	return;
     }
     if(m_declaration->isTypeAlias())

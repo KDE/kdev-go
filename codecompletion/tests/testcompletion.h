@@ -30,6 +30,8 @@ private slots:
     void test_basicCompletion();
     void test_functionCallTips_data();
     void test_functionCallTips();
+    void test_typeMatching_data();
+    void test_typeMatching();
 
 };
 

@@ -22,6 +22,9 @@
 #include <language/codecompletion/codecompletionmodel.h>
 #include <language/duchain/duchainlock.h>
 
+#include "context.h"
+#include "types/gofunctiontype.h"
+
 namespace go
 {
 
@@ -49,6 +52,44 @@ QVariant CompletionItem::data(const QModelIndex& index, int role, const KDevelop
                 return m_prefix;
             }
             break;
+        }
+        case CodeCompletionModel::BestMatchesCount:
+            return 5;
+        case CodeCompletionModel::MatchQuality:
+        {
+            if(!declaration())
+                return QVariant();
+            //type aliases are actually different types
+            if(declaration()->isTypeAlias())
+                return QVariant();
+            AbstractType::Ptr typeToMatch = static_cast<go::CodeCompletionContext*>(model->completionContext().data())->typeToMatch();
+            if(!typeToMatch)
+                return QVariant();
+            AbstractType::Ptr declType = declaration()->abstractType();
+            if (!declType)
+                return QVariant();
+            //ignore constants
+            typeToMatch->setModifiers(AbstractType::NoModifiers);
+            declType->setModifiers(AbstractType::NoModifiers);
+            if(declType->equals(typeToMatch.constData()))
+            {
+                return QVariant(10);
+            }
+            else if(declType->whichType() == AbstractType::TypeFunction)
+            {
+                GoFunctionType* function = fastCast<GoFunctionType*>(declType.constData());
+                auto args = function->returnArguments();
+                if(args.size() != 0)
+                {
+                    AbstractType::Ptr first = args.first();
+                    first->setModifiers(AbstractType::NoModifiers);
+                    if(first->equals(typeToMatch.constData()))
+                        return QVariant(10);
+                }
+            }else
+            {
+                return QVariant();
+            }
         }
     }
     return NormalDeclarationCompletionItem::data(index, role, model);

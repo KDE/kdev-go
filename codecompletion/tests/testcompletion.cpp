@@ -19,6 +19,7 @@
 #include "testcompletion.h"
 
 #include "context.h"
+#include "model.h"
 #include "parser/parsesession.h"
 #include "builders/declarationbuilder.h"
 
@@ -40,6 +41,8 @@ QStandardItemModel& fakeModel() {
   model.setRowCount(10);
   return model;
 }
+
+go::CodeCompletionModel* model = 0;
 
 DUContext* getPackageContext(const QString& code)
 {
@@ -74,13 +77,15 @@ QList<CompletionTreeItemPointer> getCompletions(QString code)
     Q_ASSERT(context);
 
     go::CodeCompletionContext* completion = new go::CodeCompletionContext(DUContextPointer(context),
-                                                                         code.mid(0, cursorIndex),
-                                                                         cursor);
+                                                                        code.mid(0, cursorIndex),
+                                                                        cursor);
+    model = new go::CodeCompletionModel(nullptr);
+    model->setCompletionContext(KSharedPtr<KDevelop::CodeCompletionContext>(completion));
     bool abort = false;
     return completion->completionItems(abort, true);
 }
 
-void debugPrint(const QList<CompletionTreeItemPointer>& completions)
+void debugPrint(const QList<CompletionTreeItemPointer>& completions, bool showQuality=false)
 {
     qDebug() << "Completions debug print";
     QModelIndex prefixIdx = fakeModel().index(0, KDevelop::CodeCompletionModel::Prefix);
@@ -92,11 +97,17 @@ void debugPrint(const QList<CompletionTreeItemPointer>& completions)
         name << item->data(prefixIdx, Qt::DisplayRole, nullptr).toString();
         name << item->data(nameIdx, Qt::DisplayRole, nullptr).toString();
         name << item->data(argsIdx, Qt::DisplayRole, nullptr).toString();
-        qDebug() << name.join(QString(' '));
+        if(!showQuality)
+            qDebug() << name.join(QString(' '));
+        else
+        {
+            int quality = item->data(nameIdx, KDevelop::CodeCompletionModel::MatchQuality, model).toInt();
+            qDebug() << name.join(QString(' ')) << quality;
+        }
     }
 }
 
-bool containsDeclaration(QString declaration, const QList<CompletionTreeItemPointer>& completions, int depth=-1)
+bool containsDeclaration(QString declaration, const QList<CompletionTreeItemPointer>& completions, int depth=-1, int quality=-1)
 {
     QModelIndex prefixIdx = fakeModel().index(0, KDevelop::CodeCompletionModel::Prefix);
     QModelIndex nameIdx = fakeModel().index(0, KDevelop::CodeCompletionModel::Name);
@@ -108,11 +119,13 @@ bool containsDeclaration(QString declaration, const QList<CompletionTreeItemPoin
         name << item->data(prefixIdx, Qt::DisplayRole, nullptr).toString();
         name << item->data(nameIdx, Qt::DisplayRole, nullptr).toString();
         name << item->data(argsIdx, Qt::DisplayRole, nullptr).toString();
-        if(name.join(QString(' ')) == declaration && (depth == -1 || item->argumentHintDepth() == depth))
+        int itemQuality = item->data(nameIdx, KDevelop::CodeCompletionModel::MatchQuality, model).toInt();
+        if(name.join(QString(' ')) == declaration && (depth == -1 || item->argumentHintDepth() == depth)
+            && (quality == -1 || quality == itemQuality) )
             return true;
     }
     //print completions if we haven't found anything
-    debugPrint(completions);
+    debugPrint(completions, quality == -1 ? false : true);
     return false;
 }
 
@@ -128,7 +141,7 @@ void TestCompletion::cleanupTestCase()
 }
 
 void TestCompletion::test_basicCompletion()
-{
+{ 
     QString code("package main; func main() { var a int; %CURSOR }");
     auto completions = getCompletions(code);
     QCOMPARE(completions.size(), 3);
@@ -162,7 +175,7 @@ void TestCompletion::test_functionCallTips_data()
     QTest::newRow("nested") << "func myfunc(a int) {};" << "f := myfunc; myfunc(f(%CURSOR))" << " myfunc (int a)" << 2 << 6;
     QTest::newRow("nested 2") << "func myfunc(a int) {};" << "f := myfunc; myfunc(f(%CURSOR))" << " f (int)" << 1 << 6;
     //TODO these don't work yet(they still pass, but they're wrong)
-    QTest::newRow("lambda") << "" << "f := func() int { \n}(%CURSOR)" << "int <unknown> ()" << 0 << 4;
+    //QTest::newRow("lambda") << "" << "f := func() int { \n}(%CURSOR)" << "int <unknown> ()" << 0 << 3;
     QTest::newRow("multiple lines") << "func myfunc(a, b int) {};" << "myfunc(5, \n %CURSOR)" << " myfunc (int a, int b)" << 0 << 3;
 }
 
@@ -180,3 +193,35 @@ void TestCompletion::test_functionCallTips()
     QVERIFY(containsDeclaration(result, completions, depth));
 }
 
+void TestCompletion::test_typeMatching_data()
+{
+    QTest::addColumn<QString>("declaration");
+    QTest::addColumn<QString>("expression");
+    QTest::addColumn<QString>("result");
+    QTest::addColumn<int>("size");
+    QTest::addColumn<int>("quality");
+
+    QTest::newRow("assignment") << "var pi int = 3.14" << "var a int; a = %CURSOR a" << "int pi " << 4 << 10;
+    QTest::newRow("const") << "const pi int = 3.14" << "var a int; a = %CURSOR a" << "int pi " << 4 << 10;
+    QTest::newRow("function") << "func test() int {}" << "var a int; a = %CURSOR a" << "int test ()" << 4 << 10;
+    QTest::newRow("function var") << "func test() int {}" << "f := test; var a int; a = %CURSOR a" << "function () int f " << 5 << 10;
+    QTest::newRow("function type") << "func test() int {}" << "var a func() int; a = %CURSOR a" << "int test ()" << 4 << 10;
+    QTest::newRow("function type var") << "func test() int {}" << "f := test; var a func() int; a = %CURSOR a" << "function () int f " << 5 << 10;
+    QTest::newRow("arguments") << "func test(a int) {}" << "var a int; test(%CURSOR);" << "int a " << 5 << 10;
+    QTest::newRow("sum") << "var a int" << "var b int; b + %CURSOR c" << "int a " << 4 << 10;
+    //QTest::newRow("multiple assignments") << "var a int = 1; var b bool = true" << "a, b = %CURSOR a, b" << "int a " << 4 << 10;
+    //QTest::newRow("multiple assignments 2") << "var a int = 1; var b bool = true" << "a, b = a, %CURSOR b" << "bool b " << 4 << 10;
+}
+
+void TestCompletion::test_typeMatching()
+{
+    QFETCH(QString, declaration);
+    QFETCH(QString, expression);
+    QFETCH(QString, result);
+    QFETCH(int, size);
+    QFETCH(int, quality);
+    QString code(QString("package main; %1; func main() { %2 }").arg(declaration).arg(expression));
+    auto completions = getCompletions(code);
+    QCOMPARE(completions.size(), size);
+    QVERIFY(containsDeclaration(result, completions, -1, quality));
+}

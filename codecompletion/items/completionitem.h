@@ -16,36 +16,27 @@
 *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA   *
 *************************************************************************************/
 
-#ifndef GOLANGFUNCTIONITEM_H
-#define GOLANGFUNCTIONITEM_H
+#ifndef GOLANGCOMPLETIONITEM_H
+#define GOLANGCOMPLETIONITEM_H
 
-#include "completionitem.h"
+#include <language/codecompletion/normaldeclarationcompletionitem.h>
 
 using namespace KDevelop;
 
 namespace go
 {
 
-class FunctionCompletionItem : public CompletionItem
+class CompletionItem : public NormalDeclarationCompletionItem
 {
 public:
-    FunctionCompletionItem(KDevelop::DeclarationPointer decl = KDevelop::DeclarationPointer(),
-                                    int depth=0, int atArgument=-1);
-
-    virtual void executed(KTextEditor::Document* document, const KTextEditor::Range& word) override;
+    CompletionItem(KDevelop::DeclarationPointer decl = KDevelop::DeclarationPointer(),
+                   KSharedPtr<KDevelop::CodeCompletionContext> context=KSharedPtr<KDevelop::CodeCompletionContext>(),
+                   int inheritanceDepth = 0);
 
     virtual QVariant data(const QModelIndex& index, int role, const KDevelop::CodeCompletionModel* model) const;
-    virtual KTextEditor::CodeCompletionModel::CompletionProperties completionProperties() const;
-    virtual int argumentHintDepth() const;
-    virtual int inheritanceDepth() const;
 
 private:
-    int m_depth;
-    int m_atArgument;
-    int m_currentArgStart;
-    int m_currentArgEnd;
     QString m_prefix;
-    QString m_arguments;
 };
 
 }

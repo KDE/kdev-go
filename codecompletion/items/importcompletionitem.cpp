@@ -16,51 +16,36 @@
 *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA   *
 *************************************************************************************/
 
-#ifndef GOLANGHELPER_H
-#define GOLANGHELPER_H
+#include "importcompletionitem.h"
 
-#include <language/duchain/ducontext.h>
-#include <QUrl>
-
-#include "goduchainexport.h"
-
-using namespace KDevelop;
+#include <KTextEditor/View>
+#include <KTextEditor/Document>
+#include <language/codecompletion/codecompletionmodel.h>
 
 namespace go
 {
 
-class KDEVGODUCHAIN_EXPORT Helper
+ImportCompletionItem::ImportCompletionItem(QString packagename): KDevelop::NormalDeclarationCompletionItem(KDevelop::DeclarationPointer(),
+                                                                  KSharedPtr<KDevelop::CodeCompletionContext>(), 0), m_packageName(packagename)
 {
-public:
-    static QList<QString> getSearchPaths(QUrl document=QUrl());
-private:
-    static QList<QString> m_CachedSearchPaths;
-};
-
-KDEVGODUCHAIN_EXPORT DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext* context, bool searchInParent=true);
-
-/**
- * This tries to find declaration which has a real type, like Instance and Type
- * but skips declarations like Namespace, NamespaceAlias and Import which can be 
- * packages or type methods(but not the actual type declarations)
- */
-KDEVGODUCHAIN_EXPORT DeclarationPointer getTypeOrVarDeclaration(QualifiedIdentifier id, DUContext* context, bool searchInParent=true);
-
-/**
- * This only looks for type declarations
- */
-KDEVGODUCHAIN_EXPORT DeclarationPointer getTypeDeclaration(QualifiedIdentifier id, DUContext* context, bool searchInParent=true);
-
-KDEVGODUCHAIN_EXPORT QList<Declaration*> getDeclarations(QualifiedIdentifier id, DUContext* context, bool searchInParent=true);
-
-
-KDEVGODUCHAIN_EXPORT DeclarationPointer getFirstDeclaration(DUContext* context, bool searchInParent=true);
-
-/**
- * Checks if topContext declares package @param id
- */
-KDEVGODUCHAIN_EXPORT DeclarationPointer checkPackageDeclaration(Identifier id, TopDUContext* context);
-
 }
 
-#endif
+QVariant ImportCompletionItem::data(const QModelIndex& index, int role, const KDevelop::CodeCompletionModel* model) const
+{
+    if(role == Qt::DisplayRole && (index.column() == CodeCompletionModel::Name))
+        return m_packageName;
+    if(role == Qt::DisplayRole && (index.column() == CodeCompletionModel::Prefix))
+        return "package";
+    return NormalDeclarationCompletionItem::data(index, role, model);
+}
+
+void ImportCompletionItem::execute(KTextEditor::Document* document, const KTextEditor::Range& word)
+{
+    KTextEditor::Range checkSuffix(word.end().line(), word.end().column(), word.end().line(), document->lineLength(word.end().line()));
+    QString suffix = "\"";
+    if(document->text(checkSuffix).startsWith('"'))
+        suffix.clear();
+    document->replaceText(word, m_packageName + suffix);
+}
+
+}

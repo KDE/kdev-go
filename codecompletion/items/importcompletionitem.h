@@ -16,50 +16,26 @@
 *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA   *
 *************************************************************************************/
 
-#ifndef GOLANGHELPER_H
-#define GOLANGHELPER_H
+#ifndef GOLANGIMPORTITEM_H
+#define GOLANGIMPORTITEM_H
 
-#include <language/duchain/ducontext.h>
-#include <QUrl>
-
-#include "goduchainexport.h"
+#include <language/codecompletion/normaldeclarationcompletionitem.h>
 
 using namespace KDevelop;
 
 namespace go
 {
 
-class KDEVGODUCHAIN_EXPORT Helper
+class ImportCompletionItem : public KDevelop::NormalDeclarationCompletionItem
 {
 public:
-    static QList<QString> getSearchPaths(QUrl document=QUrl());
+    ImportCompletionItem(QString packagename);
+    virtual QVariant data(const QModelIndex& index, int role, const KDevelop::CodeCompletionModel* model) const;
+    void execute(KTextEditor::Document* document, const KTextEditor::Range& word) override;
+
 private:
-    static QList<QString> m_CachedSearchPaths;
+    QString m_packageName;
 };
-
-KDEVGODUCHAIN_EXPORT DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext* context, bool searchInParent=true);
-
-/**
- * This tries to find declaration which has a real type, like Instance and Type
- * but skips declarations like Namespace, NamespaceAlias and Import which can be 
- * packages or type methods(but not the actual type declarations)
- */
-KDEVGODUCHAIN_EXPORT DeclarationPointer getTypeOrVarDeclaration(QualifiedIdentifier id, DUContext* context, bool searchInParent=true);
-
-/**
- * This only looks for type declarations
- */
-KDEVGODUCHAIN_EXPORT DeclarationPointer getTypeDeclaration(QualifiedIdentifier id, DUContext* context, bool searchInParent=true);
-
-KDEVGODUCHAIN_EXPORT QList<Declaration*> getDeclarations(QualifiedIdentifier id, DUContext* context, bool searchInParent=true);
-
-
-KDEVGODUCHAIN_EXPORT DeclarationPointer getFirstDeclaration(DUContext* context, bool searchInParent=true);
-
-/**
- * Checks if topContext declares package @param id
- */
-KDEVGODUCHAIN_EXPORT DeclarationPointer checkPackageDeclaration(Identifier id, TopDUContext* context);
 
 }
 

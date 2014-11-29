@@ -11,6 +11,7 @@ set(completion_SRCS
     context.cpp
     items/completionitem.cpp
     items/functionitem.cpp
+    items/importcompletionitem.cpp
 )
 
 kde4_add_library(kdevgocompletion SHARED ${completion_SRCS})

@@ -29,6 +29,7 @@
 
 #include <QReadLocker>
 #include <QProcess>
+#include <QDirIterator>
 
 #include "parsesession.h"
 #include "duchain/builders/declarationbuilder.h"
@@ -36,6 +37,8 @@
 #include "duchain/helper.h"
 
 using namespace KDevelop;
+
+QHash<QString, QString> GoParseJob::canonicalImports;
 
 GoParseJob::GoParseJob(const KDevelop::IndexedString& url, KDevelop::ILanguageSupport* languageSupport): ParseJob(url, languageSupport)
 {
@@ -103,6 +106,10 @@ void GoParseJob::run()
     else
         session.setIncludePaths(go::Helper::getSearchPaths());
 
+    if(canonicalImports.empty())
+        parseCanonicalImports();
+    session.setCanonicalImports(&canonicalImports);
+
     if(result)
     {
 	QReadLocker parseLock(languageSupport()->language()->parseLock());
@@ -144,5 +151,79 @@ void GoParseJob::run()
       kDebug() << "===Success===" << document().str();
     else
       kDebug() << "===Failed===" << document().str();
+}
+
+void GoParseJob::parseCanonicalImports()
+{
+    QList<QString> importPaths = go::Helper::getSearchPaths();
+    for(const QString& path : importPaths)
+    {
+        QDirIterator iterator(path, QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
+        while(iterator.hasNext())
+        {
+            iterator.next();
+            QDir dir(iterator.filePath());
+            for(const QString& file : dir.entryList(QStringList("*.go"), QDir::Files | QDir::NoSymLinks))
+            {
+                QFile f(dir.filePath(file));
+                f.open(QIODevice::ReadOnly);
+                QByteArray contents = f.readAll();
+                f.close();
+                QString canonicalImport = extractCanonicalImport(QString(contents));
+                if(canonicalImport.length() != 0)
+                {
+                    kDebug() << "Found canonical import for package " << iterator.filePath() << " import: " << canonicalImport;
+                    canonicalImports[canonicalImport] = iterator.filePath();
+                    break;
+                }
+            }
+        }
+    }
+    //if no canonical imports were found add stab value to map
+    //so we won't search for them again
+    if(canonicalImports.empty())
+        canonicalImports["<?>"] = QString("none");
+}
+
+QString GoParseJob::extractCanonicalImport(QString string)
+{
+    int i = 0;
+    while(i < string.length())
+    {
+       if(string[i].isSpace())
+           i++;
+       else if(string[i] == '/')
+       {
+           if(i + 1 < string.length() && string[i+1] == '/')
+           {
+               i += 2;
+               while(i<string.length() && string[i] != '\n')
+                   ++i;
+               ++i;
+           }
+           else if(i + 1 < string.length() && string[i+1] == '*')
+           {
+               i += 2;
+               while(i+1<string.length() && !(string[i] == '*' && string[i+1] == '/'))
+                   ++i;
+               i+=2;
+           }else
+               return QString("");
+       }else if(string[i] == 'p')
+       {
+           string = string.mid(i);
+           //match "package name // or /* import \" "
+           if(string.indexOf(QRegExp("^package\\s*\\w*\\s*(//|/\\*)\\s*import\\s*\"")) == 0)
+           {
+               int nameStart = string.indexOf("\"")+1;
+               int nameEnd = string.indexOf("\"", nameStart);
+               if(nameStart != -1 && nameEnd != -1)
+                   return string.mid(nameStart, nameEnd - nameStart);
+           }
+           return QString("");
+       }else
+           return QString("");
+    }
+    return QString("");
 }
 

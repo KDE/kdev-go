@@ -30,6 +30,22 @@ public:
 protected:
       virtual void run() override;
 
+private:
+    /**
+     * Parses every .go file available in search paths,
+     * looks for declarations like ` package pack //import "my_pack" `
+     * which means that package pack must be imported under name my_pack.
+     * Canonical imports paths should be available before any other parsing
+     * can begin, so it must be fast.
+     **/
+    void parseCanonicalImports();
+
+    /**
+     * extracts package's canonical import name.
+     **/
+    QString extractCanonicalImport(QString string);
+    static QHash<QString, QString> canonicalImports;
+
 };
 
 #endif

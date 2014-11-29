@@ -80,6 +80,8 @@ public:
 
     void setIncludePaths(const QList<QString> &paths);
 
+    void setCanonicalImports(QHash<QString, QString>* imports);
+
     /**
      * Returns doc comment preceding given token.
      * GoDoc comments are multilined /*-style comments
@@ -117,6 +119,7 @@ private:
     KDevelop::TopDUContext::Features m_features;
     bool forExport;
     QList<QString> m_includePaths;
+    QHash<QString, QString>* m_canonicalImports;
   
 };
 

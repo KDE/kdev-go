@@ -156,14 +156,27 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QString package)
 {
     package = package.mid(1, package.length()-2);
     QStringList files;
-    for(const QString& pathname : m_includePaths)
+    //try canonical paths first
+    if(m_canonicalImports && m_canonicalImports->contains(package))
     {
-        QDir path(pathname);
-        if(path.exists() && path.cd(package))
+        QDir path((*m_canonicalImports)[package]);
+        if(path.exists())
         {
             for(const QString& file : path.entryList(QStringList("*.go"), QDir::Files | QDir::NoSymLinks))
                 files.append(path.filePath(file));
-            break;
+        }
+    }
+    if(files.empty())
+    {
+        for(const QString& pathname : m_includePaths)
+        {
+            QDir path(pathname);
+            if(path.exists() && path.cd(package))
+            {
+                for(const QString& file : path.entryList(QStringList("*.go"), QDir::Files | QDir::NoSymLinks))
+                    files.append(path.filePath(file));
+                break;
+            }
         }
     }
     QList<ReferencedTopDUContext> contexts;
@@ -386,5 +399,10 @@ QByteArray ParseSession::commentBeforeToken(qint64 token)
     if(start != -1 && end != -1 && lineStart  != -1 && lineEnd != -1 && lineEnd == currentLine - 1)
         return comment.mid(start, end-start+1).replace(QRegExp("\n\\s*//"), "\n").toUtf8();
     return QByteArray();
+}
+
+void ParseSession::setCanonicalImports(QHash< QString, QString >* imports)
+{
+    m_canonicalImports = imports;
 }
 

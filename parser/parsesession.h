@@ -81,6 +81,15 @@ public:
     void setIncludePaths(const QList<QString> &paths);
 
     /**
+     * Returns doc comment preceding given token.
+     * GoDoc comments are multilined /*-style comments
+     * or several consecutive single-lined //-style comments
+     * with no empty line between them.
+     * Comment must start on a new line and end a line before given declaration.
+     **/
+    QByteArray commentBeforeToken(qint64 token);
+
+    /**
      *	Don't use this function!
      *  Most of the times you don't need to access lexer of parseSession directly,
      *  This only exists, because parser test application uses DebugVisitor, which needs a lexer

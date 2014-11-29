@@ -43,7 +43,7 @@ namespace go
 CodeCompletionContext::CodeCompletionContext(const KDevelop::DUContextPointer& context,
 					     const QString& text, 
 					     const KDevelop::CursorInRevision& position, int depth): 
-					     KDevelop::CodeCompletionContext(context, extractLastLine(text), position, depth)
+					     KDevelop::CodeCompletionContext(context, extractLastLine(text), position, depth), m_fullText(text)
 {
 }
 
@@ -51,6 +51,7 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::completionItems(bool& 
 {
     kDebug() << m_text;
     QList<CompletionTreeItemPointer> items;
+
     //We shouldn't need anything before last semicolon (previous statements)
     if(m_text.lastIndexOf(';') != -1)
         m_text = m_text.mid(m_text.lastIndexOf(';'));
@@ -61,6 +62,9 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::completionItems(bool& 
         items << importCompletion();
         return items;
     }
+
+    if(isInsideCommentOrString())
+        return items;
 
     items << functionCallTips();
     
@@ -381,6 +385,78 @@ CompletionTreeItemPointer CodeCompletionContext::itemForDeclaration(QPair<Declar
     return CompletionTreeItemPointer(new go::CompletionItem(DeclarationPointer(declaration.first),
                                                         KSharedPtr<KDevelop::CodeCompletionContext>(), declaration.second));
 }
+
+bool CodeCompletionContext::isInsideCommentOrString()
+{
+    bool inLineComment = false;
+    bool inComment = false;
+    bool inQuotes = false;
+    bool inDoubleQuotes = false;
+    bool inBackQuotes = false;
+    QString text = ' ' + m_fullText;
+    for(int index = 0; index < text.size()-1; ++index)
+    {
+        const QChar c = text.at(index);
+        const QChar next = text.at(index + 1);
+        if(inLineComment)
+        {
+            if(c == QLatin1Char('\n'))
+            {
+                inLineComment = false;
+                continue;
+            }
+        }
+        if(inComment)
+        {
+            if(c == QLatin1Char('*') && next == QLatin1Char('/'))
+            {
+                inComment = false;
+                continue;
+            }
+        }
+        else if(inQuotes)
+        {
+            if(c != QLatin1Char('\\') && next == QLatin1Char('\''))
+            {
+                inQuotes = false;
+                continue;
+            }
+        }
+        else if(inDoubleQuotes)
+        {
+            if(c != QLatin1Char('\\') && next == QLatin1Char('\"'))
+            {
+                inDoubleQuotes = false;
+                continue;
+            }
+        }
+        else if(inBackQuotes)
+        {
+            if(c != QLatin1Char('\\') && next == QLatin1Char('\`'))
+            {
+                inBackQuotes = false;
+                continue;
+            }
+        }
+        else
+        {
+            if(c == QLatin1Char('/') && next == QLatin1Char('/'))
+                inLineComment = true;
+            if(c == QLatin1Char('/') && next == QLatin1Char('*'))
+                inComment = true;
+            if(next == QLatin1Char('\''))
+                inQuotes = true;
+            if(next == QLatin1Char('\"'))
+                inDoubleQuotes = true;
+            if(next == QLatin1Char('\`'))
+                inBackQuotes = true;
+        }
+    }
+    if(inLineComment || inComment || inQuotes || inDoubleQuotes || inBackQuotes)
+        return true;
+    return false;
+}
+
 
 
 }

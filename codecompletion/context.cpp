@@ -29,6 +29,7 @@
 #include "types/gostructuretype.h"
 #include "items/functionitem.h"
 #include "helper.h"
+#include "types/gofunctiontype.h"
 
 using namespace KDevelop;
 
@@ -49,29 +50,60 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::completionItems(bool& 
     kDebug() << "Completion items test";
     kDebug() << m_text;
     QList<CompletionTreeItemPointer> items;
+    //We shouldn't need anything before last semicolon (previous statements)
+    if(m_text.lastIndexOf(';') != -1)
+        m_text = m_text.mid(m_text.lastIndexOf(';'));
+
+    items << functionCallTips();
     
     QChar lastChar = m_text.size() > 0 ? m_text.at(m_text.size() - 1) : QLatin1Char('\0');
     if(lastChar == QLatin1Char('.'))
     {//imports and member completions
 	items << importAndMemberCompletion();
-	
     }else
-    {//all declarations
-	DUChainReadLocker lock;
-	auto declarations = m_duContext->allDeclarations(CursorInRevision::invalid(), m_duContext->topContext());
-	for(const QPair<Declaration*, int> &decl : declarations)
-	{
-            if(decl.first->topContext() != m_duContext->topContext())
-                continue;
-            if(decl.first->identifier() == globalImportIdentifier() || decl.first->identifier() == globalAliasIdentifier())
-                continue;
-	    items << itemForDeclaration(decl);
-										  
-	}
-	
+    {
+        items << normalCompletion();
     }
     return items;
 }
+
+QList< CompletionTreeItemPointer > CodeCompletionContext::normalCompletion()
+{
+    //all declarations
+    QList<CompletionTreeItemPointer> items;
+    DUChainReadLocker lock;
+    auto declarations = m_duContext->allDeclarations(CursorInRevision::invalid(), m_duContext->topContext());
+    for(const QPair<Declaration*, int> &decl : declarations)
+    {
+        if(decl.first->topContext() != m_duContext->topContext())
+            continue;
+        if(decl.first->identifier() == globalImportIdentifier() || decl.first->identifier() == globalAliasIdentifier())
+            continue;
+        items << itemForDeclaration(decl);
+    }
+    return items;
+}
+
+QList< CompletionTreeItemPointer > CodeCompletionContext::functionCallTips()
+{
+    QStack<ExpressionStackEntry> stack = expressionStack(m_text);
+    QList<CompletionTreeItemPointer> items;
+    int depth = 1;
+    while(!stack.empty())
+    {
+        ExpressionStackEntry entry = stack.pop();
+        DeclarationPointer function = lastDeclaration(m_text.left(entry.startPosition - 1));
+        kDebug() << m_text.left(entry.startPosition - 1);
+        if(function && fastCast<go::GoFunctionType*>(function->abstractType().constData()))
+        {
+            FunctionCompletionItem* item = new FunctionCompletionItem(function, depth, entry.commas);
+            depth++;
+            items << CompletionTreeItemPointer(item);
+        }
+    }
+    return items;
+}
+
 
 QList< CompletionTreeItemPointer > CodeCompletionContext::importAndMemberCompletion()
 {
@@ -249,11 +281,29 @@ AbstractType::Ptr CodeCompletionContext::lastType(const QString& expression)
     return AbstractType::Ptr();
 }
 
+DeclarationPointer CodeCompletionContext::lastDeclaration(const QString& expression)
+{
+    QStack<ExpressionStackEntry> stack = expressionStack(expression);
+    QString lastExpression(expression.mid(stack.top().operatorEnd));
+    kDebug() << lastExpression;
+
+    ParseSession session(lastExpression.toUtf8(), 0, false);
+    ExpressionAst* expressionAst;
+    if(!session.parseExpression(&expressionAst))
+        return DeclarationPointer();
+
+    ExpressionVisitor expVisitor(&session, this->m_duContext.data());
+    expVisitor.visitExpression(expressionAst);
+    if(expVisitor.lastDeclaration())
+        return expVisitor.lastDeclaration();
+
+    return DeclarationPointer();
+}
+
 CompletionTreeItemPointer CodeCompletionContext::itemForDeclaration(QPair<Declaration*, int > declaration)
 {
     if(declaration.first->isFunctionDeclaration())
-        return CompletionTreeItemPointer(new FunctionCompletionItem(DeclarationPointer(declaration.first),
-                                                          KSharedPtr<KDevelop::CodeCompletionContext>(), declaration.second));
+        return CompletionTreeItemPointer(new FunctionCompletionItem(DeclarationPointer(declaration.first)));
     return CompletionTreeItemPointer(new NormalDeclarationCompletionItem(DeclarationPointer(declaration.first),
                                                         KSharedPtr<KDevelop::CodeCompletionContext>(), declaration.second));
 }

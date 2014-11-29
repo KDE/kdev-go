@@ -138,7 +138,8 @@ void ExpressionVisitor::visitPrimaryExpr(PrimaryExprAst* node)
 		    return;
 		}
 	    }
-	    //kDebug() << "Expression Visitor for "<< id;
+            m_declaration = decl;
+            //kDebug() << "Expression Visitor for "<< id;
 	
             //this handles stuff like mytype{}, mytype()
 	    if((node->literalValue || node->callOrBuiltinParam) && decl->isTypeAlias())
@@ -161,6 +162,9 @@ void ExpressionVisitor::visitPrimaryExpr(PrimaryExprAst* node)
 			addType(arg);
 		    pushUse(node->id, decl.data());
 		    visitCallOrBuiltinParam(node->callOrBuiltinParam);
+                    //if function was called, last declaration will no longer be of this function
+                    //this is needed to prevent wrong function calltips
+                    m_declaration = DeclarationPointer();
 		}
 	    }else
 	    {
@@ -240,6 +244,7 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
 			pushUse(node->selector, decl.data());
 			pushType(decl->abstractType());
 		    }
+		    m_declaration = decl;
 		    success = true;
 		}
 	    //}
@@ -261,6 +266,7 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
 			DUChainReadLocker lock;
 			pushUse(node->selector, decl.data());
 			pushType(decl->abstractType());
+                        m_declaration = decl;
 		    }
 		    break;
 		}
@@ -442,6 +448,7 @@ void ExpressionVisitor::visitParenType(ParenTypeAst* node)
                 for(const AbstractType::Ptr& arg : type->returnArguments())
                     addType(arg);
                 pushUse(node->type->typeName->name, decl.data());
+                m_declaration = decl;
                 return;
             }
             //TODO there also can be builtin functions '(new)(int)'

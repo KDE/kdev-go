@@ -50,8 +50,15 @@ private:
     QStack<ExpressionStackEntry> expressionStack(const QString& expression);
     
     KDevelop::AbstractType::Ptr lastType(const QString& expression);
+
+    KDevelop::DeclarationPointer lastDeclaration(const QString& expression);
     
     QList<KDevelop::CompletionTreeItemPointer> importAndMemberCompletion();
+
+    QList<KDevelop::CompletionTreeItemPointer> normalCompletion();
+
+    QList<KDevelop::CompletionTreeItemPointer> functionCallTips();
+
 
     /**
      * Return completion item for declaration.

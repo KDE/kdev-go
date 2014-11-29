@@ -28,6 +28,8 @@ private slots:
     void initTestCase();
     void cleanupTestCase();
     void test_basicCompletion();
+    void test_functionCallTips_data();
+    void test_functionCallTips();
 
 };
 

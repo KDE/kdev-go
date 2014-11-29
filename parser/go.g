@@ -153,12 +153,16 @@
 --I'm not sure how exactly these rules should be applied so for now I just
 --insert semicolon in the same conditions as newline
 --another example is { for {} } or  {return "", 0 }
-"}"  [: int prevkind = at(size()-1).kind;  if(prevkind == Token_IDENT || prevkind == Token_INTEGER || prevkind == Token_FLOAT
+
+--even though "}" cannot be first token in correct Go program
+--it can occur in completion snippet, so we check if size() > 0
+"}"  [: if(size() > 0) {
+        int prevkind = at(size()-1).kind;  if(prevkind == Token_IDENT || prevkind == Token_INTEGER || prevkind == Token_FLOAT
 			    || prevkind == Token_COMPLEX || prevkind == Token_RUNE || prevkind == Token_STRING
 			    || prevkind == Token_BREAK || prevkind == Token_CONTINUE || prevkind == Token_FALLTHROUGH
 			    || prevkind == Token_RETURN || prevkind == Token_PLUSPLUS || prevkind == Token_MINUSMINUS
 			    || prevkind == Token_RPAREN || prevkind == Token_RBRACKET || prevkind == Token_RBRACE)
-				lxTOKEN(SEMICOLON);   :]	RBRACE;
+				lxTOKEN(SEMICOLON);  } :]	RBRACE;
 
 
 

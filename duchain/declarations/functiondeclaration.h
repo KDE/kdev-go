@@ -21,6 +21,8 @@
 
 #include <language/duchain/functiondeclaration.h>
 
+#include "../goduchainexport.h"
+
 namespace go {
 
 class GoFunctionDeclarationData : public KDevelop::FunctionDeclarationData
@@ -40,7 +42,7 @@ public:
 //typedef KDevelop::FunctionDeclarationData GoFunctionDeclarationData;
     
     
-class GoFunctionDeclaration : public KDevelop::FunctionDeclaration
+class KDEVGODUCHAIN_EXPORT GoFunctionDeclaration : public KDevelop::FunctionDeclaration
 {
 public:
     

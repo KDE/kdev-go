@@ -25,7 +25,6 @@
 #include <language/duchain/duchain.h>
 #include <language/duchain/parsingenvironment.h>
 #include <language/duchain/problem.h>
-#include <interfaces/ilanguage.h>
 
 #include <QReadLocker>
 #include <QProcess>

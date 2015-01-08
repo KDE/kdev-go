@@ -113,7 +113,7 @@ void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread
 
     if(result)
     {
-	QReadLocker parseLock(languageSupport()->language()->parseLock());
+	QReadLocker parseLock(languageSupport()->parseLock());
 	
 	if(abortRequested())
 	  return abortJob();

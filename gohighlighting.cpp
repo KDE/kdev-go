@@ -40,5 +40,3 @@ KDevelop::CodeHighlightingInstance* Highlighting::createInstance() const
 {
     return new HighlightingInstance(this);
 }
-
-#include "gohighlighting.moc"

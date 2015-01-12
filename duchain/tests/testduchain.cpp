@@ -574,4 +574,3 @@ DUContext* getMainContext(const QString& code)
 }
 
 
-#include "testduchain.moc"

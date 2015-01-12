@@ -1,13 +1,13 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 project(kdevgoplugin)
 
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 90)
 set(VERSION_PATCH 90)
 # KDevplatform dependency version
-set( KDEVPLATFORM_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}" )
+set(KDEVPLATFORM_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
-find_package (ECM 0.0.9 REQUIRED NO_MODULE)
+find_package(ECM 0.0.9 REQUIRED NO_MODULE)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
 
@@ -24,7 +24,7 @@ find_package(KDevelop-PG-Qt REQUIRED)
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}
-    )
+)
     
 enable_testing()
 
@@ -34,27 +34,25 @@ add_subdirectory(codecompletion)
 
 include_directories(
     ${KDEVPGQT_INCLUDE_DIR}
-    )
-
-
+)
 
 set(goplugin_SRC 
     kdevgoplugin.cpp
     golangparsejob.cpp
     gohighlighting.cpp
     godebug.cpp
-    )
+)
     
 add_library(kdevgoplugin MODULE ${goplugin_SRC})
 target_link_libraries(kdevgoplugin 
-        KDev::Interfaces
-        KDev::Language
-        KF5::ThreadWeaver
-        KF5::TextEditor
-        kdevgoparser
-        kdevgoduchain
-        kdevgocompletion
-        )
+    KDev::Interfaces
+    KDev::Language
+    KF5::ThreadWeaver
+    KF5::TextEditor
+    kdevgoparser
+    kdevgoduchain
+    kdevgocompletion
+)
 
 install(TARGETS kdevgoplugin DESTINATION ${PLUGIN_INSTALL_DIR})
 

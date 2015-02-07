@@ -1,16 +1,20 @@
 {
     "KPlugin": {
-        "Category": "Language Support",
-        "Icon": "text-x-go",
-        "Id": "kdevgo",
-        "License": "GPL",
-        "Name": "Go Support",
+        "Category": "Language Support", 
+        "Icon": "text-x-go", 
+        "Id": "kdevgo", 
+        "License": "GPL", 
+        "Name": "Go Support", 
         "ServiceTypes": [
             "KDevelop/Plugin"
         ]
-    },
-    "X-KDevelop-Interfaces": [ "ILanguageSupport" ],
-    "X-KDevelop-Language": "Go",
-    "X-KDevelop-Mode": "NoGUI",
-    "X-KDevelop-SupportedMimeTypes": [ "text/x-go" ]
+    }, 
+    "X-KDevelop-Interfaces": [
+        "ILanguageSupport"
+    ], 
+    "X-KDevelop-Language": "Go", 
+    "X-KDevelop-Mode": "NoGUI", 
+    "X-KDevelop-SupportedMimeTypes": [
+        "text/x-go"
+    ]
 }

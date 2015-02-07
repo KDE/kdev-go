@@ -36,14 +36,13 @@ include_directories(
     ${KDEVPGQT_INCLUDE_DIR}
 )
 
-set(goplugin_SRC 
+kdevplatform_add_plugin(kdevgoplugin JSON kdevgo.json SOURCES
     kdevgoplugin.cpp
     golangparsejob.cpp
     gohighlighting.cpp
     godebug.cpp
 )
-    
-add_library(kdevgoplugin MODULE ${goplugin_SRC})
+
 target_link_libraries(kdevgoplugin 
     KDev::Interfaces
     KDev::Language
@@ -53,8 +52,3 @@ target_link_libraries(kdevgoplugin
     kdevgoduchain
     kdevgocompletion
 )
-
-install(TARGETS kdevgoplugin DESTINATION ${PLUGIN_INSTALL_DIR})
-
-configure_file(kdev-go.desktop.in ${CMAKE_BINARY_DIR}/kdev-go.desktop)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/kdev-go.desktop DESTINATION ${SERVICES_INSTALL_DIR})

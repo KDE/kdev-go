@@ -28,10 +28,7 @@
 #include "codecompletion/model.h"
 #include "golangparsejob.h"
 
-K_PLUGIN_FACTORY(GoPluginFactory, registerPlugin<GoPlugin>(); )
-//K_EXPORT_PLUGIN(GoPluginFactory(
-//    KAboutData("kdevgoplugin","kdevgoplugin",
-//               ki18n("Go Plugin"), "0.1", ki18n("Go Language Support for KDevelop"), KAboutData::License_GPL)))
+K_PLUGIN_FACTORY_WITH_JSON(GoPluginFactory, "kdevgo.json", registerPlugin<GoPlugin>(); )
 
 using namespace KDevelop;
 

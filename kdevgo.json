@@ -5,6 +5,12 @@
         "Id": "kdevgo", 
         "License": "GPL", 
         "Name": "Go Support", 
+        "Name[nl]": "Ondersteuning voor Go", 
+        "Name[pt]": "Suporte para Go", 
+        "Name[pt_BR]": "Suporte a Go", 
+        "Name[sv]": "Go-support", 
+        "Name[uk]": "Підтримка Go", 
+        "Name[x-test]": "xxGo Supportxx", 
         "ServiceTypes": [
             "KDevelop/Plugin"
         ]

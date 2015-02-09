@@ -5,6 +5,7 @@
         "Id": "kdevgo", 
         "License": "GPL", 
         "Name": "Go Support", 
+        "Name[en_GB]": "Go Support", 
         "Name[nl]": "Ondersteuning voor Go", 
         "Name[pt]": "Suporte para Go", 
         "Name[pt_BR]": "Suporte a Go", 

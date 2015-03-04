@@ -46,6 +46,7 @@ private slots:
     void test_literals();
     void test_unaryOps_data();
     void test_unaryOps();
+    void test_typeAssertions();
 };
 
 

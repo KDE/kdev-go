@@ -536,6 +536,24 @@ void TestDuchain::test_unaryOps()
     QCOMPARE(decls.first()->abstractType()->toString(), result);
 }
 
+void TestDuchain::test_typeAssertions()
+{
+    QString code("package main; type mytype int; func main() { var a int; test := a.(float64); test2 := a.(*uint); \
+                test3 := a.(map[int]string); test4 := a.([]rune); test5 := a.(mytype)}");
+    DUContext* context = getMainContext(code);
+    DUChainReadLocker lock;
+    Declaration* decl = context->findDeclarations(QualifiedIdentifier("test")).first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(decl->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeFloat64));
+    decl = context->findDeclarations(QualifiedIdentifier("test2")).first();
+    QCOMPARE(decl->abstractType()->toString(), QString("uint*"));
+    decl = context->findDeclarations(QualifiedIdentifier("test3")).first();
+    QCOMPARE(decl->abstractType()->toString(), QString("map[int]string"));
+    decl = context->findDeclarations(QualifiedIdentifier("test4")).first();
+    QCOMPARE(decl->abstractType()->toString(), QString("rune[]"));
+    decl = context->findDeclarations(QualifiedIdentifier("test5")).first();
+    QCOMPARE(decl->abstractType()->toString(), QString("main::mytype"));
+}
+
 
 DUContext* getPackageContext(const QString& code)
 {

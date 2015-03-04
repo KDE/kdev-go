@@ -343,6 +343,10 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
             //unrecognized index expression, return whatever type was before index
             pushType(type);
         }
+    }else if(node->typeAssertion && m_builder)
+    {
+        m_builder->visitType(node->typeAssertion);
+        pushType(m_builder->getLastType());
     }
     if(node->primaryExprResolve)
 	visitPrimaryExprResolve(node->primaryExprResolve);

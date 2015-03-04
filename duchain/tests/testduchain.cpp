@@ -325,6 +325,8 @@ void TestDuchain::test_rangeclause_data()
     QTest::newRow("chan range") << "var mychan chan *mytype" << "mychan" << "main::mytype*" << "nil";
     QTest::newRow("chan range 2") << "var mychan <- chan []int" << "mychan" << "int[]" << "nil";
     QTest::newRow("chan range 3") << "var mychan chan <- struct{ b int}" << "mychan" << "struct{ b int}" << "nil";
+    QTest::newRow("named type") << "var myvar mytype" << "myvar" << "int" << "float64";
+    QTest::newRow("named type pointer") << "var myvar *mytype" << "myvar" << "int" << "float64";
 }
 
 void TestDuchain::test_rangeclause()
@@ -333,11 +335,11 @@ void TestDuchain::test_rangeclause()
     QFETCH(QString, rangeexpr);
     QFETCH(QString, type1);
     QFETCH(QString, type2);
-    QString code(QString("package main; type mytype int; func main() { %1; for test, test2 := range %2 {   } }").arg(vardecl).arg(rangeexpr));
+    QString code(QString("package main; type mytype []float64; func main() { %1; for test, test2 := range %2 {   } }").arg(vardecl).arg(rangeexpr));
     DUContext* context = getMainContext(code);
     QVERIFY(context);
     DUChainReadLocker lock;
-    context = context->findContextAt(CursorInRevision(0, 80));
+    context = context->findContextAt(CursorInRevision(0, 90));
     QVERIFY(context);
     auto decls = context->findDeclarations(QualifiedIdentifier("test"));
     QCOMPARE(decls.size(), 1);

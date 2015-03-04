@@ -725,6 +725,24 @@ void ExpressionVisitor::visitRangeClause(ExpressionAst* node)
         return;
     AbstractType::Ptr type = popTypes().first();
     //go::DefaultVisitor::visitPrimaryExprResolve(node); //build uses
+    //dereference pointers
+    if(fastCast<PointerType*>(type.constData()))
+    {
+        PointerType::Ptr ptype = PointerType::Ptr(fastCast<PointerType*>(type.constData()));
+        type = ptype->baseType();
+    }
+    //descend to underlying types through custom ones
+    int recursionPrev = 0; //prevent recursion in case user defined circular types
+    while(fastCast<StructureType*>(type.constData()) && recursionPrev < 100)
+    {
+        DUChainReadLocker lock;
+        Declaration* declaration = fastCast<StructureType*>(type.constData())->declaration(m_context->topContext());
+        if(!declaration || !declaration->abstractType())
+            return;
+        type = declaration->abstractType(); //underlying type
+        recursionPrev++;
+    }
+
     if(fastCast<GoIntegralType*>(type.constData()))
     {
         GoIntegralType::Ptr itype(fastCast<GoIntegralType*>(type.constData()));
@@ -738,15 +756,6 @@ void ExpressionVisitor::visitRangeClause(ExpressionAst* node)
         ArrayType::Ptr atype(fastCast<ArrayType*>(type.constData()));
         pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeInt)));
         addType(atype->elementType());
-    }else if(fastCast<PointerType*>(type.constData()))
-    {//pointers to array are automatically dereferenced
-        PointerType::Ptr ptype = PointerType::Ptr(fastCast<PointerType*>(type.constData()));
-        if(fastCast<ArrayType*>(ptype->baseType().constData()))
-        {
-            ArrayType::Ptr atype = ArrayType::Ptr(fastCast<ArrayType*>(ptype->baseType().constData()));
-            pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeInt)));
-            addType(atype->elementType());
-        }
     }else if(fastCast<GoMapType*>(type.constData()))
     {
         GoMapType::Ptr mtype(fastCast<GoMapType*>(type.constData()));

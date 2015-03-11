@@ -556,6 +556,20 @@ void TestDuchain::test_typeAssertions()
     QCOMPARE(decl->abstractType()->toString(), QString("main::mytype"));
 }
 
+void TestDuchain::test_selectCases()
+{
+    QString code("package main; type mytype int; func main() { mychan := make(chan mytype, 1); select { case test, ok := <- mychan: mychan <- mytype{1}; } }");
+    DUContext* context = getMainContext(code);
+    DUChainReadLocker lock;
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("test")).size(), 0);
+    QCOMPARE(context->findDeclarations(QualifiedIdentifier("ok")).size(), 0);
+
+    context = context->findContextAt(CursorInRevision(0, 120));
+    Declaration* decl = context->findDeclarations(QualifiedIdentifier("test")).first();
+    Declaration* ok = context->findDeclarations(QualifiedIdentifier("ok")).first();
+    QCOMPARE(decl->abstractType()->toString(), QString("main::mytype"));
+    QCOMPARE(fastCast<go::GoIntegralType*>(ok->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeBool));
+}
 
 DUContext* getPackageContext(const QString& code)
 {

@@ -55,6 +55,13 @@ public:
     virtual void visitTypeCaseClause(go::TypeCaseClauseAst* node);
     virtual void visitExprCaseClause(go::ExprCaseClauseAst* node);
 
+    /**
+     * this handles variable declaration in select statements, e.g.
+     * select { case i := <-mychan: bla bla...  }
+     * NOTE: right hand side expression must be a receive operator, returning two values */
+    virtual void visitCommCase(go::CommCaseAst* node);
+    virtual void visitCommClause(go::CommClauseAst* node);
+
     virtual void visitTypeDecl(go::TypeDeclAst* node);
   
     

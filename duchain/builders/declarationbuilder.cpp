@@ -538,6 +538,35 @@ void DeclarationBuilder::visitExprCaseClause(go::ExprCaseClauseAst* node)
     closeContext();
 }
 
+void DeclarationBuilder::visitCommCase(go::CommCaseAst* node)
+{
+    if(node->autoassign != -1)
+    {
+        go::ExpressionVisitor expVisitor(m_session, currentContext(), this);
+        expVisitor.visitExpression(node->recvExp);
+        auto types = expVisitor.lastTypes();
+        if(types.size() == 2) //expression must be a receive operator, returning two values
+        {
+            declareVariable(identifierAstFromExpressionAst(node->sendOrRecv), types.first());
+            if(node->expressionList)
+            {
+                auto secondVariable = node->expressionList->expressionsSequence->front();
+                declareVariable(identifierAstFromExpressionAst(secondVariable->element), types.at(1));
+            }
+        }
+    }
+    DeclarationBuilderBase::visitCommCase(node);
+}
+
+void DeclarationBuilder::visitCommClause(go::CommClauseAst* node)
+{
+    openContext(node, editorFindRange(node, 0), DUContext::Other); //wrapper context
+    DeclarationBuilderBase::visitCommClause(node);
+    closeContext();
+}
+
+
+
 void DeclarationBuilder::visitTypeDecl(go::TypeDeclAst* node)
 {
     m_lastTypeComment = m_session->commentBeforeToken(node->startToken);

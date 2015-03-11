@@ -732,7 +732,7 @@ commCase=commCase COLON statements=statements
 
 defaultToken=DEFAULT
 | CASE sendOrRecv=expression
-( (expressionList=expressionList | 0) (ASSIGN | AUTOASSIGN) recvExp=expression
+( (expressionList=expressionList | 0) (ASSIGN | autoassign=AUTOASSIGN) recvExp=expression
  | LEFTCHAN sendExp=expression | 0 )
  -> commCase;;
 

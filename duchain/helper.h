@@ -20,6 +20,7 @@
 #define GOLANGHELPER_H
 
 #include <language/duchain/ducontext.h>
+#include <language/duchain/topducontext.h>
 #include <QUrl>
 
 #include "goduchainexport.h"
@@ -33,8 +34,12 @@ class KDEVGODUCHAIN_EXPORT Helper
 {
 public:
     static QList<QString> getSearchPaths(QUrl document=QUrl());
+    static QString getBuiltinFile();
+    static ReferencedTopDUContext getBuiltinContext();
 private:
     static QList<QString> m_CachedSearchPaths;
+    static QString builtinFile;
+    static DUChainPointer<TopDUContext> builtinContext;
 };
 
 KDEVGODUCHAIN_EXPORT DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext* context, bool searchInParent=true);

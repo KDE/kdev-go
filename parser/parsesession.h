@@ -70,7 +70,17 @@ public:
 
     QList<KDevelop::ReferencedTopDUContext> contextForThisPackage(KDevelop::IndexedString package);
 
+    /**
+     * Schedules for parsing with given priority and features.
+     * NOTE this will not schedule recursive imports (imports of imports and so on)
+     * to schedule any file use BackgroundParser instead
+     **/
     bool scheduleForParsing(const KDevelop::IndexedString& url, int priority, KDevelop::TopDUContext::Features features);
+
+    /**
+     * Reschedules this file with same features.
+     **/
+    void rescheduleThisFile();
 
     void reparseImporters(KDevelop::DUContext* context);
 

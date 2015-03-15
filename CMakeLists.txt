@@ -52,3 +52,5 @@ target_link_libraries(kdevgoplugin
     kdevgoduchain
     kdevgocompletion
 )
+
+install(FILES builtins.go DESTINATION ${DATA_INSTALL_DIR}/kdev-go)

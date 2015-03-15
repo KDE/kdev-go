@@ -21,14 +21,21 @@
 #include <language/duchain/duchainlock.h>
 #include <language/duchain/declaration.h>
 #include <language/duchain/topducontext.h>
+#include <language/duchain/duchain.h>
+#include <language/backgroundparser/backgroundparser.h>
+#include <interfaces/icore.h>
+#include <interfaces/ilanguagecontroller.h>
 
 #include <QReadLocker>
 #include <QProcess>
+#include <QStandardPaths>
 
 namespace go
 {
 
 QList<QString> Helper::m_CachedSearchPaths;
+QString Helper::builtinFile;
+DUChainPointer<TopDUContext> Helper::builtinContext;
 
 QList< QString > Helper::getSearchPaths(QUrl document)
 {
@@ -81,6 +88,38 @@ QList< QString > Helper::getSearchPaths(QUrl document)
     return paths;
 }
 
+QString Helper::getBuiltinFile()
+{
+    if(Helper::builtinFile.isNull())
+        Helper::builtinFile = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "kdev-go/builtins.go");
+
+    return Helper::builtinFile;
+}
+
+ReferencedTopDUContext Helper::getBuiltinContext()
+{
+    if(Helper::builtinContext)
+    {
+        return ReferencedTopDUContext(Helper::builtinContext.data());
+    }else
+    {
+        DUChainReadLocker lock;
+        IndexedString file = IndexedString(Helper::getBuiltinFile());
+        if(file.isEmpty())
+            return ReferencedTopDUContext(0);
+        Helper::builtinContext = DUChain::self()->chainForDocument(file);
+        if(!Helper::builtinContext)
+        {
+            //if builtins were not parsed, schedule for parsing with high priority
+            KDevelop::ICore::self()->languageController()->backgroundParser()->addDocument(file,
+                                                                                           KDevelop::TopDUContext::ForceUpdate,
+                                                                                           BackgroundParser::BestPriority,
+                                                                                           0, ParseJob::FullSequentialProcessing);
+            return ReferencedTopDUContext(0);
+        }
+        return ReferencedTopDUContext(Helper::builtinContext.data());
+    }
+}
 
 DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext* context, bool searchInParent)
 {

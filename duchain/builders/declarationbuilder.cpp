@@ -421,7 +421,8 @@ void DeclarationBuilder::visitSourceFile(go::SourceFileAst* node)
     m_thisPackage = identifierForNode(node->packageClause->packageName);
     //import package this context belongs to
     importThisPackage();
-    
+    importBuiltins();
+
     go::DefaultVisitor::visitSourceFile(node);
     closeContext();
     closeDeclaration();
@@ -456,6 +457,28 @@ void DeclarationBuilder::importThisPackage()
     }
     DUChainWriteLocker lock;
     topContext()->updateImportsCache();
+}
+
+void DeclarationBuilder::importBuiltins()
+{
+    QString builtinFile = go::Helper::getBuiltinFile();
+    if(builtinFile.isEmpty() || IndexedString(builtinFile) == document())
+        return;
+    ReferencedTopDUContext builtins = go::Helper::getBuiltinContext();
+    if(!builtins)
+    {//schedule this file for reparsing, if builtins were not parsed yet
+        m_session->rescheduleThisFile();
+    }else
+    {
+        DUChainWriteLocker lock;
+        //import builtins
+        NamespaceAliasDeclaration* decl = openDeclaration<NamespaceAliasDeclaration>(QualifiedIdentifier(globalImportIdentifier()), RangeInRevision());
+        decl->setKind(Declaration::NamespaceAlias);
+        decl->setImportIdentifier(QualifiedIdentifier("_builtins"));
+        closeDeclaration();
+        topContext()->addImportedParentContext(builtins);
+        topContext()->updateImportsCache();
+    }
 }
 
 void DeclarationBuilder::visitForStmt(go::ForStmtAst* node)

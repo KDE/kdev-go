@@ -246,6 +246,13 @@ bool ParseSession::scheduleForParsing(const IndexedString& url, int priority, To
     return true;
 }
 
+void ParseSession::rescheduleThisFile()
+{
+    BackgroundParser* bgparser = KDevelop::ICore::self()->languageController()->backgroundParser();
+    if(!bgparser->isQueued(m_document))
+        bgparser->addDocument(m_document, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate), m_priority, 0, ParseJob::FullSequentialProcessing);
+}
+
 /**
  * Reparse files that import current context.
  * Only works for opened files, so another opened files get notified of changed context

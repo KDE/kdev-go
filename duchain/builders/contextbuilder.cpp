@@ -42,11 +42,8 @@ ContextBuilder::~ContextBuilder()
 
 void ContextBuilder::startVisiting(go::AstNode* node)
 {
-    //qCDebug(DUCHAIN) << "Start visiting";
     visitNode(node);
 }
-
-
 
 
 KDevelop::DUContext* ContextBuilder::contextFromNode(go::AstNode* node)

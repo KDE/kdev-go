@@ -100,6 +100,7 @@ private:
                                                        DUContext* paramContext, DUContext* retparamContext, const QByteArray& comment=QByteArray()) override;
 
     void importThisPackage();
+    void importBuiltins();
     bool m_export;
     
     //QHash<QString, TopDUContext*> m_anonymous_imports;

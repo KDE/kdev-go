@@ -27,6 +27,7 @@ using namespace KDevelop;
 ContextBuilder::ContextBuilder()
 {
     m_mapAst = false;
+    m_expectMoreImports = true;
 }
 
 
@@ -133,5 +134,17 @@ void ContextBuilder::visitBlock(go::BlockAst* node)
     go::DefaultVisitor::visitBlock(node);
     closeContext();
 }
+
+void ContextBuilder::visitTopLevelDeclaration(go::TopLevelDeclarationAst* node)
+{
+    if(m_expectMoreImports)
+    {
+        //first TopLevelDeclaration was encountered, no more imports are possible
+        m_expectMoreImports = false;
+        topContext()->updateImportsCache();
+    }
+    go::DefaultVisitor::visitTopLevelDeclaration(node);
+}
+
 
 

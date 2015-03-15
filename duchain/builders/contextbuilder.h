@@ -59,8 +59,14 @@ public:
     virtual void startVisiting(go::AstNode* node);
     virtual void visitIfStmt(go::IfStmtAst* node);
     virtual void visitBlock(go::BlockAst* node);
-  
-    
+
+    /**
+     * In go all imports must appear before first top level declaration.
+     * This gives us the opportunity to call updateImportsCache() only once, when first
+     * TopLevelDeclaration is encountered.
+     **/
+    virtual void visitTopLevelDeclaration(go::TopLevelDeclarationAst* node);
+
     virtual KDevelop::DUContext* contextFromNode(go::AstNode* node);
     
     virtual void setContextOnNode(go::AstNode* node, KDevelop::DUContext* context);
@@ -99,6 +105,7 @@ protected:
     
     bool m_mapAst; // make KDevelop::AbstractContextBuilder happy
     QScopedPointer<Editor> m_editor; // make KDevelop::AbstractUseBuilder happy
+    bool m_expectMoreImports;
   
 };
 

@@ -405,7 +405,6 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
         firstContext = false;
     }
     DUChainWriteLocker lock;
-    topContext()->updateImportsCache();
 }
 
 void DeclarationBuilder::visitSourceFile(go::SourceFileAst* node)
@@ -456,7 +455,6 @@ void DeclarationBuilder::importThisPackage()
 	topContext()->addImportedParentContext(context.data());
     }
     DUChainWriteLocker lock;
-    topContext()->updateImportsCache();
 }
 
 void DeclarationBuilder::importBuiltins()
@@ -477,7 +475,6 @@ void DeclarationBuilder::importBuiltins()
         decl->setImportIdentifier(QualifiedIdentifier("_builtins"));
         closeDeclaration();
         topContext()->addImportedParentContext(builtins);
-        topContext()->updateImportsCache();
     }
 }
 

@@ -155,13 +155,15 @@
 --another example is { for {} } or  {return "", 0 }
 
 --even though "}" cannot be first token in correct Go program
---it can occur in completion snippet, so we check if size() > 0
+--it can occur in completion snippet, so we check if size() > 0.
+--see labeledStmt parser rule if you wonder why 'prevkind == Token_COLON' is here.
 "}"  [: if(size() > 0) {
         int prevkind = at(size()-1).kind;  if(prevkind == Token_IDENT || prevkind == Token_INTEGER || prevkind == Token_FLOAT
 			    || prevkind == Token_COMPLEX || prevkind == Token_RUNE || prevkind == Token_STRING
 			    || prevkind == Token_BREAK || prevkind == Token_CONTINUE || prevkind == Token_FALLTHROUGH
 			    || prevkind == Token_RETURN || prevkind == Token_PLUSPLUS || prevkind == Token_MINUSMINUS
-			    || prevkind == Token_RPAREN || prevkind == Token_RBRACKET || prevkind == Token_RBRACE)
+			    || prevkind == Token_RPAREN || prevkind == Token_RBRACKET || prevkind == Token_RBRACE
+			    || prevkind == Token_COLON)
 				lxTOKEN(SEMICOLON);  } :]	RBRACE;
 
 
@@ -595,7 +597,7 @@ LBRACE (statements=statements | 0) RBRACE
 --conflicts:
 --FIRST/FIRST between simpleStmt.expression and labeledStmt (IDENT) - resolved by try/rollback
 --@TODO consider resolving ^ this conflict with LA for better performance
---FIRST/FIRST between simpleStmt.expression and shortVarDecl (IDENT) - resolved bt try/rollback
+--FIRST/FIRST between simpleStmt.expression and shortVarDecl (IDENT) - resolved by try/rollback
 
 --@Warning there is a dangerous bug with the try/rollback usage
 --if try/rollback expression succedes catch rule won't be evaluated even if parser fails later
@@ -615,9 +617,15 @@ declaration=declaration
 | block=block
 | try/rollback(labeledStmt=labeledStmt)
   catch(simpleStmt=simpleStmt)
-| 0				--Empty statement is part of language specification
+| 0                            --Empty statement is part of language specification
 -> statement;;
 
+--apparently it is legal in go to write: " ...
+--                                           label:
+--                                         }"
+--which is a labeled statement with an empty statement, but since lexer does not insert semicolons when line ends on COLON
+--last statement is left without any semicolon.
+--Therefore (hopefully) temporary workaround is to insert semicolons before '}' and after ':'. See lexer rule for '}'.
 label=identifier COLON statement=statement
 -> labeledStmt;;
 

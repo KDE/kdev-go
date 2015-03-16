@@ -237,6 +237,12 @@ void ParserTest::testForRangeLoop()
     QVERIFY(session.startParsing());
 }
 
+void ParserTest::testEmptyLabeledStmt()
+{
+    QString code("package main; func main() {  for i:=1; i<5; i++ { a := i;  emptylabel:  \n } }");
+    ParseSession session(code.toUtf8(), 0, true);
+    QVERIFY(session.startParsing());
+}
 
 
 //add this tests:

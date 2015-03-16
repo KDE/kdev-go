@@ -38,6 +38,7 @@ private slots:
   void testIfClause();
   void testFuncTypes();
   void testForRangeLoop();
+  void testEmptyLabeledStmt();
   
 };
 

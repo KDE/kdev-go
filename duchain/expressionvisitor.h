@@ -88,6 +88,11 @@ private:
      * to identified types.
      **/
     bool handleComplexLiteralsAndConversions(PrimaryExprResolveAst* node, Declaration* decl);
+
+    /**
+     * Handle 'make', 'append' and 'new' methods since they don't follow go syntax
+     * and cannot be handled by builtins.go
+     **/
     bool handleBuiltinFunction(PrimaryExprAst* node);
 
     /**

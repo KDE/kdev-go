@@ -613,7 +613,7 @@ bool ExpressionVisitor::handleBuiltinFunction(PrimaryExprAst* node)
     {
 	//QualifiedIdentifier builtinFunction = identifierForNode(node->id);
 	QString builtinFunction = identifierForNode(node->id).toString();
-	if((builtinFunction == "make" || builtinFunction == "append") && node->callOrBuiltinParam->type)
+	if(builtinFunction == "make" && node->callOrBuiltinParam->type)
 	{//for make first argument must be slice, map or channel type
 	    //TODO check types and open problem if they not what they should be
             m_builder->visitType(node->callOrBuiltinParam->type);
@@ -621,7 +621,17 @@ bool ExpressionVisitor::handleBuiltinFunction(PrimaryExprAst* node)
 	    visitCallOrBuiltinParam(node->callOrBuiltinParam);
 	    pushType(type);
 	    return true;
-	}else if(builtinFunction == "new")
+	}else if(builtinFunction == "append" && node->callOrBuiltinParam->expression)
+        {
+            visitExpression(node->callOrBuiltinParam->expression);
+            auto types = popTypes();
+            if(!types.empty())
+            {
+                auto type = types.first();
+                pushType(type);
+            }
+            return true;
+        }else if(builtinFunction == "new")
 	{
 	    AbstractType::Ptr type;
 	    if(!node->callOrBuiltinParam->type)
@@ -657,41 +667,6 @@ bool ExpressionVisitor::handleBuiltinFunction(PrimaryExprAst* node)
 		ptype->setBaseType(type);
 		pushType(AbstractType::Ptr(ptype));
 	    }
-	    return true;
-	}else if(builtinFunction == "cap" || builtinFunction == "copy" || builtinFunction == "len")
-	{
-	    visitCallOrBuiltinParam(node->callOrBuiltinParam);
-	    pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeInt)));
-            return true;
-	}else if((builtinFunction == "imag" || builtinFunction == "real") && node->callOrBuiltinParam->expression)
-	{
-	    visitExpression(node->callOrBuiltinParam->expression);
-	    auto types = popTypes();
-	    if(types.size() != 1)
-		return false;
-	    AbstractType::Ptr type = resolveTypeAlias(types.first());
-	    GoIntegralType::Ptr itype(fastCast<GoIntegralType*>(type.constData()));
-	    if(itype)
-	    {
-		if(itype->dataType() == GoIntegralType::TypeComplex64)
-		    pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeFloat32)));
-		else
-		    pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeFloat64)));
-		return true;
-	    }
-	}else if(builtinFunction == "complex")
-	{
-	    visitCallOrBuiltinParam(node->callOrBuiltinParam);
-	    pushType(AbstractType::Ptr(new GoIntegralType(GoIntegralType::TypeComplex128)));
-	    return true;
-	}else if(builtinFunction == "recover")
-	{
-	    visitCallOrBuiltinParam(node->callOrBuiltinParam);
-	    GoStructureType* type = new GoStructureType();
-	    type->setInterfaceType();
-	    type->setContext(m_builder->newContext(RangeInRevision::invalid()));
-	    type->setPrettyName("interface {}");
-	    pushType(AbstractType::Ptr(type));
 	    return true;
 	}
 	return false;

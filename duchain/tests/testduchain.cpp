@@ -21,6 +21,7 @@
 #include "parser/parsesession.h"
 #include "builders/declarationbuilder.h"
 #include "types/gointegraltype.h"
+#include "helper.h"
 
 #include <QtTest/QtTest>
 //#include <qtest_kde.h>
@@ -40,6 +41,20 @@ void TestDuchain::initTestCase()
 {
     AutoTestShell::init();
     TestCore::initialize(Core::NoUi);
+
+    //build builtins file, because it won't be scheduled automatically
+    QString builtinsFile = go::Helper::getBuiltinFile();
+    QFile f(builtinsFile);
+    f.open(QIODevice::ReadOnly);
+    QByteArray contents = f.readAll();
+    f.close();
+    ParseSession session(QString(contents).toUtf8(), 0);
+    session.setCurrentDocument(IndexedString(builtinsFile));
+    if(session.startParsing())
+    {
+        DeclarationBuilder builder(&session, false);
+        builder.build(session.currentDocument(), session.ast());
+    }
 }
 
 void TestDuchain::cleanupTestCase()
@@ -65,8 +80,8 @@ void TestDuchain::sanityCheck()
     DUContext* packageContext = packageDeclaration->internalContext();
     QVERIFY(packageContext);
     decls = packageContext->localDeclarations();
-    QCOMPARE(decls.size(), 1);
-    Declaration* funcDeclaration = decls.first();
+    QCOMPARE(decls.size(), 2);
+    Declaration* funcDeclaration = decls.at(1);
     QVERIFY(funcDeclaration);
     QCOMPARE(funcDeclaration->identifier().toString(), QString("main"));
 }
@@ -86,15 +101,16 @@ void TestDuchain::builtinFunctions_data()
     QTest::newRow("new") << "new(map[byte]mytype)" << "map[byte]main::mytype*";
     QTest::newRow("new 2") << "new(mytype)" << "main::mytype*";
     QTest::newRow("new 2") << "new([]unknown)" << "unknown[]*";
-    QTest::newRow("append") << "append([]int, 1, 2)" << "int[]";
+    QTest::newRow("append") << "append([]int{0}, 1, 2)" << "int[]";
+    QTest::newRow("append 2") << "append(myslice, \"a\")" << "string[]";
 
     QTest::newRow("cap") << "cap(myvar)" << "int";
     QTest::newRow("copy") << "copy(a, b)" << "int";
     QTest::newRow("len") << "len(array)" << "int";
     QTest::newRow("real") << "real(5i)" << "float64";
-    QTest::newRow("real 2") << "real(myvar)" << "float32";
+    QTest::newRow("real 2") << "real(myvar)" << "float64";
     QTest::newRow("imag") << "imag(2i)" << "float64";
-    QTest::newRow("imag 2") << "imag(myvar)" << "float32";
+    QTest::newRow("imag 2") << "imag(myvar)" << "float64";
     QTest::newRow("imag 3") << "imag(2+3i)" << "float64";
     QTest::newRow("complex") << "complex(-1, 0)" << "complex128";
     QTest::newRow("recover") << "recover()" << "interface {}";
@@ -107,7 +123,8 @@ void TestDuchain::builtinFunctions()
     QFETCH(QString, expression);
     QFETCH(QString, type);
 
-    QString code(QString("package main; type mytype int; var myvar complex64; func main() { testvar := %1; }").arg(expression));
+    QString code(QString("package main; type mytype int; var myvar complex64; var myslice []string; func main() { \
+                          testvar := %1; }").arg(expression));
 
     DUContext* context = getMainContext(code);
     QVERIFY(context);

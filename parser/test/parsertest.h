@@ -39,6 +39,7 @@ private slots:
   void testFuncTypes();
   void testForRangeLoop();
   void testEmptyLabeledStmt();
+  void testMapKeyLiteralValue(); //Go 1.5 feature
   
 };
 

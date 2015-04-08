@@ -477,10 +477,10 @@ LBRACE (element=element | 0) (COMMA (#elements=element | 0))* (SEMICOLON | 0) RB
 --so we just save whatever there is and when traversing AST later
 --we decide what is what by looking at value node
 keyOrValue=keyOrValue (COLON value=value | 0 ) 
-| literalValue=literalValue				--in this case it's just value
 -> element;;
 
 indexOrValue=expression
+| literalValue=literalValue             --Go 1.5 feature - literal values in map key
 -> keyOrValue;;
 
 expValue=expression

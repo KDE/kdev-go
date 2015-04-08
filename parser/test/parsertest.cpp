@@ -244,6 +244,14 @@ void ParserTest::testEmptyLabeledStmt()
     QVERIFY(session.startParsing());
 }
 
+void ParserTest::testMapKeyLiteralValue()
+{
+    QString code("package main; type T struct { method string }; func main() { var x = map[T]int{{\"foo\"} : 3, }; \
+                  var y = map[T]int { T{\"foo\"} : 3, };  var z = map[int]T{ 3 : {\"foo\"}, };  }");
+    ParseSession session(code.toUtf8(), 0, true);
+    QVERIFY(session.startParsing());
+}
+
 
 //add this tests:
 //go func(ch chan<- bool) {for {sleep(10); ch <- true; }}(c);

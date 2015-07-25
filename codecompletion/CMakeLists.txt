@@ -16,7 +16,7 @@ set(completion_SRCS
 )
 
 add_library(kdevgocompletion SHARED ${completion_SRCS})
-
+generate_export_header(kdevgocompletion BASE_NAME kdevgocompletion EXPORT_MACRO_NAME KDEVGOCOMPLETION_EXPORT)
 target_link_libraries(kdevgocompletion LINK_PRIVATE
     KDev::Language
     KDev::Interfaces

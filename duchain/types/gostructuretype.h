@@ -23,7 +23,7 @@
 #include <language/duchain/indexedducontext.h>
 #include <language/duchain/types/typesystem.h>
 
-#include "goduchainexport.h"
+#include "kdevgoduchain_export.h"
 
 
 namespace go

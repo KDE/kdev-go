@@ -22,7 +22,7 @@
 #include "parser/godefaultvisitor.h"
 #include "parser/goast.h"
 #include "builders/declarationbuilder.h"
-#include "goduchainexport.h"
+#include "kdevgoduchain_export.h"
 
 namespace go 
 {

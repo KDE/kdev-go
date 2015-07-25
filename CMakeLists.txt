@@ -15,6 +15,7 @@ include(ECMAddTests)
 include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(KDECompilerSettings)
+include(GenerateExportHeader)
 
 find_package(Qt5 REQUIRED Core Widgets Test)
 find_package(KF5 REQUIRED COMPONENTS ItemModels ThreadWeaver TextEditor I18n)

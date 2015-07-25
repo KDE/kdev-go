@@ -19,8 +19,9 @@
 #ifndef GOLANGNAVWIDGET_H
 #define GOLANGNAVWIDGET_H
 
+#include "kdevgoduchain_export.h"
+
 #include <language/duchain/navigation/abstractnavigationwidget.h>
-#include "../goduchainexport.h"
 
 class KDEVGODUCHAIN_EXPORT NavigationWidget : public KDevelop::AbstractNavigationWidget
 {

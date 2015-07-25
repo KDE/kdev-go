@@ -21,7 +21,7 @@
 
 #include <language/duchain/builders/abstracttypebuilder.h>
 #include "contextbuilder.h"
-#include "duchain/goduchainexport.h"
+#include "duchain/kdevgoduchain_export.h"
 #include "duchain/declarations/functiondeclaration.h"
 #include "duchain/types/gofunctiontype.h"
 

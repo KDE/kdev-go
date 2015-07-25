@@ -23,7 +23,7 @@
 #include <language/duchain/topducontext.h>
 #include <QUrl>
 
-#include "goduchainexport.h"
+#include "kdevgoduchain_export.h"
 
 using namespace KDevelop;
 

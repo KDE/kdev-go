@@ -22,14 +22,14 @@
 #include <language/codecompletion/codecompletioncontext.h>
 #include <language/codecompletion/codecompletionitem.h>
 
-#include "gocompletionexport.h"
+#include "kdevgocompletion_export.h"
 #include <QStack>
 #include <language/duchain/declaration.h>
 
 namespace go
 {
     
-class GOLANGCOMPLETION_EXPORT CodeCompletionContext : public KDevelop::CodeCompletionContext
+class KDEVGOCOMPLETION_EXPORT CodeCompletionContext : public KDevelop::CodeCompletionContext
 {
 public:
     CodeCompletionContext(const KDevelop::DUContextPointer& context, const QString& text,

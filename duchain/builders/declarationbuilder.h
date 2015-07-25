@@ -22,7 +22,7 @@
 #include <language/duchain/builders/abstractdeclarationbuilder.h>
 #include <language/duchain/builders/abstracttypebuilder.h>
 
-#include "duchain/goduchainexport.h"
+#include "duchain/kdevgoduchain_export.h"
 #include "contextbuilder.h"
 #include "typebuilder.h"
 #include "parser/parsesession.h"

@@ -23,7 +23,7 @@
 #include <language/duchain/types/typesystemdata.h>
 //#include <language/duchain/types/abstracttype.h>
 #include <language/duchain/types/indexedtype.h>
-#include <duchain/goduchainexport.h>
+#include <duchain/kdevgoduchain_export.h>
 
 using namespace KDevelop;
 

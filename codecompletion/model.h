@@ -21,12 +21,12 @@
 
 #include <language/codecompletion/codecompletionmodel.h>
 
-#include "gocompletionexport.h"
+#include "kdevgocompletion_export.h"
 
 namespace go
 {
 
-class GOLANGCOMPLETION_EXPORT CodeCompletionModel : public KDevelop::CodeCompletionModel
+class KDEVGOCOMPLETION_EXPORT CodeCompletionModel : public KDevelop::CodeCompletionModel
 {
 public:
     CodeCompletionModel(QObject* parent);

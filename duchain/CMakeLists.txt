@@ -27,7 +27,7 @@ set(duchain_SRC
      )
      
 add_library( kdevgoduchain SHARED ${duchain_SRC})
-
+generate_export_header(kdevgoduchain BASE_NAME kdevgoduchain EXPORT_MACRO_NAME KDEVGODUCHAIN_EXPORT)
 target_link_libraries(kdevgoduchain LINK_PRIVATE
     KDev::Interfaces
     KDev::Language

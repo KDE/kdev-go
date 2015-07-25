@@ -21,7 +21,7 @@
 
 #include <language/duchain/types/integraltype.h>
 
-#include "goduchainexport.h"
+#include "kdevgoduchain_export.h"
 
 namespace go {
     

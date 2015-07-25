@@ -39,7 +39,7 @@
 %parser_declaration_header "language/duchain/duchain.h"
 
 %export_macro "KDEVGOPARSER_EXPORT"
-%export_macro_header "goparserexport.h"
+%export_macro_header "kdevgoparser_export.h"
 
 
 %ast_extra_members

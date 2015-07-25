@@ -23,7 +23,7 @@
 #include <language/duchain/topducontext.h>
 #include <serialization/indexedstring.h>
 
-#include "goparserexport.h"
+#include "kdevgoparser_export.h"
 #include "parser/goast.h"
 
 namespace KDevPG
@@ -40,7 +40,7 @@ class StartAst;
 
 typedef QPair<KDevelop::DUContextPointer, KDevelop::RangeInRevision> SimpleUse;
 
-class KDE_EXPORT ParseSession
+class KDEVGOPARSER_EXPORT ParseSession
 {
 public:
   

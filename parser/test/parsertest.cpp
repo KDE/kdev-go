@@ -263,5 +263,3 @@ void ParserTest::testMapKeyLiteralValue()
 //	f(); g();
  
 }
-
-#include  "parsertest.moc"

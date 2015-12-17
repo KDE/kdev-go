@@ -24,6 +24,8 @@
 #include "parser/goast.h"
 #include "contextbuilder.h"
 
+#include <QStack>
+
 namespace go 
 {
     

@@ -146,7 +146,9 @@ void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread
 	DUChain::self()->updateContextEnvironment(context->topContext(), file.data());
     }
     highlightDUChain();
-    
+
+    DUChain::self()->emitUpdateReady(document(), duChain());
+
     if(result)
       qCDebug(Go) << "===Success===" << document().str();
     else

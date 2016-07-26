@@ -26,7 +26,8 @@
 class KDEVGODUCHAIN_EXPORT NavigationWidget : public KDevelop::AbstractNavigationWidget
 {
 public:
-    NavigationWidget(KDevelop::Declaration* decl, KDevelop::TopDUContext* topContext, const QString& htmlPrefix, const QString& htmlSuffix);
+    NavigationWidget(KDevelop::Declaration* decl, KDevelop::TopDUContext* topContext,
+                     const QString& htmlPrefix, const QString& htmlSuffix, const KDevelop::AbstractNavigationWidget::DisplayHints hints);
   
 };
 

@@ -22,6 +22,7 @@
 #include <language/duchain/types/structuretype.h>
 #include <language/duchain/indexedducontext.h>
 #include <language/duchain/types/typesystem.h>
+#include <serialization/indexedstring.h>
 
 #include "kdevgoduchain_export.h"
 

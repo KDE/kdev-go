@@ -27,10 +27,9 @@ NavigationWidget::NavigationWidget(KDevelop::Declaration* decl, KDevelop::TopDUC
                                    const QString& htmlPrefix, const QString& htmlSuffix,
                                    const KDevelop::AbstractNavigationWidget::DisplayHints hints)
 {
-    m_topContext = topContext;
-    m_startContext = NavigationContextPointer(new DeclarationNavigationContext(DeclarationPointer(decl), m_topContext, nullptr));
+    auto context = NavigationContextPointer(new DeclarationNavigationContext(DeclarationPointer(decl), TopDUContextPointer(topContext), nullptr));
     
-    m_startContext->setPrefixSuffix(htmlPrefix, htmlSuffix);
+    context->setPrefixSuffix(htmlPrefix, htmlSuffix);
     setDisplayHints(hints);
-    setContext(m_startContext);
+    setContext(context);
 }

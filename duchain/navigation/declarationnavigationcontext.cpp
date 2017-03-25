@@ -69,43 +69,43 @@ DeclarationNavigationContext::DeclarationNavigationContext(DeclarationPointer de
 QString DeclarationNavigationContext::html(bool shorten)
 {
   clear();
-  m_shorten = shorten;
+  AbstractDeclarationNavigationContext::html(shorten);
   modifyHtml()  += "<html><body><p>" + fontSizePrefix(shorten);
 
-  addExternalHtml(m_prefix);
+  addExternalHtml(prefix());
 
-  if(!m_declaration.data()) {
+  if(!declaration().data()) {
     modifyHtml() += i18n("<br /> lost declaration <br />");
     return currentHtml();
   }
   
-  if( m_previousContext ) {
-    QString link = createLink( m_previousContext->name(), m_previousContext->name(), NavigationAction(m_previousContext) );
+  if( previousContext() ) {
+    QString link = createLink( previousContext()->name(), previousContext()->name(), NavigationAction(previousContext()) );
     modifyHtml() += navigationHighlight(i18n("Back to %1<br />", link));
   }
   
   QExplicitlySharedDataPointer<IDocumentation> doc;
   
   if( !shorten ) {
-    doc = ICore::self()->documentationController()->documentationForDeclaration(m_declaration.data());
+    doc = ICore::self()->documentationController()->documentationForDeclaration(declaration().data());
 
-    const AbstractFunctionDeclaration* function = dynamic_cast<const AbstractFunctionDeclaration*>(m_declaration.data());
+    const AbstractFunctionDeclaration* function = dynamic_cast<const AbstractFunctionDeclaration*>(declaration().data());
     if( function ) {
       htmlFunction();
-    } else if( m_declaration->isTypeAlias() || m_declaration->kind() == Declaration::Instance ) {
+    } else if( declaration()->isTypeAlias() || declaration()->kind() == Declaration::Instance ) {
 	
 	
-      if( m_declaration->isTypeAlias() )
+      if( declaration()->isTypeAlias() )
         modifyHtml() += importantHighlight("type ");
 
-      if(m_declaration->type<EnumeratorType>())
+      if(declaration()->type<EnumeratorType>())
         modifyHtml() += i18n("enumerator ");
       
-      if( !m_declaration->isTypeAlias()) 
-          modifyHtml() += ' ' + identifierHighlight(declarationName(m_declaration).toHtmlEscaped(), m_declaration) + " ";
+      if( !declaration()->isTypeAlias())
+          modifyHtml() += ' ' + identifierHighlight(declarationName(declaration()).toHtmlEscaped(), declaration()) + " ";
 
-      AbstractType::Ptr useType = m_declaration->abstractType();
-      if(m_declaration->isTypeAlias()) {
+      AbstractType::Ptr useType = declaration()->abstractType();
+      if(declaration()->isTypeAlias()) {
         //Do not show the own name as type of typedefs
         if(useType.cast<TypeAliasType>())
           useType = useType.cast<TypeAliasType>()->type();
@@ -116,21 +116,21 @@ QString DeclarationNavigationContext::html(bool shorten)
       modifyHtml() += "<br>";
 
     }else{
-      if( m_declaration->kind() == Declaration::Type && m_declaration->abstractType().cast<StructureType>()) {
+      if( declaration()->kind() == Declaration::Type && declaration()->abstractType().cast<StructureType>()) {
         htmlClass();
       }
-      if ( m_declaration->kind() == Declaration::Namespace ) {
-        modifyHtml() += i18n("namespace %1 ", identifierHighlight(m_declaration->qualifiedIdentifier().toString().toHtmlEscaped(), m_declaration));
+      if ( declaration()->kind() == Declaration::Namespace ) {
+        modifyHtml() += i18n("namespace %1 ", identifierHighlight(declaration()->qualifiedIdentifier().toString().toHtmlEscaped(), declaration()));
       }
 
-      if(m_declaration->type<EnumerationType>()) {
-        EnumerationType::Ptr enumeration = m_declaration->type<EnumerationType>();
-        modifyHtml() += i18n("enumeration %1 ", identifierHighlight(m_declaration->identifier().toString().toHtmlEscaped(), m_declaration));
+      if(declaration()->type<EnumerationType>()) {
+        EnumerationType::Ptr enumeration = declaration()->type<EnumerationType>();
+        modifyHtml() += i18n("enumeration %1 ", identifierHighlight(declaration()->identifier().toString().toHtmlEscaped(), declaration()));
       }
 
-      if(m_declaration->isForwardDeclaration()) {
-        ForwardDeclaration* forwardDec = static_cast<ForwardDeclaration*>(m_declaration.data());
-        Declaration* resolved = forwardDec->resolve(m_topContext.data());
+      if(declaration()->isForwardDeclaration()) {
+        ForwardDeclaration* forwardDec = static_cast<ForwardDeclaration*>(declaration().data());
+        Declaration* resolved = forwardDec->resolve(topContext().data());
         if(resolved) {
           modifyHtml() += i18n("( resolved forward-declaration: ");
           makeLink(resolved->identifier().toString(), KDevelop::DeclarationPointer(resolved), NavigationAction::NavigateDeclaration );
@@ -153,7 +153,7 @@ QString DeclarationNavigationContext::html(bool shorten)
       modifyHtml() += "<br />";
     }
   }else{
-    AbstractType::Ptr showType = m_declaration->abstractType();
+    AbstractType::Ptr showType = declaration()->abstractType();
     if(showType && showType.cast<FunctionType>()) {
       showType = showType.cast<FunctionType>()->returnType();
       if(showType)
@@ -168,11 +168,11 @@ QString DeclarationNavigationContext::html(bool shorten)
     }
   }
   
-  QualifiedIdentifier identifier = m_declaration->qualifiedIdentifier();
+  QualifiedIdentifier identifier = declaration()->qualifiedIdentifier();
   if( identifier.count() > 1 ) {
-    if( m_declaration->context() && m_declaration->context()->owner() )
+    if( declaration()->context() && declaration()->context()->owner() )
     {
-      Declaration* decl = m_declaration->context()->owner();
+      Declaration* decl = declaration()->context()->owner();
 
       FunctionDefinition* definition = dynamic_cast<FunctionDefinition*>(decl);
       if(definition && definition->declaration())
@@ -192,8 +192,8 @@ QString DeclarationNavigationContext::html(bool shorten)
     }
   }
   
-  if( shorten && !m_declaration->comment().isEmpty() ) {
-    QString comment = QString::fromUtf8(m_declaration->comment());
+  if( shorten && !declaration()->comment().isEmpty() ) {
+    QString comment = QString::fromUtf8(declaration()->comment());
     if( comment.length() > 60 ) {
       comment.truncate(60);
       comment += "...";
@@ -205,7 +205,7 @@ QString DeclarationNavigationContext::html(bool shorten)
   }
   
 
-  QString access = stringFromAccess(m_declaration);
+  QString access = stringFromAccess(declaration());
   if( !access.isEmpty() )
     modifyHtml() += labelHighlight(i18n("Access: %1 ", propertyHighlight(access.toHtmlEscaped())));
 
@@ -213,7 +213,7 @@ QString DeclarationNavigationContext::html(bool shorten)
   ///@todo Enumerations
 
   QString detailsHtml;
-  QStringList details = declarationDetails(m_declaration);
+  QStringList details = declarationDetails(declaration());
   if( !details.isEmpty() ) {
     bool first = true;
     foreach( const QString &str, details ) {
@@ -224,7 +224,7 @@ QString DeclarationNavigationContext::html(bool shorten)
     }
   }
 
-  QString kind = declarationKind(m_declaration);
+  QString kind = declarationKind(declaration());
   if( !kind.isEmpty() ) {
     if( !detailsHtml.isEmpty() )
       modifyHtml() += labelHighlight(i18n("Kind: %1 %2 ", importantHighlight(kind.toHtmlEscaped()), detailsHtml));
@@ -240,22 +240,22 @@ QString DeclarationNavigationContext::html(bool shorten)
     htmlAdditionalNavigation();
   
   if( !shorten ) {
-    if(dynamic_cast<FunctionDefinition*>(m_declaration.data()))
+    if(dynamic_cast<FunctionDefinition*>(declaration().data()))
       modifyHtml() += labelHighlight(i18n( "Def.: " ));
     else
       modifyHtml() += labelHighlight(i18n( "Decl.: " ));
 
-    makeLink( QString("%1 :%2").arg( QUrl(m_declaration->url().str()).fileName() ).arg( m_declaration->rangeInCurrentRevision().start().line()+1 ), m_declaration, NavigationAction::JumpToSource );
+    makeLink( QString("%1 :%2").arg( QUrl(declaration()->url().str()).fileName() ).arg( declaration()->rangeInCurrentRevision().start().line()+1 ), declaration(), NavigationAction::JumpToSource );
     modifyHtml() += " ";
     //modifyHtml() += "<br />";
-    if(!dynamic_cast<FunctionDefinition*>(m_declaration.data())) {
-      if( FunctionDefinition* definition = FunctionDefinition::definition(m_declaration.data()) ) {
+    if(!dynamic_cast<FunctionDefinition*>(declaration().data())) {
+      if( FunctionDefinition* definition = FunctionDefinition::definition(declaration().data()) ) {
         modifyHtml() += labelHighlight(i18n( " Def.: " ));
         makeLink( QString("%1 :%2").arg( QUrl(definition->url().str()).fileName() ).arg( definition->rangeInCurrentRevision().start().line()+1 ), DeclarationPointer(definition), NavigationAction::JumpToSource );
       }
     }
 
-    if( FunctionDefinition* definition = dynamic_cast<FunctionDefinition*>(m_declaration.data()) ) {
+    if( FunctionDefinition* definition = dynamic_cast<FunctionDefinition*>(declaration().data()) ) {
       if(definition->declaration()) {
         modifyHtml() += labelHighlight(i18n( " Decl.: " ));
         makeLink( QString("%1 :%2").arg( QUrl(definition->declaration()->url().str()).fileName() ).arg( definition->declaration()->rangeInCurrentRevision().start().line()+1 ), DeclarationPointer(definition->declaration()), NavigationAction::JumpToSource );
@@ -263,12 +263,12 @@ QString DeclarationNavigationContext::html(bool shorten)
     }
     
     modifyHtml() += " "; //The action name _must_ stay "show_uses", since that is also used from outside
-    makeLink(i18n("Show uses"), "show_uses", NavigationAction(m_declaration, NavigationAction::NavigateUses));
+    makeLink(i18n("Show uses"), "show_uses", NavigationAction(declaration(), NavigationAction::NavigateUses));
   }
   
-  if( !shorten && (!m_declaration->comment().isEmpty() || doc) ) {
+  if( !shorten && (!declaration()->comment().isEmpty() || doc) ) {
     modifyHtml() += "<br />";
-    QString comment = QString::fromUtf8(m_declaration->comment());
+    QString comment = QString::fromUtf8(declaration()->comment());
     if(comment.isEmpty() && doc) {
       comment = doc->description();
       if(!comment.isEmpty()) {
@@ -286,13 +286,13 @@ QString DeclarationNavigationContext::html(bool shorten)
   
     if(!shorten && doc) {
       modifyHtml() += "<br />" + i18n("Show documentation for ");
-      makeLink( prettyQualifiedIdentifier(m_declaration).toString(), m_declaration, NavigationAction::ShowDocumentation );
+      makeLink( prettyQualifiedIdentifier(declaration()).toString(), declaration(), NavigationAction::ShowDocumentation );
     }
   
   
     //modifyHtml() += "<br />";
 
-  addExternalHtml(m_suffix);
+  addExternalHtml(suffix());
 
   modifyHtml() += fontSizeSuffix(shorten) + "</p></body></html>";
 
@@ -303,11 +303,11 @@ QString DeclarationNavigationContext::html(bool shorten)
 void DeclarationNavigationContext::htmlFunction()
 {
     //KDevelop::AbstractDeclarationNavigationContext::htmlFunction();
-    const go::GoFunctionDeclaration* function = dynamic_cast<const go::GoFunctionDeclaration*>(m_declaration.data());
+    const go::GoFunctionDeclaration* function = dynamic_cast<const go::GoFunctionDeclaration*>(declaration().data());
     if(!function) 
 	AbstractDeclarationNavigationContext::htmlFunction();
 
-    const go::GoFunctionType::Ptr type = m_declaration->abstractType().cast<go::GoFunctionType>();
+    const go::GoFunctionType::Ptr type = declaration()->abstractType().cast<go::GoFunctionType>();
     if( !type ) {
 	modifyHtml() += errorHighlight("Invalid type<br />");
 	return;
@@ -318,7 +318,7 @@ void DeclarationNavigationContext::htmlFunction()
 	eventuallyMakeTypeLinks( type->returnType() );
     }*/
 
-    modifyHtml() += ' ' + identifierHighlight(prettyIdentifier(m_declaration).toString().toHtmlEscaped(), m_declaration);
+    modifyHtml() += ' ' + identifierHighlight(prettyIdentifier(declaration()).toString().toHtmlEscaped(), declaration());
 
     if( type->indexedArgumentsSize() == 0 )
     {
@@ -331,8 +331,8 @@ void DeclarationNavigationContext::htmlFunction()
 	int currentArgNum = 0;
 
 	QVector<Declaration*> decls;
-	if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(m_declaration.data())) {
-	    decls = argumentContext->localDeclarations(m_topContext.data());
+	if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(declaration().data())) {
+	    decls = argumentContext->localDeclarations(topContext().data());
 	}
 	foreach(const AbstractType::Ptr& argType, type->arguments()) {
 	    if( !first )
@@ -340,7 +340,7 @@ void DeclarationNavigationContext::htmlFunction()
 	    first = false;
 
 	    if (currentArgNum < decls.size()) {
-		modifyHtml() += identifierHighlight(decls[currentArgNum]->identifier().toString().toHtmlEscaped(), m_declaration) + " ";
+		modifyHtml() += identifierHighlight(decls[currentArgNum]->identifier().toString().toHtmlEscaped(), declaration()) + " ";
 	    }
 
 	    if(type->modifiers() == go::GoFunctionType::VariadicArgument && currentArgNum == decls.size()-1)
@@ -375,16 +375,16 @@ void DeclarationNavigationContext::htmlFunction()
 	int currentArgNum = 0;
 	bool first=true;
 	QVector<Declaration*> decls;
-	/*if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(m_declaration.data())) {
-	    decls = argumentContext->localDeclarations(m_topContext.data());
+	/*if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(declaration().data())) {
+	    decls = argumentContext->localDeclarations(topContext().data());
 	}*/
 	if(DUContext* retContext = function->returnArgsContext()) 
-	    decls = retContext->localDeclarations(m_topContext.data());
+	    decls = retContext->localDeclarations(topContext().data());
 	
 	if(type->returnArguments().size() == 1)
 	{
             if(decls.size() != 0) //show declaration if one exists
-                modifyHtml() += identifierHighlight(decls[0]->identifier().toString().toHtmlEscaped(), m_declaration) + " ";
+                modifyHtml() += identifierHighlight(decls[0]->identifier().toString().toHtmlEscaped(), declaration()) + " ";
 	    eventuallyMakeTypeLinks(type->returnArguments().front());
 	    //modifyHtml() += ' ' + nameHighlight(Qt::escape(decls[currentArgNum]->identifier().toString()));
 	}else
@@ -397,7 +397,7 @@ void DeclarationNavigationContext::htmlFunction()
 
 	    //TODO fix parameter names
 	    if (currentArgNum < decls.size()) {
-		modifyHtml() += identifierHighlight(decls[currentArgNum]->identifier().toString().toHtmlEscaped(), m_declaration) + " ";
+		modifyHtml() += identifierHighlight(decls[currentArgNum]->identifier().toString().toHtmlEscaped(), declaration()) + " ";
 	    }
 	    eventuallyMakeTypeLinks( argType );
 	    ++currentArgNum;
@@ -415,11 +415,11 @@ void DeclarationNavigationContext::eventuallyMakeTypeLinks(AbstractType::Ptr typ
 	modifyHtml() += typeHighlight(QString("<no type>").toHtmlEscaped());
 	return;
     }
-    if(m_declaration->isTypeAlias())
+    if(declaration()->isTypeAlias())
     {
 	//Go type declaration. manually creating links
-	QualifiedIdentifier id = m_declaration->qualifiedIdentifier();
-	makeLink(id.toString(), DeclarationPointer(m_declaration), NavigationAction::NavigateDeclaration );
+	QualifiedIdentifier id = declaration()->qualifiedIdentifier();
+	makeLink(id.toString(), DeclarationPointer(declaration()), NavigationAction::NavigateDeclaration );
 	
     }else 
 	KDevelop::AbstractDeclarationNavigationContext::eventuallyMakeTypeLinks(type);

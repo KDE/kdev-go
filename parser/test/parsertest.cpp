@@ -122,8 +122,7 @@ void ParserTest::testOperators()
 
 void ParserTest::testRunes()
 {
-    //@TODO stuff like ''' shouldn't actually be accepted, try fixing rune lexer rule in go.g
-    QByteArray code = "'\\'   '\"'   '~'   '_'  '0'  'a'  '\''   'щ'  '''  ";
+    QByteArray code = "'\\'   '\"'   '~'   '_'  '0'  'a'  '\\''   'щ'  '''  ";
     KDevPG::QByteArrayIterator iter(code);
     Lexer lexer(iter);
     QVERIFY( lexer.read().kind == TokenTypeWrapper::Token_RUNE);
@@ -134,7 +133,7 @@ void ParserTest::testRunes()
     QVERIFY( lexer.read().kind == TokenTypeWrapper::Token_RUNE);
     QVERIFY( lexer.read().kind == TokenTypeWrapper::Token_RUNE);
     QVERIFY( lexer.read().kind == TokenTypeWrapper::Token_RUNE);
-    QVERIFY( lexer.read().kind == TokenTypeWrapper::Token_RUNE);
+    QVERIFY( lexer.read().kind == TokenTypeWrapper::Token_TEST);
     
 }
 

@@ -212,8 +212,7 @@
   ("\\u"[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]) |
     ("\\U"[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]
       [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]) |
-     -- ("\\a")|("\\b")|("\\f")|("\\n")|("\\r")|("\\t")|("\\v")|("\\\\")|("\\\'")|("\\\"") | ({alphabetic} | {num} | [.^\'] )		-> unicode_value;
-     ("\\a")|("\\b")|("\\f")|("\\n")|("\\r")|("\\t")|("\\v")|("\\\\")|("\\\'")|("\\\"") | ({alphabetic} | {num} | . )		-> unicode_value;
+      ("\\a")|("\\b")|("\\f")|("\\n")|("\\r")|("\\t")|("\\v")|("\\\\")|("\\\'")|("\\\"") | ({alphabetic} | {num} | [.^\'] )		-> unicode_value;
      
 --because of problems with utf-8 add this rule for now
 --disregard that, utf8 works fine

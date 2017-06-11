@@ -41,6 +41,8 @@ private slots:
   void testNumbers_data();
   void testCommentsAreIgnored();
   void testCommentsAreIgnored_data();
+  void testMultiLineStrings();
+  void testMultiLineStrings_data();
   void testBasicTypes();
   void testIfClause();
   void testFuncTypes();

@@ -207,6 +207,35 @@ void ParserTest::testCommentsAreIgnored_data()
     QTest::newRow("Multi-lined comment") << QByteArray("/*\ntest\n*/\n");
 }
 
+void ParserTest::testMultiLineStrings()
+{
+    QFETCH(QByteArray, code);
+    QFETCH(bool, isValid);
+    QFETCH(QByteArray, expectedContent);
+    go::Parser *parser;
+    go::Lexer *lexer;
+    go::StatementsAst* ast;
+    prepareParser(code, &parser, &lexer);
+    bool result = parser->parseStatements(&ast);
+    QCOMPARE(result, isValid);
+    if(isValid)
+    {
+        auto node = ast->statementSequence->front()->element->simpleStmt->shortVarDecl->expression->unaryExpression->primaryExpr->basicLit;
+        auto stringValue = getCodeFromNode(code, lexer, node);
+        QCOMPARE(stringValue, expectedContent);
+    }
+}
+
+void ParserTest::testMultiLineStrings_data()
+{
+    QTest::addColumn<QByteArray>("code");
+    QTest::addColumn<bool>("isValid");
+    QTest::addColumn<QByteArray>("expectedContent");
+
+    QTest::newRow("Multiline string") << QByteArray("a := `\\n\n\\n`\n") << true << QByteArray("`\\n\n\\n`");
+    QTest::newRow("Incorrect multiline string") << QByteArray("a := \"\n\"\n") << false << QByteArray();
+}
+
 void ParserTest::testBasicTypes()
 {
     QByteArray code = "struct { array [5][2]string; slice []*int; \

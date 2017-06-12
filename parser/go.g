@@ -223,10 +223,10 @@
 
 --strings----------------------------------------------------------------
 --This works well
-( [.^(\" | \\)] | \\.)	->string_internal;
+( [.^(\" | \\ | \n)] | \\.)	->string_internal;
 -- ( [.^(\` | \\)] | \\.)	->string_internal2; --I'm not sure if you can escape backticks
   ("\"" ({string_internal})* "\"")  			 STRING;
-  "\`" [: lxSET_RULE_SET(instring); :]                 STRING;
+  "\`" [: lxSET_RULE_SET(instring); lxCONTINUE; :];
 
   
   
@@ -266,9 +266,9 @@
  .	;
  ;
 %lexer "instring" ->
- \n            [: locationTable()->newline(lxCURR_IDX); :]     ;
- "\`"          [: lxSET_RULE_SET(start); :] ;
- .         ;
+ \n            [: locationTable()->newline(lxCURR_IDX); lxCONTINUE; :] ;
+ "\`"          [: lxSET_RULE_SET(start); :] STRING;
+ .             [: lxCONTINUE; :];
  ;
 
 ------------------------------------------------------------------------- 

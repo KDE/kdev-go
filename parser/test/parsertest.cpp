@@ -181,6 +181,14 @@ void prepareParser(const QByteArray& code, go::Parser** parser, go::Lexer** lexe
     KDevPG::QByteArrayIterator iter(code);
     *lexer = new go::Lexer(iter);
     (*parser)->setTokenStream(*lexer);
+    (*parser)->rewind(0);
+}
+
+QByteArray ParserTest::getCodeFromNode(const QByteArray &code, go::Lexer *lexer, go::AstNode *node)
+{
+    auto startToken = lexer->at(node->startToken);
+    auto endToken = lexer->at(node->endToken);
+    return code.mid(startToken.begin, endToken.end - startToken.begin+1);
 }
 
 void ParserTest::testCommentsAreIgnored()
@@ -227,9 +235,9 @@ void ParserTest::testBasicTypes()
     QString content = code;
     const KDevPG::ListNode <go::FieldDeclAst*> *node = ast->complexType->structType->fieldDeclSequence->front();
     //qDebug() << code.mid(lexer.at(node->element->startToken).begin, lexer.at(node->element->endToken).end - lexer.at(node->element->startToken).begin+1);
-    QVERIFY( code.mid(lexer.at(node->element->startToken).begin, lexer.at(node->element->endToken).end - lexer.at(node->element->startToken).begin+1) 
-      == "array [5][2]string");
-  
+    auto actual = getCodeFromNode(code, &lexer, node->element);
+    QByteArray expected = "array [5][2]string";
+    QCOMPARE(actual, expected);
 }
 
 
@@ -287,6 +295,96 @@ void ParserTest::testForRangeLoop()
     QString code = "package main; func main() { str := \"string\"; for range str { c := 2 } } ";
     ParseSession session(code.toUtf8(), 0, true);
     QVERIFY(session.startParsing());
+}
+
+void ParserTest::testForSingleConditionalLoop()
+{
+    QByteArray code = "for i < 1 { i += 1 }\n";
+    QByteArray expectedConditionCode = "i < 1";
+    QByteArray expectedBlockCode = "{ i += 1 }";
+    go::Parser *parser;
+    go::Lexer *lexer;
+    go::StatementsAst* ast;
+    prepareParser(code, &parser, &lexer);
+
+    bool result = parser->parseStatements(&ast);
+    QVERIFY(result);
+
+    auto forStmt = ast->statementSequence->front()->element->forStmt;
+    auto condition = forStmt->initStmtOrCondition;
+    auto block = forStmt->block;
+    bool foundCStyleCondition = forStmt->condition;
+    bool foundPostStmt = forStmt->postStmt;
+    QVERIFY(condition);
+    QVERIFY(block);
+    QVERIFY(!foundCStyleCondition);
+    QVERIFY(!foundPostStmt);
+
+    auto conditionCode = getCodeFromNode(code, lexer, condition);
+    auto blockCode = getCodeFromNode(code, lexer, block);
+    QCOMPARE(conditionCode, expectedConditionCode);
+    QCOMPARE(blockCode, expectedBlockCode);
+}
+
+void ParserTest::testForWithForClauseLoop()
+{
+    QByteArray code = "for i := 0; i < 10; i++ { f(i) }\n";
+    QByteArray expectedInitStmtCode = "i := 0";
+    QByteArray expectedConditionCode = "i < 10";
+    QByteArray expectedPostStmtCode = "i++";
+    QByteArray expectedBlockCode = "{ f(i) }";
+    go::Parser *parser;
+    go::Lexer *lexer;
+    go::StatementsAst* ast;
+    prepareParser(code, &parser, &lexer);
+
+    bool result = parser->parseStatements(&ast);
+    QVERIFY(result);
+
+    auto forStmt = ast->statementSequence->front()->element->forStmt;
+    auto initStmt = forStmt->initStmtOrCondition;
+    auto condition = forStmt->condition;
+    auto postStmt = forStmt->postStmt;
+    auto block = forStmt->block;
+    QVERIFY(initStmt);
+    QVERIFY(condition);
+    QVERIFY(postStmt);
+    QVERIFY(block);
+
+    auto initStmtCode = getCodeFromNode(code, lexer, initStmt);
+    auto conditionCode = getCodeFromNode(code, lexer, condition);
+    auto postStmtCode = getCodeFromNode(code, lexer, postStmt);
+    auto blockCode = getCodeFromNode(code, lexer, block);
+    QCOMPARE(initStmtCode, expectedInitStmtCode);
+    QCOMPARE(conditionCode, expectedConditionCode);
+    QCOMPARE(postStmtCode, expectedPostStmtCode);
+    QCOMPARE(blockCode, expectedBlockCode);
+}
+
+void ParserTest::testForWithEmptySingleConditionLoop()
+{
+    QByteArray code = "for { i += 1 }\n";
+    QByteArray expectedBlockCode = "{ i += 1 }";
+    go::Parser *parser;
+    go::Lexer *lexer;
+    go::StatementsAst* ast;
+    prepareParser(code, &parser, &lexer);
+
+    bool result = parser->parseStatements(&ast);
+    QVERIFY(result);
+
+    auto forStmt = ast->statementSequence->front()->element->forStmt;
+    auto conditionNode = forStmt->initStmtOrCondition;
+    auto block = forStmt->block;
+    bool foundCStyleCondition = forStmt->condition;
+    bool foundPostStmt = forStmt->postStmt;
+    QVERIFY(!conditionNode);
+    QVERIFY(!foundCStyleCondition);
+    QVERIFY(!foundPostStmt);
+    QVERIFY(block);
+
+    auto blockCode = getCodeFromNode(code, lexer, block);
+    QCOMPARE(blockCode, expectedBlockCode);
 }
 
 void ParserTest::testEmptyLabeledStmt()

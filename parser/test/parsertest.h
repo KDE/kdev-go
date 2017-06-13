@@ -24,6 +24,9 @@
 
 namespace go {
 
+class Lexer;
+class AstNode;
+
 class ParserTest : public QObject
 {
   Q_OBJECT
@@ -42,9 +45,13 @@ private slots:
   void testIfClause();
   void testFuncTypes();
   void testForRangeLoop();
+  void testForSingleConditionalLoop();
+  void testForWithForClauseLoop();
+  void testForWithEmptySingleConditionLoop();
   void testEmptyLabeledStmt();
   void testMapKeyLiteralValue(); //Go 1.5 feature
-  
+private:
+  QByteArray getCodeFromNode(const QByteArray &code, go::Lexer *lexer, go::AstNode *node);
 };
 
 }

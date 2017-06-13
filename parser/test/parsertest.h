@@ -34,6 +34,8 @@ private slots:
   void testKeyWords();
   void testOperators();
   void testRunes();
+  void testNumbers();
+  void testNumbers_data();
   void testBasicTypes();
   void testIfClause();
   void testFuncTypes();

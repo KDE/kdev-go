@@ -138,6 +138,41 @@ void ParserTest::testRunes()
     
 }
 
+void ParserTest::testNumbers()
+{
+    QFETCH(QByteArray, code);
+    QFETCH(int, tokenType);
+    KDevPG::QByteArrayIterator iter(code);
+    Lexer lexer(iter);
+    auto token = lexer.read();
+    QCOMPARE((TokenType)token.kind, (TokenType)tokenType);
+}
+
+void ParserTest::testNumbers_data()
+{
+    QTest::addColumn<QByteArray>("code");
+    QTest::addColumn<int>("tokenType");
+
+    QTest::newRow("integer 42") << QByteArray("42") << (int)TokenTypeWrapper::Token_INTEGER;
+    QTest::newRow("integer 0600") << QByteArray("0600") << (int)TokenTypeWrapper::Token_INTEGER;
+    QTest::newRow("integer 0xDEADBEEF") << QByteArray("0xDEADBEEF") << (int)TokenTypeWrapper::Token_INTEGER;
+    QTest::newRow("float 0.") << QByteArray("0.") << (int)TokenTypeWrapper::Token_FLOAT;
+    QTest::newRow("float 1.12") << QByteArray("1.12") << (int)TokenTypeWrapper::Token_FLOAT;
+    QTest::newRow("float 1.e+2") << QByteArray("1.e+2") << (int)TokenTypeWrapper::Token_FLOAT;
+    QTest::newRow("float 1.e-2") << QByteArray("1.e-2") << (int)TokenTypeWrapper::Token_FLOAT;
+    QTest::newRow("float 1E5") << QByteArray("1E5") << (int)TokenTypeWrapper::Token_FLOAT;
+    QTest::newRow("float .123") << QByteArray(".123") << (int)TokenTypeWrapper::Token_FLOAT;
+    QTest::newRow("complex number 0i") << QByteArray("0i") << (int)TokenTypeWrapper::Token_COMPLEX;
+    QTest::newRow("complex number 011i") << QByteArray("011i") << (int)TokenTypeWrapper::Token_COMPLEX;
+    QTest::newRow("complex number 0.i") << QByteArray("0.i") << (int)TokenTypeWrapper::Token_COMPLEX;
+    QTest::newRow("complex number 2.3i") << QByteArray("2.3i") << (int)TokenTypeWrapper::Token_COMPLEX;
+    QTest::newRow("complex number 1.e+0i") << QByteArray("1.e+0i") << (int)TokenTypeWrapper::Token_COMPLEX;
+    QTest::newRow("complex number 5.5e-3i") << QByteArray("5.5e-3i") << (int)TokenTypeWrapper::Token_COMPLEX;
+    QTest::newRow("complex number 1E6i") << QByteArray("1E6i") << (int)TokenTypeWrapper::Token_COMPLEX;
+    QTest::newRow("complex number .23i") << QByteArray(".23i") << (int)TokenTypeWrapper::Token_COMPLEX;
+    QTest::newRow("complex number .123E+4i") << QByteArray(".123E+4i") << (int)TokenTypeWrapper::Token_COMPLEX;
+}
+
 void prepareParser(const QByteArray& code, go::Parser** parser, go::Lexer** lexer)
 {
     KDevPG::TokenStream tokenStream;

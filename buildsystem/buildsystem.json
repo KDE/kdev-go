@@ -1,0 +1,28 @@
+{
+    "KPlugin": {
+        "Category": "Project Management",
+        "Description": "Imports go projects",
+        "Icon": "kdevelop",
+        "Id": "KDevGoBuildSystem",
+        "Name": "Go Project Manager",
+        "ServiceTypes": [
+            "KDevelop/Plugin"
+        ]
+    },
+    "X-KDevelop-FileManager": "Go",
+    "X-KDevelop-IRequired": [
+        "org.kdevelop.IMakeBuilder",
+        "org.kdevelop.IDefinesAndIncludesManager"
+    ],
+    "X-KDevelop-Interfaces": [
+        "org.kdevelop.IBuildSystemManager",
+        "org.kdevelop.IProjectFileManager"
+    ],
+    "X-KDevelop-ProjectFilesFilter": [
+        "*.go"
+    ],
+    "X-KDevelop-ProjectFilesFilterDescription": [
+        "Go projects"
+    ],
+    "X-KDevelop-Mode": "NoGUI"
+}

@@ -29,6 +29,7 @@ include_directories(
     
 enable_testing()
 
+add_subdirectory(buildsystem)
 add_subdirectory(parser)
 add_subdirectory(duchain)
 add_subdirectory(codecompletion)

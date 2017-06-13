@@ -183,6 +183,23 @@ void prepareParser(const QByteArray& code, go::Parser** parser, go::Lexer** lexe
     (*parser)->setTokenStream(*lexer);
 }
 
+void ParserTest::testCommentsAreIgnored()
+{
+    QFETCH(QByteArray, code);
+    go::Lexer *lexer;
+    lexer = new go::Lexer(go::Lexer::ByteStringIterator(code));
+    QCOMPARE(lexer->read().kind, (int)TokenType::Token_EOF);
+}
+
+void ParserTest::testCommentsAreIgnored_data()
+{
+    QTest::addColumn<QByteArray>("code");
+
+    QTest::newRow("Single-lined comment") << QByteArray("//test\n");
+    QTest::newRow("Multiple single-lined comments") << QByteArray("//test\n//test\n");
+    QTest::newRow("Multi-lined comment") << QByteArray("/*\ntest\n*/\n");
+}
+
 void ParserTest::testBasicTypes()
 {
     QByteArray code = "struct { array [5][2]string; slice []*int; \

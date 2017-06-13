@@ -36,6 +36,8 @@ private slots:
   void testRunes();
   void testNumbers();
   void testNumbers_data();
+  void testCommentsAreIgnored();
+  void testCommentsAreIgnored_data();
   void testBasicTypes();
   void testIfClause();
   void testFuncTypes();

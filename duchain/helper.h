@@ -40,6 +40,7 @@ private:
     static QList<QString> m_CachedSearchPaths;
     static QString builtinFile;
     static DUChainPointer<TopDUContext> builtinContext;
+    static QByteArray getGoEnv(QString name);
 };
 
 KDEVGODUCHAIN_EXPORT DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext* context, bool searchInParent=true);

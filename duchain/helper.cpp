@@ -54,7 +54,9 @@ QList< QString > Helper::getSearchPaths(QUrl document)
     if(Helper::m_CachedSearchPaths.empty())
     {
         //check $GOPATH env var
-        QByteArray result = qgetenv("GOPATH");
+        //since Go 1.8 $GOPATH may be not set because it defaults to $HOME/go
+        //so use go tool which can correctly handle default case.
+        QByteArray result = getGoEnv("GOPATH");
         if(!result.isEmpty())
         {
             QDir path(result);
@@ -65,12 +67,7 @@ QList< QString > Helper::getSearchPaths(QUrl document)
         //these days most people don't set GOROOT manually
         //instead go tool can find correct value for GOROOT on its own
         //in order for this to work go exec must be in $PATH
-        QProcess p;
-        p.start("go env GOROOT");
-        p.waitForFinished();
-        result = p.readAllStandardOutput();
-        if(result.endsWith("\n"))
-            result.remove(result.length()-1, 1);
+        result = getGoEnv("GOROOT");
         if(!result.isEmpty())
         {
             //since Go 1.4 stdlib packages are stored in $GOROOT/src/
@@ -86,6 +83,17 @@ QList< QString > Helper::getSearchPaths(QUrl document)
     }
     paths.append(m_CachedSearchPaths);
     return paths;
+}
+
+QByteArray Helper::getGoEnv(QString name)
+{
+    QProcess p;
+    p.start("go env " + name);
+    p.waitForFinished();
+    QByteArray result = p.readAllStandardOutput();
+    if(result.endsWith("\n"))
+        result.remove(result.length()-1, 1);
+    return result;
 }
 
 QString Helper::getBuiltinFile()

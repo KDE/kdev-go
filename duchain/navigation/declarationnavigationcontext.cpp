@@ -69,7 +69,7 @@ DeclarationNavigationContext::DeclarationNavigationContext(DeclarationPointer de
 QString DeclarationNavigationContext::html(bool shorten)
 {
   clear();
-  AbstractDeclarationNavigationContext::html(shorten);
+  AbstractNavigationContext::html(shorten);
   modifyHtml()  += "<html><body><p>" + fontSizePrefix(shorten);
 
   addExternalHtml(prefix());

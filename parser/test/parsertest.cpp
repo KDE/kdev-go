@@ -387,6 +387,92 @@ void ParserTest::testForWithEmptySingleConditionLoop()
     QCOMPARE(blockCode, expectedBlockCode);
 }
 
+void ParserTest::testShortVarDeclaration()
+{
+    QFETCH(QByteArray, code);
+    QFETCH(bool, idFound);
+    QFETCH(bool, idListFound);
+    QFETCH(bool, expressionFound);
+    QFETCH(bool, expressionListFound);
+    QFETCH(QByteArray, expectedId);
+    QFETCH(QList<QByteArray>, expectedIdList);
+    QFETCH(QByteArray, expectedExpression);
+    QFETCH(QList<QByteArray>, expectedExpressionList);
+
+    go::Parser *parser;
+    go::Lexer *lexer;
+    go::StatementsAst* ast;
+    prepareParser(code, &parser, &lexer);
+
+    bool result = parser->parseStatements(&ast);
+    QVERIFY(result);
+
+    auto shortVarDecl = ast->statementSequence->front()->element->simpleStmt->shortVarDecl;
+    QCOMPARE(shortVarDecl->id != nullptr, idFound);
+    QCOMPARE(shortVarDecl->idList != nullptr, idListFound);
+    QCOMPARE(shortVarDecl->expression != nullptr, expressionFound);
+    QCOMPARE(shortVarDecl->expressionList != nullptr, expressionListFound);
+
+    if(idFound)
+    {
+        auto idCode = getCodeFromNode(code, lexer, shortVarDecl->id);
+        QCOMPARE(idCode, expectedId);
+    }
+    if(idListFound)
+    {
+        auto idSequence = shortVarDecl->idList->idSequence;
+        QList<QByteArray> actualList;
+        for(int i = 0; i<idSequence->count(); ++i)
+        {
+            actualList.append(getCodeFromNode(code, lexer, idSequence->at(i)->element));
+        }
+        QCOMPARE(actualList, expectedIdList);
+    }
+    if(expressionFound)
+    {
+        auto expressionCode = getCodeFromNode(code, lexer, shortVarDecl->expression);
+        QCOMPARE(expressionCode, expectedExpression);
+    }
+    if(expressionListFound)
+    {
+        auto expressionsSequence = shortVarDecl->expressionList->expressionsSequence;
+        QList<QByteArray> actualList;
+        for(int i = 0; i<expressionsSequence->count(); ++i)
+        {
+            actualList.append(getCodeFromNode(code, lexer, expressionsSequence->at(i)->element));
+        }
+        QCOMPARE(actualList, expectedExpressionList);
+    }
+}
+
+void ParserTest::testShortVarDeclaration_data()
+{
+    QTest::addColumn<QByteArray>("code");
+    QTest::addColumn<bool>("idFound");
+    QTest::addColumn<bool>("idListFound");
+    QTest::addColumn<bool>("expressionFound");
+    QTest::addColumn<bool>("expressionListFound");
+    QTest::addColumn<QByteArray>("expectedId");
+    QTest::addColumn<QList<QByteArray>>("expectedIdList");
+    QTest::addColumn<QByteArray>("expectedExpression");
+    QTest::addColumn<QList<QByteArray>>("expectedExpressionList");
+
+    QTest::newRow("One variable, one expression")
+        << QByteArray("a := 10\n")
+        << true << false << true << false
+        << QByteArray("a") << QList<QByteArray>() << QByteArray("10") << QList<QByteArray>();
+
+    QTest::newRow("Few variables, one expression")
+        << QByteArray("a, b, c := test()\n")
+        << true << true << true << false
+        << QByteArray("a") << (QList<QByteArray>() << "b" << "c") << QByteArray("test()") << QList<QByteArray>();
+
+    QTest::newRow("Few variables, few expressions")
+        << QByteArray("a, b, c := 10, 3, 7\n")
+        << true << true << true << true
+        << QByteArray("a") << (QList<QByteArray>() << "b" << "c") << QByteArray("10") << (QList<QByteArray>() << "3" << "7");
+}
+
 void ParserTest::testEmptyLabeledStmt()
 {
     QString code("package main; func main() {  for i:=1; i<5; i++ { a := i;  emptylabel:  \n } }");

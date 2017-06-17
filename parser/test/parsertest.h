@@ -48,6 +48,8 @@ private slots:
   void testForSingleConditionalLoop();
   void testForWithForClauseLoop();
   void testForWithEmptySingleConditionLoop();
+  void testShortVarDeclaration();
+  void testShortVarDeclaration_data();
   void testEmptyLabeledStmt();
   void testMapKeyLiteralValue(); //Go 1.5 feature
 private:

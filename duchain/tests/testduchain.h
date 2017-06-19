@@ -48,6 +48,7 @@ private slots:
     void test_unaryOps();
     void test_typeAssertions();
     void test_selectCases();
+    void test_declareVariablesInParametersOfNestedFunction();
 };
 
 

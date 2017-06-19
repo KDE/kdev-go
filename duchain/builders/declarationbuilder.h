@@ -54,6 +54,7 @@ public:
     virtual void visitSwitchStmt(go::SwitchStmtAst* node);
     virtual void visitTypeCaseClause(go::TypeCaseClauseAst* node);
     virtual void visitExprCaseClause(go::ExprCaseClauseAst* node);
+    virtual void visitPrimaryExpr(go::PrimaryExprAst *node);
 
     /**
      * this handles variable declaration in select statements, e.g.

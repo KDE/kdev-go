@@ -167,6 +167,34 @@ void TestDuchain::test_declareVariables()
     QCOMPARE(declarations.size(), 0);
 }
 
+void TestDuchain::test_declareVariablesInParametersOfNestedFunction()
+{
+    QString code("package main; func main() {\n"
+                         "a := func(test1 int) { return test1 }\n"
+                         "func(test2 int) { return test2 } (5)\n"
+                         "pass(func(test3 int) {return test3 })\n}\n");
+    auto mainContext = getMainContext(code);
+    DUChainReadLocker lock;
+
+    auto firstFunctionContext = mainContext->childContexts().at(0);
+    auto declarations = firstFunctionContext->findDeclarations(QualifiedIdentifier("test1"));
+    QCOMPARE(declarations.size(), 1);
+    auto declaration = declarations.first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(declaration->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeInt));
+
+    auto secondFunctionContext = mainContext->childContexts().at(2);
+    declarations = secondFunctionContext->findDeclarations(QualifiedIdentifier("test2"));
+    QCOMPARE(declarations.size(), 1);
+    declaration = declarations.first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(declaration->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeInt));
+
+    auto thirdFunctionContext = mainContext->childContexts().at(4);
+    declarations = thirdFunctionContext->findDeclarations(QualifiedIdentifier("test3"));
+    QCOMPARE(declarations.size(), 1);
+    declaration = declarations.first();
+    QCOMPARE(fastCast<go::GoIntegralType*>(declaration->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeInt));
+}
+
 void TestDuchain::test_constants()
 {
     QString code("package main; const const1, const2 float32 = 1, 2; const ( const3, const4, const5 = 'a', 3, \"abc\"; ); ");

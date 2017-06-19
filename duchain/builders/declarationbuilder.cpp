@@ -254,6 +254,18 @@ void DeclarationBuilder::visitFuncDeclaration(go::FuncDeclarationAst* node)
     closeContext(); //body wrapper context
 }
 
+void DeclarationBuilder::visitPrimaryExpr(go::PrimaryExprAst *node)
+{
+    if(node->signature && !node->convArg) // func type literal and not conversion.
+    {
+        buildFunction(node->signature, node->body);
+    }
+    else
+    {
+        go::DefaultVisitor::visitPrimaryExpr(node);
+    }
+}
+
 void DeclarationBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
 {
     Declaration* declaration=0;

@@ -18,11 +18,11 @@
         "org.kdevelop.IBuildSystemManager",
         "org.kdevelop.IProjectFileManager"
     ],
+    "X-KDevelop-Mode": "NoGUI",
     "X-KDevelop-ProjectFilesFilter": [
         "*.go"
     ],
     "X-KDevelop-ProjectFilesFilterDescription": [
         "Go projects"
-    ],
-    "X-KDevelop-Mode": "NoGUI"
+    ]
 }

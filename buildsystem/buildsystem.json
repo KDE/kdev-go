@@ -2,9 +2,19 @@
     "KPlugin": {
         "Category": "Project Management",
         "Description": "Imports go projects",
+        "Description[nl]": "Importeert Go-projecten",
+        "Description[pt]": "Importa projectos de Go",
+        "Description[sv]": "Importera Go-projekt",
+        "Description[uk]": "Імпортування проектів go",
+        "Description[x-test]": "xxImports go projectsxx",
         "Icon": "kdevelop",
         "Id": "KDevGoBuildSystem",
         "Name": "Go Project Manager",
+        "Name[nl]": "Projectmanager van Go",
+        "Name[pt]": "Gestor de Projectos de Go",
+        "Name[sv]": "Gå till projekthanterare",
+        "Name[uk]": "Керування проектами go",
+        "Name[x-test]": "xxGo Project Managerxx",
         "ServiceTypes": [
             "KDevelop/Plugin"
         ]

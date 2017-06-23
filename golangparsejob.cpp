@@ -141,6 +141,7 @@ void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread
     setDuChain(context);
     {
         DUChainWriteLocker lock;
+        context->setProblems(session.problems());
 	context->setFeatures(minimumFeatures());
         ParsingEnvironmentFilePointer file = context->parsingEnvironmentFile();
 	Q_ASSERT(file);

@@ -21,7 +21,9 @@
 
 #include <language/editor/rangeinrevision.h>
 #include <language/duchain/topducontext.h>
+#include <language/duchain/problem.h>
 #include <serialization/indexedstring.h>
+#include <interfaces/iproblem.h>
 
 #include "kdevgoparser_export.h"
 #include "parser/goast.h"
@@ -69,6 +71,8 @@ public:
     QList<KDevelop::ReferencedTopDUContext> contextForImport(QString package);
 
     QList<KDevelop::ReferencedTopDUContext> contextForThisPackage(KDevelop::IndexedString package);
+
+    QList<KDevelop::ProblemPointer> problems() const;
 
     /**
      * Schedules for parsing with given priority and features.
@@ -130,7 +134,8 @@ private:
     bool forExport;
     QList<QString> m_includePaths;
     QHash<QString, QString>* m_canonicalImports;
-  
+
+    QList<KDevelop::ProblemPointer> m_problems;
 };
 
 #endif

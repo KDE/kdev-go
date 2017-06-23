@@ -34,6 +34,7 @@ public:
   ParserTest();
   
 private slots:
+  void initTestCase();
   void testKeyWords();
   void testOperators();
   void testRunes();

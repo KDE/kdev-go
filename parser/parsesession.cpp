@@ -26,6 +26,7 @@
 #include <language/duchain/duchainlock.h>
 #include <interfaces/icore.h>
 #include <language/backgroundparser/backgroundparser.h>
+#include <language/editor/documentrange.h>
 #include <interfaces/ilanguagecontroller.h>
 #include <QProcess>
 #include <QUrl>
@@ -139,6 +140,7 @@ KDevelop::IndexedString ParseSession::currentDocument()
 void ParseSession::setCurrentDocument(const KDevelop::IndexedString& document)
 {
     m_document = document;
+    m_parser->setCurrentDocument(m_document);
 }
 
 /**
@@ -413,3 +415,7 @@ void ParseSession::setCanonicalImports(QHash< QString, QString >* imports)
     m_canonicalImports = imports;
 }
 
+QList<KDevelop::ProblemPointer> ParseSession::problems() const
+{
+    return m_parser->problems();
+}

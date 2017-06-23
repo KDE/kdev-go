@@ -37,6 +37,7 @@
 %lexer_bits_header "QDebug"
 %parser_bits_header "QDebug"
 %parser_declaration_header "language/duchain/duchain.h"
+%parser_declaration_header "language/duchain/problem.h"
 
 %export_macro "KDEVGOPARSER_EXPORT"
 %export_macro_header "kdevgoparser_export.h"
@@ -47,11 +48,28 @@
     KDevelop::DUContext* ducontext;
 :]
 
+%parserclass (public declaration)
+[:
+    enum ProblemType {
+        Error,
+        Warning,
+        Info,
+        Todo
+    };
+    void setCurrentDocument(KDevelop::IndexedString url);
+    KDevelop::ProblemPointer reportProblem( Parser::ProblemType type, const QString& message, int tokenOffset = -1 );
+    QList<KDevelop::ProblemPointer> problems() {
+          return m_problems;
+    }
+:]
+
 %parserclass (private declaration)
 [:
    struct ParserState {
     };
     ParserState m_state;
+    KDevelop::IndexedString m_currentDocument;
+    QList<KDevelop::ProblemPointer> m_problems;
 
     qint64 lparenCount=0;
     bool inIfClause = false;
@@ -788,17 +806,73 @@ import=STRING
 ->importpath;;
 
 [:
+#include <language/editor/documentrange.h>
+
 namespace go 
 {
+KDevelop::ProblemPointer Parser::reportProblem( Parser::ProblemType type, const QString& message, int offset )
+{
+    qint64 sLine;
+    qint64 sCol;
+    qint64 index = tokenStream->index() + offset;
+    if (index >= tokenStream->size()) {
+        return {};
+    }
+    tokenStream->startPosition(index, &sLine, &sCol);
+    qint64 eLine;
+    qint64 eCol;
+    tokenStream->endPosition(index, &eLine, &eCol);
+    auto p = KDevelop::ProblemPointer(new KDevelop::Problem());
+    p->setSource(KDevelop::IProblem::Parser);
+    switch ( type ) {
+        case Error:
+            p->setSeverity(KDevelop::IProblem::Error);
+            break;
+        case Warning:
+            p->setSeverity(KDevelop::IProblem::Warning);
+            break;
+        case Info:
+            p->setSeverity(KDevelop::IProblem::Hint);
+            break;
+        case Todo:
+            p->setSeverity(KDevelop::IProblem::Hint);
+            p->setSource(KDevelop::IProblem::ToDo);
+            break;
+    }
+    p->setDescription(message);
+    KTextEditor::Range range(sLine, sCol + 1, eLine, eCol + 2);
+    p->setFinalLocation(KDevelop::DocumentRange(m_currentDocument, range));
+    m_problems << p;
+    return p;
+}
+
+void Parser::setCurrentDocument(KDevelop::IndexedString document)
+{
+    m_currentDocument = document;
+}
 
 void Parser::expectedSymbol(int /*expectedSymbol*/, const QString& name)
 {
-  qDebug() << "Expected: " << name;
-  //qDebug() << "Expected symbol: " << expectedSymbol;
+    qint64 line;
+    qint64 col;
+    qint64 index = tokenStream->index()-1;
+    Token &token = tokenStream->at(index);
+    tokenStream->startPosition(index, &line, &col);
+    qint64 eLine;
+    qint64 eCol;
+    tokenStream->endPosition(index, &eLine, &eCol);
+    reportProblem( Parser::Error,
+                   QStringLiteral("Expected symbol \"%1\" (current token [%2] at %3:%4 - %5:%6)")
+                  .arg(name)
+                  .arg(token.kind)
+                  .arg(line)
+                  .arg(col)
+                  .arg(eLine)
+                  .arg(eCol));
 }
 void Parser::expectedToken(int /*expected*/, qint64 /*where*/, const QString& name)
 {
-  qDebug() << "Expected token: " << name;
+    reportProblem(Parser::Error, QStringLiteral("Expected token \"%1\"").arg(name));
 }
 
 Parser::ParserState* Parser::copyCurrentState()

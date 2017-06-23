@@ -19,6 +19,8 @@
 #include "parsertest.h"
 
 #include <QTest>
+#include <tests/autotestshell.h>
+#include <tests/testcore.h>
 #include "parser/golexer.h"
 #include "parser/goparser.h"
 #include "parser/godebugvisitor.h"
@@ -29,6 +31,12 @@
 QTEST_MAIN(go::ParserTest)
 namespace go {
 ParserTest::ParserTest() {}
+
+void ParserTest::initTestCase()
+{
+    KDevelop::AutoTestShell::init();
+    KDevelop::TestCore::initialize(KDevelop::Core::NoUi);
+}
 
 void ParserTest::testKeyWords()
 {
@@ -223,6 +231,10 @@ void ParserTest::testMultiLineStrings()
         auto node = ast->statementSequence->front()->element->simpleStmt->shortVarDecl->expression->unaryExpression->primaryExpr->basicLit;
         auto stringValue = getCodeFromNode(code, lexer, node);
         QCOMPARE(stringValue, expectedContent);
+    }
+    else
+    {
+        QVERIFY(parser->problems().size() > 0);
     }
 }
 

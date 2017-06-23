@@ -13,4 +13,5 @@ ecm_add_test(parsertest.cpp
         Qt5::Test
         Qt5::Core
         KDev::Language
+        KDev::Tests
         )

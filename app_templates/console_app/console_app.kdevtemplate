@@ -1,0 +1,8 @@
+# KDE Config File
+[General]
+Name=Simple Go console application
+Name[x-test]=xxSimple Go console applicationxx
+Category=Go
+Comment=Generate filestructure to start a Go console application
+Comment[x-test]=xxGenerate filestructure to start a Go console applicationxx
+ShowFilesAfterGeneration=main.go

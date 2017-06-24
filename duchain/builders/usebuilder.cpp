@@ -74,12 +74,12 @@ void UseBuilder::visitPrimaryExpr(PrimaryExprAst* node)
     for(int i=0; i<ids.size(); ++i)
 	newUse(ids.at(i), decls.at(i));
     //build uses in subexpressions
-    go::DefaultVisitor::visitPrimaryExpr(node);
+    ContextBuilder::visitPrimaryExpr(node);
 }
 
 void UseBuilder::visitBlock(BlockAst* node)
 {
-    go::DefaultVisitor::visitBlock(node);
+    ContextBuilder::visitBlock(node);
 }
 
 }

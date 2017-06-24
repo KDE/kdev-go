@@ -49,6 +49,7 @@ private slots:
     void test_typeAssertions();
     void test_selectCases();
     void test_declareVariablesInParametersOfNestedFunction();
+    void test_usesAreAddedInCorrectContext();
 };
 
 

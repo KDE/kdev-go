@@ -20,10 +20,12 @@
 
 #include "parser/parsesession.h"
 #include "builders/declarationbuilder.h"
+#include "builders/usebuilder.h"
 #include "types/gointegraltype.h"
 #include "helper.h"
 
 #include <QtTest/QtTest>
+#include <language/duchain/use.h>
 //#include <qtest_kde.h>
 
 #include <tests/testcore.h>
@@ -34,7 +36,9 @@ QTEST_MAIN(TestDuchain);
 
 using namespace KDevelop;
 
+DUContext* getPackageContext(const ReferencedTopDUContext& topContext);
 DUContext* getPackageContext(const QString& code);
+DUContext* getMainContext(DUContext* packageContext);
 DUContext* getMainContext(const QString& code);
 
 void TestDuchain::initTestCase()
@@ -616,40 +620,78 @@ void TestDuchain::test_selectCases()
     QCOMPARE(fastCast<go::GoIntegralType*>(ok->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeBool));
 }
 
+void TestDuchain::test_usesAreAddedInCorrectContext()
+{
+    QString code("package main\n"
+                 "var d int = 6\n"
+                 "func main() {\n"
+                 "    var x int = d\n"
+                 "}");
+    ParseSession session(code.toUtf8(), 0);
+    session.setCurrentDocument(IndexedString("file:///temp/1"));
+    QVERIFY(session.startParsing());
+    DeclarationBuilder builder(&session, false);
+    ReferencedTopDUContext topContext =  builder.build(session.currentDocument(), session.ast());
+    QVERIFY(topContext.data());
+    go::UseBuilder builder2(&session);
+    builder2.buildUses(session.ast());
+    auto packageContext = getPackageContext(topContext);
+    auto context = getMainContext(packageContext);
+    DUChainReadLocker lock;
+
+    QCOMPARE(context->usesCount(), 1);
+    QCOMPARE(context->uses()->usedDeclaration(context->topContext()), context->parentContext()->parentContext()->localDeclarations().at(1));
+}
+
+DUContext* getPackageContext(const ReferencedTopDUContext &topContext)
+{
+    if(!topContext)
+    {
+        return 0;
+    }
+    DUChainReadLocker lock;
+    auto decls = topContext->localDeclarations();
+    if(decls.size() != 1)
+        return 0;
+    Declaration* packageDeclaration = decls.first();
+    DUContext* packageContext = packageDeclaration->internalContext();
+    return packageContext;
+}
+
 DUContext* getPackageContext(const QString& code)
 {
     ParseSession session(code.toUtf8(), 0);
     static int testNumber = 0;
     session.setCurrentDocument(IndexedString(QString("file:///temp/%1").arg(testNumber++)));
     if(!session.startParsing())
-	return 0;
+    {
+        return 0;
+    }
     DeclarationBuilder builder(&session, false);
     ReferencedTopDUContext context =  builder.build(session.currentDocument(), session.ast());
-    if(!context)
-	return 0;
+    return getPackageContext(context);
+}
 
+DUContext* getMainContext(DUContext *packageContext)
+{
+    if(!packageContext)
+    {
+        return 0;
+    }
     DUChainReadLocker lock;
-    auto decls = context->localDeclarations();
-    if(decls.size() != 1)
-	return 0;
-    Declaration* packageDeclaration = decls.first();
-    DUContext* packageContext = packageDeclaration->internalContext();
-    return packageContext;
+    auto decls = packageContext->findDeclarations(QualifiedIdentifier("main"));
+    if(decls.size() == 0)
+        return 0;
+    AbstractFunctionDeclaration* function = dynamic_cast<AbstractFunctionDeclaration*>(decls.first());
+    if(!function)
+        return 0;
+    return function->internalFunctionContext();
 }
 
 DUContext* getMainContext(const QString& code)
 {
     DUContext* package = getPackageContext(code);
-    if(!package)
-	return 0;
-    DUChainReadLocker lock;
-    auto decls = package->findDeclarations(QualifiedIdentifier("main"));
-    if(decls.size() == 0)
-	return 0;
-    AbstractFunctionDeclaration* function = dynamic_cast<AbstractFunctionDeclaration*>(decls.first());
-    if(!function)
-	return 0;
-    return function->internalFunctionContext();
+    return getMainContext(package);
 }
 
 

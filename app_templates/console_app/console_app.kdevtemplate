@@ -2,6 +2,7 @@
 [General]
 Name=Simple Go console application
 Name[ca]=Aplicació senzilla de consola en Go
+Name[ca@valencia]=Aplicació senzilla de consola en Go
 Name[es]=Aplicación de consola Go sencilla
 Name[nl]=Eenvoudige Go console-toepassingen
 Name[pt]=Aplicação de consola simples em Go
@@ -12,6 +13,7 @@ Name[x-test]=xxSimple Go console applicationxx
 Category=Go
 Comment=Generate filestructure to start a Go console application
 Comment[ca]=Genera l'estructura de fitxers per a iniciar una aplicació de consola en Go
+Comment[ca@valencia]=Genera l'estructura de fitxers per a iniciar una aplicació de consola en Go
 Comment[es]=Generar una estructura de archivo para iniciar una aplicación de consola Go
 Comment[nl]=Genereer een bestandsstructuur om een Go console-toepassing te starten
 Comment[pt]=Gerar a estrutura de ficheiros para iniciar uma aplicação de consola em Go

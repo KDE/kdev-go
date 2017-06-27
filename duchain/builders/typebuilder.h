@@ -52,11 +52,6 @@ public:
     void buildTypeName(go::IdentifierAst* typeName, go::IdentifierAst* fullName = 0);
 
     /**
-     * A shortcut for ExpressionVisitor to build function type
-     **/
-    void buildFunction(go::SignatureAst* node, go::BlockAst* block=0);
-
-    /**
      * Used by external classes like ExpressionVisitor after building a type.
      */
     AbstractType::Ptr getLastType() { return lastType(); }
@@ -76,14 +71,12 @@ protected:
      * declared here as pure virtual so we can use that when building functions
      **/
     virtual GoFunctionDeclaration* declareFunction(go::IdentifierAst* id, const GoFunctionType::Ptr& type,
-                                                   DUContext* paramContext, DUContext* retparamContext, const QByteArray& comment=QByteArray()) = 0;
-
-
+                                                   DUContext* paramContext, DUContext* retparamContext, const QByteArray& comment=QByteArray(), DUContext* bodyContext = nullptr) = 0;
 
     /**
      * opens GoFunctionType, parses it's parameters and return declaration if @param declareParameters is true.
      **/
-    go::GoFunctionDeclaration* parseSignature(go::SignatureAst* node, bool declareParameters, go::IdentifierAst* name=0, const QByteArray& comment=QByteArray());
+    go::GoFunctionDeclaration* parseSignature(go::SignatureAst* node, bool declareParameters, DUContext* bodyContext = nullptr, go::IdentifierAst* name=0, const QByteArray& comment=QByteArray());
 
     /**
      * Convenience function that parses function parameters.

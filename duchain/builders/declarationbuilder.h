@@ -64,7 +64,11 @@ public:
     virtual void visitCommClause(go::CommClauseAst* node);
 
     virtual void visitTypeDecl(go::TypeDeclAst* node);
-  
+
+    /**
+     * A shortcut for ExpressionVisitor to build function type
+     **/
+    go::GoFunctionDeclaration* buildFunction(go::SignatureAst* node, go::BlockAst* block = nullptr, go::IdentifierAst* name = nullptr, const QByteArray& comment = {});
     
     /*struct GoImport{
 	GoImport(bool anon, KDevelop::TopDUContext* ctx) : anonymous(anon), context(ctx) {}
@@ -98,7 +102,7 @@ private:
      * Called from typebuilder when building functions and methods
      **/
     virtual go::GoFunctionDeclaration* declareFunction(go::IdentifierAst* id, const go::GoFunctionType::Ptr& type,
-                                                       DUContext* paramContext, DUContext* retparamContext, const QByteArray& comment=QByteArray()) override;
+                                                       DUContext* paramContext, DUContext* retparamContext, const QByteArray& comment = {}, DUContext* bodyContext = nullptr) override;
 
     void importThisPackage();
     void importBuiltins();

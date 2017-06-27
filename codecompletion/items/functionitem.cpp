@@ -22,6 +22,7 @@
 #include <KTextEditor/Document>
 #include <language/duchain/declaration.h>
 #include <language/codecompletion/codecompletionmodel.h>
+#include <language/duchain/duchainutils.h>
 
 #include "types/gofunctiontype.h"
 #include "declarations/functiondeclaration.h"
@@ -42,9 +43,12 @@ FunctionCompletionItem::FunctionCompletionItem(DeclarationPointer decl, int dept
     if(type->modifiers() == go::GoFunctionType::VariadicArgument)
         variadicArgs = true;
 
-    DUContext* argsContext = 0;
+    DUContext* argsContext = nullptr;
     if(function)
-        argsContext = function->internalContext();
+    {
+        DUChainReadLocker lock;
+        argsContext = DUChainUtils::getArgumentContext(function.data());
+    }
     m_arguments = "(";
     if(argsContext)
     {

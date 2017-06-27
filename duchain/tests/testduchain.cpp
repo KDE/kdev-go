@@ -345,10 +345,10 @@ void TestDuchain::test_funccontexts()
     DUChainReadLocker lock;
     auto decls = context->findDeclarations(QualifiedIdentifier("mytype::main"));
     QCOMPARE(decls.size(), 1);
-    AbstractFunctionDeclaration* function = dynamic_cast<AbstractFunctionDeclaration*>(decls.first());
+    auto function = dynamic_cast<go::GoFunctionDeclaration*>(decls.first());
     QVERIFY(function);
-    context = function->internalFunctionContext();
-    QCOMPARE(context->localDeclarations().size(), 1);
+    context = function->internalContext();
+    QCOMPARE(context->localDeclarations().size(), 2);
     QCOMPARE(context->findDeclarations(QualifiedIdentifier("i")).size(), 1);
     QCOMPARE(context->findDeclarations(QualifiedIdentifier("a")).size(), 1);
     QCOMPARE(context->findDeclarations(QualifiedIdentifier("b")).size(), 1);
@@ -640,7 +640,7 @@ void TestDuchain::test_usesAreAddedInCorrectContext()
     DUChainReadLocker lock;
 
     QCOMPARE(context->usesCount(), 1);
-    QCOMPARE(context->uses()->usedDeclaration(context->topContext()), context->parentContext()->parentContext()->localDeclarations().at(1));
+    QCOMPARE(context->uses()->usedDeclaration(context->topContext()), context->parentContext()->localDeclarations().at(1));
 }
 
 void TestDuchain::test_functionContextIsCreatedWhenDeclaringAsMemberOfStruct_data()
@@ -717,10 +717,10 @@ DUContext* getMainContext(DUContext *packageContext)
     auto decls = packageContext->findDeclarations(QualifiedIdentifier("main"));
     if(decls.size() == 0)
         return 0;
-    AbstractFunctionDeclaration* function = dynamic_cast<AbstractFunctionDeclaration*>(decls.first());
+    auto function = dynamic_cast<go::GoFunctionDeclaration*>(decls.first());
     if(!function)
         return 0;
-    return function->internalFunctionContext();
+    return function->internalContext();
 }
 
 DUContext* getMainContext(const QString& code)

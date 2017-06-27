@@ -230,28 +230,7 @@ void DeclarationBuilder::visitConstSpec(go::ConstSpecAst* node)
 
 void DeclarationBuilder::visitFuncDeclaration(go::FuncDeclarationAst* node)
 {
-    go::GoFunctionDeclaration* decl = parseSignature(node->signature, true, node->funcName, m_session->commentBeforeToken(node->startToken-1));
-    if(!node->body)
-	return;
-    //a context will be opened when visiting block, but we still open another one here
-    //so we can import arguments into it.(same goes for methodDeclaration)
-    DUContext* bodyContext = openContext(node->body, DUContext::ContextType::Function, node->funcName);
-    {//import parameters into body context
-        DUChainWriteLocker lock;
-        if(decl->internalContext())
-            currentContext()->addImportedParentContext(decl->internalContext());
-        if(decl->returnArgsContext())
-            currentContext()->addImportedParentContext(decl->returnArgsContext());
-    }
- 
-    visitBlock(node->body);
-    {
-	DUChainWriteLocker lock;
-        lastContext()->setType(DUContext::Function);
-	decl->setInternalFunctionContext(lastContext()); //inner block context
-	decl->setKind(Declaration::Instance);
-    }
-    closeContext(); //body wrapper context
+    buildFunction(node->signature, node->body, node->funcName, m_session->commentBeforeToken(node->startToken-1));
 }
 
 void DeclarationBuilder::visitPrimaryExpr(go::PrimaryExprAst *node)
@@ -271,58 +250,39 @@ void DeclarationBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
     Declaration* declaration=0;
     if(node->methodRecv)
     {
-	go::IdentifierAst* actualtype=0;
-	if(node->methodRecv->ptype)
-	    actualtype = node->methodRecv->ptype;
-	else if(node->methodRecv->type)
-	    actualtype = node->methodRecv->type;
-	else 
-	    actualtype = node->methodRecv->nameOrType;
-	DUChainWriteLocker lock;
-	declaration = openDeclaration<Declaration>(identifierForNode(actualtype), editorFindRange(actualtype, 0));
-	declaration->setKind(Declaration::Namespace);
-	openContext(node, editorFindRange(node, 0), DUContext::Namespace, identifierForNode(actualtype));
-	declaration->setInternalContext(currentContext());
-    }
-    go::GoFunctionDeclaration* decl = parseSignature(node->signature, true, node->methodName, m_session->commentBeforeToken(node->startToken-1));
-    
-    if(!node->body)
-	return;
-
-    DUContext* bodyContext = openContext(node->body, DUContext::ContextType::Function, node->methodName);
-
-    {//import parameters into body context
+        go::IdentifierAst* actualtype=0;
+        if(node->methodRecv->ptype)
+            actualtype = node->methodRecv->ptype;
+        else if(node->methodRecv->type)
+            actualtype = node->methodRecv->type;
+        else
+            actualtype = node->methodRecv->nameOrType;
         DUChainWriteLocker lock;
-        if(decl->internalContext())
-            currentContext()->addImportedParentContext(decl->internalContext());
-        if(decl->returnArgsContext())
-            currentContext()->addImportedParentContext(decl->returnArgsContext());
+        declaration = openDeclaration<Declaration>(identifierForNode(actualtype), editorFindRange(actualtype, 0));
+        declaration->setKind(Declaration::Namespace);
+        openContext(node, editorFindRange(node, 0), DUContext::Namespace, identifierForNode(actualtype));
+        declaration->setInternalContext(currentContext());
     }
-    
-    if(node->methodRecv->type)
+
+    auto functionDeclaration = buildFunction(node->signature, node->body, node->methodName, m_session->commentBeforeToken(node->startToken-1));
+
+    if(node->methodRecv->type && functionDeclaration->internalContext())
     {//declare method receiver variable('this' or 'self' analog in Go)
+        openContext(functionDeclaration->internalContext());
         buildTypeName(node->methodRecv->type);
-	if(node->methodRecv->star!= -1)
-	{
-	    PointerType* ptype = new PointerType();
-	    ptype->setBaseType(lastType());
-	    injectType(PointerType::Ptr(ptype));
-	}
-	DUChainWriteLocker n;
-	Declaration* thisVariable = openDeclaration<Declaration>(identifierForNode(node->methodRecv->nameOrType), editorFindRange(node->methodRecv->nameOrType, 0));
-	thisVariable->setAbstractType(lastType());
-	closeDeclaration();
+        if(node->methodRecv->star!= -1)
+        {
+            PointerType* ptype = new PointerType();
+            ptype->setBaseType(lastType());
+            injectType(PointerType::Ptr(ptype));
+        }
+        DUChainWriteLocker n;
+        Declaration* thisVariable = openDeclaration<Declaration>(identifierForNode(node->methodRecv->nameOrType), editorFindRange(node->methodRecv->nameOrType, 0));
+        thisVariable->setAbstractType(lastType());
+        closeDeclaration();
+        closeContext();
     }
-	
-    visitBlock(node->body);
-    {
-	DUChainWriteLocker lock;
-        lastContext()->setType(DUContext::Function);
-	decl->setInternalFunctionContext(lastContext()); //inner block context
-	decl->setKind(Declaration::Instance);
-    }
-    
-    closeContext(); //body wrapper context
+
     closeContext();	//namespace
     closeDeclaration();	//namespace declaration
 }
@@ -608,19 +568,40 @@ void DeclarationBuilder::visitTypeDecl(go::TypeDeclAst* node)
 
 
 go::GoFunctionDeclaration* DeclarationBuilder::declareFunction(go::IdentifierAst* id, const go::GoFunctionType::Ptr& type,
-                                                               DUContext* paramContext, DUContext* retparamContext, const QByteArray& comment)
+                                                               DUContext* paramContext, DUContext* retparamContext, const QByteArray& comment, DUContext* bodyContext)
 {
     setComment(comment);
     DUChainWriteLocker lock;
     go::GoFunctionDeclaration* dec = openDefinition<go::GoFunctionDeclaration>(identifierForNode(id), editorFindRange(id, 0));
     dec->setType<go::GoFunctionType>(type);
-    //dec->setKind(Declaration::Type);
     dec->setKind(Declaration::Instance);
-    dec->setInternalContext(paramContext);
-    if(retparamContext)
-        dec->setReturnArgsContext(retparamContext);
-    //dec->setInternalFunctionContext(bodyContext);
+    dec->setInternalContext(bodyContext);
+
+    if(bodyContext)
+    {
+        if(paramContext)
+        {
+            bodyContext->addImportedParentContext(paramContext);
+            dec->setInternalFunctionContext(paramContext);
+        }
+        if(retparamContext)
+        {
+            bodyContext->addImportedParentContext(retparamContext);
+            dec->setReturnArgsContext(retparamContext);
+        }
+    }
+
     closeDeclaration();
     return dec;
 }
 
+go::GoFunctionDeclaration* DeclarationBuilder::buildFunction(go::SignatureAst* node, go::BlockAst* block, go::IdentifierAst* name, const QByteArray& comment)
+{
+    DUContext* bodyContext = nullptr;
+    if(block)
+    {
+        visitBlock(block);
+        bodyContext = lastContext();
+    }
+    return parseSignature(node, true, bodyContext, name, comment);
+}

@@ -228,7 +228,7 @@ void TypeBuilder::visitMethodSpec(go::MethodSpecAst* node)
 {
     if(node->signature)
     {
-        parseSignature(node->signature, true, node->methodName);
+        parseSignature(node->signature, true, nullptr, node->methodName);
     }else{
         buildTypeName(node->methodName, node->fullName);
         go::IdentifierAst* id = node->fullName ? node->fullName : node->methodName;
@@ -281,12 +281,12 @@ void TypeBuilder::visitParameter(go::ParameterAst* node)
 }
 
 
-go::GoFunctionDeclaration* TypeBuilder::parseSignature(go::SignatureAst* node, bool declareParameters, go::IdentifierAst* name, const QByteArray& comment)
+go::GoFunctionDeclaration* TypeBuilder::parseSignature(go::SignatureAst* node, bool declareParameters, DUContext* bodyContext, go::IdentifierAst* name, const QByteArray& comment)
 {
     go::GoFunctionType::Ptr type(new go::GoFunctionType());
     openType<go::GoFunctionType>(type);
 
-    DUContext* parametersContext;
+    DUContext* parametersContext = nullptr;
     if(declareParameters) parametersContext = openContext(node->parameters,
                                                editorFindRange(node->parameters, 0),
                                                DUContext::ContextType::Function,
@@ -295,7 +295,7 @@ go::GoFunctionDeclaration* TypeBuilder::parseSignature(go::SignatureAst* node, b
     parseParameters(node->parameters, true, declareParameters);
     if(declareParameters) closeContext();
 
-    DUContext* returnArgsContext=0;
+    DUContext* returnArgsContext = nullptr;
 
     if(node->result)
     {
@@ -317,7 +317,7 @@ go::GoFunctionDeclaration* TypeBuilder::parseSignature(go::SignatureAst* node, b
 
     if(declareParameters)
     {
-        return declareFunction(name, type, parametersContext, returnArgsContext, comment);
+        return declareFunction(name, type, parametersContext, returnArgsContext, comment, bodyContext);
     }
     return 0;
 }
@@ -427,27 +427,5 @@ void TypeBuilder::addArgumentHelper(go::GoFunctionType::Ptr function, AbstractTy
             function->addReturnArgument(argument);
     }
 }
-
-//TODO call this from DeclarationBuilder::visitFunctionDecl
-void TypeBuilder::buildFunction(SignatureAst* node, BlockAst* block)
-{
-    go::GoFunctionDeclaration* decl = parseSignature(node, true);
-    AbstractType::Ptr type = lastType();
-    if(block)
-    {
-        DUContext* bodyContext = openContext(block, DUContext::ContextType::Function);
-        {//import parameters into body context
-            DUChainWriteLocker lock;
-            if(decl->internalContext())
-                currentContext()->addImportedParentContext(decl->internalContext());
-            if(decl->returnArgsContext())
-                currentContext()->addImportedParentContext(decl->returnArgsContext());
-        }
-        visitBlock(block);
-        closeContext(); //wrapper context
-        injectType(type);
-    }
-}
-
 
 }

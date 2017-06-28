@@ -248,6 +248,8 @@ void DeclarationBuilder::visitPrimaryExpr(go::PrimaryExprAst *node)
 void DeclarationBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
 {
     Declaration* declaration=0;
+    bool openedDeclaration = false;
+
     if(node->methodRecv)
     {
         go::IdentifierAst* actualtype=0;
@@ -258,10 +260,29 @@ void DeclarationBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
         else
             actualtype = node->methodRecv->nameOrType;
         DUChainWriteLocker lock;
-        declaration = openDeclaration<Declaration>(identifierForNode(actualtype), editorFindRange(actualtype, 0));
-        declaration->setKind(Declaration::Namespace);
-        openContext(node, editorFindRange(node, 0), DUContext::Namespace, identifierForNode(actualtype));
-        declaration->setInternalContext(currentContext());
+
+        QList<Declaration*> declarations = currentContext()->findLocalDeclarations(identifierForNode(actualtype).last(), CursorInRevision::invalid(), this->topContext());
+
+        if(declarations.size() >= 1)
+        {
+            declaration = declarations.at(0);
+        }
+        else
+        {
+            openedDeclaration = true;
+            declaration = openDeclaration<ClassDeclaration>(identifierForNode(actualtype), editorFindRange(actualtype, 0));
+            declaration->setKind(Declaration::Type);
+        }
+
+        if(declaration->internalContext())
+        {
+            openContext(declaration->internalContext());
+        }
+        else
+        {
+            openContext(node, editorFindRange(node, 0), DUContext::Namespace, identifierForNode(actualtype));
+            declaration->setInternalContext(currentContext());
+        }
     }
 
     auto functionDeclaration = buildFunction(node->signature, node->body, node->methodName, m_session->commentBeforeToken(node->startToken-1));
@@ -284,7 +305,10 @@ void DeclarationBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
     }
 
     closeContext();	//namespace
-    closeDeclaration();	//namespace declaration
+    if(openedDeclaration)
+    {
+        closeDeclaration();
+    }
 }
 
 void DeclarationBuilder::visitTypeSpec(go::TypeSpecAst* node)
@@ -295,10 +319,10 @@ void DeclarationBuilder::visitTypeSpec(go::TypeSpecAst* node)
     if(comment.size() == 0)
         comment = m_lastTypeComment;
     setComment(comment);
-    Declaration* decl;
+    ClassDeclaration* decl;
     {
 	DUChainWriteLocker lock;
-	decl = openDeclaration<Declaration>(identifierForNode(node->name), editorFindRange(node->name, 0));
+	decl = openDeclaration<ClassDeclaration>(identifierForNode(node->name), editorFindRange(node->name, 0));
 	//decl->setKind(Declaration::Namespace);
 	decl->setKind(Declaration::Type);
 	//force direct here because otherwise DeclarationId will mess up actual type declaration and method declarations
@@ -312,6 +336,29 @@ void DeclarationBuilder::visitTypeSpec(go::TypeSpecAst* node)
     decl->setType(lastType());
     
     decl->setIsTypeAlias(true);
+    decl->setInternalContext(lastContext());
+    if(node->type && node->type->complexType && node->type->complexType->structType && node->type->complexType->structType->fieldDeclSequence)
+    {
+        auto sequence = node->type->complexType->structType->fieldDeclSequence;
+        for(int i = 0; i<sequence->count(); ++i)
+        {
+            auto anonymousField = sequence->at(i)->element->anonFieldStar;
+            if(anonymousField)
+            {
+                visitTypeName(anonymousField->typeName);
+
+                StructureType::Ptr baseClassType = lastType().cast<StructureType>();
+                if(baseClassType)
+                {
+                    auto baseClassDeclaration = baseClassType->declaration(topContext());
+                    if(baseClassDeclaration && baseClassDeclaration->internalContext())
+                    {
+                        decl->internalContext()->addImportedParentContext(baseClassType->declaration(topContext())->internalContext());
+                    }
+                }
+            }
+        }
+    }
     closeDeclaration();
     //qCDebug(DUCHAIN) << "Type" << identifierForNode(node->name) << " exit";
 }

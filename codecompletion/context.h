@@ -54,6 +54,8 @@ private:
 
     KDevelop::DeclarationPointer lastDeclaration(const QString& expression);
     
+    QList<KDevelop::CompletionTreeItemPointer> getImportableDeclarations(KDevelop::Declaration *sourceDeclaration);
+
     QList<KDevelop::CompletionTreeItemPointer> importAndMemberCompletion();
 
     QList<KDevelop::CompletionTreeItemPointer> normalCompletion();

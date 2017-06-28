@@ -171,7 +171,9 @@ void TestCompletion::test_functionCallTips_data()
     QTest::newRow("var") << "var myvar func(a int);" << "myvar(%CURSOR)" << " myvar (int)" << 1 << 4;
     QTest::newRow("var 2") << "func functest(t int) rune;" << "myvar := functest; myvar(%CURSOR)" << "rune myvar (int)" << 1 << 5;
     QTest::newRow("struct") << "type mytype struct { f func(t int) rune; };" << "var myvar mytype; myvar.f(%CURSOR)" << "rune f (int)" << 1 << 5;
-    QTest::newRow("method") << "type mytype int; func (m mytype) myfunc(c rune) {};" << "var myvar mytype; myvar.myfunc(%CURSOR)" << " myfunc (rune c)" << 1 << 6;
+    QTest::newRow("method") << "type mytype int; func (m mytype) myfunc(c rune) {};" << "var myvar mytype; myvar.myfunc(%CURSOR)" << " myfunc (rune c)" << 1 << 5;
+    QTest::newRow("method of embedded struct declared after method") << "type mytype struct {}; func (m mytype) myfunc(c rune) {}; type mytype2 struct {*mytype};" << "var myvar mytype2; myvar.myfunc(%CURSOR)" << " myfunc (rune c)" << 1 << 6;
+    QTest::newRow("method of embedded struct declared before method") << "type mytype struct {}; func (m mytype) myfunc(c rune) {}; type mytype2 struct {*mytype};" << "var myvar mytype2; myvar.myfunc(%CURSOR)" << " myfunc (rune c)" << 1 << 6;
     QTest::newRow("paren") << "func myfunc(a int) {};" << "(myfunc)(%CURSOR)" << " myfunc (int a)" << 1 << 4;
     QTest::newRow("nested") << "func myfunc(a int) {};" << "f := myfunc; myfunc(f(%CURSOR))" << " myfunc (int a)" << 2 << 6;
     QTest::newRow("nested 2") << "func myfunc(a int) {};" << "f := myfunc; myfunc(f(%CURSOR))" << " f (int)" << 1 << 6;

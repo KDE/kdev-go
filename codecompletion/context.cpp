@@ -22,6 +22,7 @@
 
 #include <language/codecompletion/normaldeclarationcompletionitem.h>
 #include <language/duchain/types/pointertype.h>
+#include <language/duchain/classdeclaration.h>
 
 #include "parser/golexer.h"
 #include "parser/goparser.h"
@@ -149,80 +150,69 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::functionCallTips()
     return items;
 }
 
+QList<CompletionTreeItemPointer> CodeCompletionContext::getImportableDeclarations(Declaration *sourceDeclaration)
+{
+    QList<CompletionTreeItemPointer> items;
+    auto declarations = getDeclarations(sourceDeclaration->qualifiedIdentifier(), m_duContext.data());
+    for(Declaration* declaration : declarations)
+    {
+        DUContext* context = declaration->internalContext();
+        if(!context) continue;
+        auto innerDeclarations = context->allDeclarations(CursorInRevision::invalid(), sourceDeclaration->topContext(), false);
+        for(const QPair<Declaration*, int> innerDeclaration : innerDeclarations)
+        {
+            if(innerDeclaration.first == declaration)
+                continue;
+            QualifiedIdentifier fullname = innerDeclaration.first->qualifiedIdentifier();
+            Identifier identifier = fullname.last();
+            if(identifier.toString().size() <= 0)
+                continue;
+            //import only declarations that start with capital letter(Go language rule)
+            if(m_duContext->topContext() != declaration->topContext())
+                if(!identifier.toString().at(0).isLetter() || (identifier.toString().at(0) != identifier.toString().at(0).toUpper()))
+                    continue;
+            items << itemForDeclaration(innerDeclaration);
+        }
+    }
+    return items;
+}
 
 QList< CompletionTreeItemPointer > CodeCompletionContext::importAndMemberCompletion()
 {
     QList<CompletionTreeItemPointer> items;
-    AbstractType::Ptr lasttype = lastType(m_text.left(m_text.size()-1));
-    if(lasttype)
+    AbstractType::Ptr type = lastType(m_text.left(m_text.size()-1));
+
+    if(type)
     {
-	//evaluate pointers
-	if(fastCast<PointerType*>(lasttype.constData()))
-	{
-	    DUChainReadLocker lock;
-	    PointerType* ptype = fastCast<PointerType*>(lasttype.constData());
-	    if(ptype->baseType())
-		lasttype = ptype->baseType();
-	}
-	if(fastCast<StructureType*>(lasttype.constData()))
-	{//we have to look for namespace declarations
-	    //TODO handle namespace aliases
-	    DUChainReadLocker lock;
-	    Declaration* lastdeclaration = fastCast<StructureType*>(lasttype.constData())->declaration(m_duContext->topContext());
-	    //if(lastdeclaration->kind() == Declaration::Namespace)
-	    //{
-		//namespace could be splitted into multiple contexts
-		//auto decls = m_duContext->findDeclarations(lastdeclaration->qualifiedIdentifier());
-		auto decls = getDeclarations(lastdeclaration->qualifiedIdentifier(), m_duContext.data());
-		for(Declaration* declaration : decls)
-		{
-		    DUContext* context = declaration->internalContext();
-		    if(!context) continue;
-		    auto declarations = context->allDeclarations(CursorInRevision::invalid(), declaration->topContext(), false);
-		    for(const QPair<Declaration*, int> decl : declarations)
-		    {
-			if(decl.first == declaration)
-			    continue;
-			QualifiedIdentifier fullname = decl.first->qualifiedIdentifier();
-			Identifier ident = fullname.last();
-			if(ident.toString().size() <= 0)
-			    continue;
-			//import only declarations that start with capital letter(Go language rule)
-			if(m_duContext->topContext() != declaration->topContext())
-			    if(!ident.toString().at(0).isLetter() || (ident.toString().at(0) != ident.toString().at(0).toUpper()))
-				continue;
-			items << itemForDeclaration(decl);
-		    }
-		}
-	   // }
-	}
-	//this construction will descend through type hierarchy till it hits basic types
-	//e.g. type mystruct struct{}; type mystruct2 mystruct; ...
-	int count = 0;
-	do {
-	    count++;
-	    GoStructureType* structure = fastCast<GoStructureType*>(lasttype.constData());
-	    if(structure)
-	    {//get members
-		DUContext* context = structure->context();
-		DUChainReadLocker lock;
-		//auto declarations = context->findDeclarations(identifierForNode(node->selector));
-		auto declarations = context->allDeclarations(CursorInRevision::invalid(), m_duContext->topContext(), false);
-		lock.unlock();
-		for(const QPair<Declaration*, int> &decl : declarations)
-		{
-		    items << itemForDeclaration(decl);
-		}
-	    }
-	    StructureType* identType = fastCast<StructureType*>(lasttype.constData());
-	    if(identType)
-	    {
-		DUChainReadLocker lock;
-		lasttype = identType->declaration(m_duContext->topContext())->abstractType();
-	    }else 
-		break;
-	    
-	}while(lasttype && count<100);
+        if(auto ptype = fastCast<PointerType*>(type.constData()))
+        {
+            DUChainReadLocker lock;
+            if(ptype->baseType())
+            {
+                type = ptype->baseType();
+            }
+        }
+        if(auto structure = fastCast<StructureType*>(type.constData()))
+        {
+            DUChainReadLocker lock;
+            Declaration* declaration = structure->declaration(m_duContext->topContext());
+            if(declaration)
+            {
+                items << getImportableDeclarations(declaration);
+            }
+        }
+        if(auto structure = fastCast<GoStructureType*>(type.constData()))
+        {
+            DUContext* context = structure->context();
+            DUChainReadLocker lock;
+
+            auto declarations = context->allDeclarations(CursorInRevision::invalid(), m_duContext->topContext(), false);
+            lock.unlock();
+            for(const QPair<Declaration*, int> &decl : declarations)
+            {
+                items << itemForDeclaration(decl);
+            }
+        }
     }
     return items;
 }

@@ -643,6 +643,39 @@ void TestDuchain::test_usesAreAddedInCorrectContext()
     QCOMPARE(context->uses()->usedDeclaration(context->topContext()), context->parentContext()->parentContext()->localDeclarations().at(1));
 }
 
+void TestDuchain::test_functionContextIsCreatedWhenDeclaringAsMemberOfStruct_data()
+{
+    QTest::addColumn<QString>("declaration");
+    QTest::newRow("short variable declaration") << "t := ";
+    QTest::newRow("variable declaration") << "var t = ";
+    QTest::newRow("assignment") << "t = ";
+}
+
+void TestDuchain::test_functionContextIsCreatedWhenDeclaringAsMemberOfStruct()
+{
+    QFETCH(QString, declaration);
+    QString code = QString("package main\n"
+                 "type Test struct {\n"
+                    "TestFunc func() ()\n"
+                 "}\n"
+                 "func main() {\n"
+                    "%1 Test{\n"
+                        "TestFunc: func() () {\n"
+                            "fmt.Println(\"Works!\")\n"
+                        "}\n"
+                    "}\n"
+                 "}").arg(declaration);
+
+    ParseSession session(code.toUtf8(), 0);
+    session.setCurrentDocument(IndexedString("file:///temp/1"));
+    QVERIFY(session.startParsing());
+    DeclarationBuilder builder(&session, false);
+    ReferencedTopDUContext topContext =  builder.build(session.currentDocument(), session.ast());
+    QVERIFY(topContext.data());
+    auto mainContext = getMainContext(getPackageContext(topContext));
+    QCOMPARE(mainContext->childContexts().size(), 3);
+}
+
 DUContext* getPackageContext(const ReferencedTopDUContext &topContext)
 {
     if(!topContext)

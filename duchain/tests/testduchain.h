@@ -50,6 +50,8 @@ private slots:
     void test_selectCases();
     void test_declareVariablesInParametersOfNestedFunction();
     void test_usesAreAddedInCorrectContext();
+    void test_functionContextIsCreatedWhenDeclaringAsMemberOfStruct_data();
+    void test_functionContextIsCreatedWhenDeclaringAsMemberOfStruct();
 };
 
 

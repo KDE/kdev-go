@@ -673,6 +673,8 @@ void TestDuchain::test_functionContextIsCreatedWhenDeclaringAsMemberOfStruct()
     ReferencedTopDUContext topContext =  builder.build(session.currentDocument(), session.ast());
     QVERIFY(topContext.data());
     auto mainContext = getMainContext(getPackageContext(topContext));
+    DUChainReadLocker lock;
+
     QCOMPARE(mainContext->childContexts().size(), 3);
 }
 

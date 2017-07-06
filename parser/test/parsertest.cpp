@@ -40,9 +40,9 @@ void ParserTest::initTestCase()
 
 void ParserTest::testKeyWords()
 {
-    QByteArray code = "break default func interface select case defer go map struct \
-      chan else goto package switch const fallthrough if range type continue for \
-      import return var";
+    QByteArray code = "break default func interface select case defer go map struct "
+      "chan else goto package switch const fallthrough if range type continue for "
+      "import return var";
     KDevPG::QByteArrayIterator iter(code);
     Lexer lexer(iter);
     QVERIFY( lexer.read().kind == TokenTypeWrapper::Token_BREAK);
@@ -74,8 +74,8 @@ void ParserTest::testKeyWords()
 
 void ParserTest::testOperators()
 {
-    QByteArray code = "+ & += &= && == != ( ) - | -= |= || < <= [ ] * ^ *= ^= <- > >= { } \
-    / << /= <<= ++ = := , ; % >> %= >>= -- ! ... . : &^ &^=";
+    QByteArray code = "+ & += &= && == != ( ) - | -= |= || < <= [ ] * ^ *= ^= <- > >= { } "
+    "/ << /= <<= ++ = := , ; % >> %= >>= -- ! ... . : &^ &^=";
     KDevPG::QByteArrayIterator iter(code);
     Lexer lexer(iter);
     QVERIFY( lexer.read().kind == TokenTypeWrapper::Token_PLUS);
@@ -250,10 +250,10 @@ void ParserTest::testMultiLineStrings_data()
 
 void ParserTest::testBasicTypes()
 {
-    QByteArray code = "struct { array [5][2]string; slice []*int; \
-	  x, y int \n A *[]int \n F func() \n T1 \n *T2 \n P.T3; \
-	  *P.T4; afk func(a, b int, z float64, opt ...interface{}) (success bool); \
-	  afk2 func(int, int) bool; afk3 func(n int) func(p *T); }";
+    QByteArray code = "struct { array [5][2]string; slice []*int;"
+	  "x, y int \n A *[]int \n F func() \n T1 \n *T2 \n P.T3;"
+	  "*P.T4; afk func(a, b int, z float64, opt ...interface{}) (success bool);"
+	  "afk2 func(int, int) bool; afk3 func(n int) func(p *T); }";
    //QByteArray code = "int";
     go::Parser parser;
     KDevPG::MemoryPool pool;
@@ -283,13 +283,13 @@ void ParserTest::testBasicTypes()
 
 void ParserTest::testIfClause()
 {
-    QByteArray code = "if a:=(A{2}); a==(A{2}) { a += A{1}; }\n \
-		  if ID(f()) { g(); }\n \
-		  if ([]int)(A)==hello {} \n \
-		  if (a)(A{3}) {} \n \
-		  if ([]a)(A{3}) {} \n \
-		  if x := f(); x < y { abc; def(); } \n \
-		  if ([]a)(A{3}); (a)(A{f}) {} \n";
+    QByteArray code = "if a:=(A{2}); a==(A{2}) { a += A{1}; }\n"
+		  "if ID(f()) { g(); }\n"
+		  "if ([]int)(A)==hello {} \n"
+		  "if (a)(A{3}) {} \n"
+		  "if ([]a)(A{3}) {}\n"
+		  "if x := f(); x < y { abc; def(); }\n"
+		  "if ([]a)(A{3}); (a)(A{f}) {}\n";
    //QByteArray code = "int";
     go::Parser parser;
     KDevPG::MemoryPool pool;
@@ -307,13 +307,13 @@ void ParserTest::testIfClause()
 
 void ParserTest::testFuncTypes()
 {
-    QByteArray code = "func () {} \n \
-	      func(a) {} \n \
-	      func(a,) {} \n \
-	      func(a int,) {}\n \ 
-	      func(a, b []int){} \n \
-	      func(*char, [2]int, f chan float64){} \n \
-	      func(nums ...int, ){} \n \ "; 
+    QByteArray code = "func () {} \n"
+	      "func(a) {} \n"
+	      "func(a,) {} \n"
+	      "func(a int,) {}\n"
+	      "func(a, b []int){} \n"
+	      "func(*char, [2]int, f chan float64){} \n"
+	      "func(nums ...int, ){} \n";
 	      
    //QByteArray code = "int";
     go::Parser parser;
@@ -522,8 +522,8 @@ void ParserTest::testEmptyLabeledStmt()
 
 void ParserTest::testMapKeyLiteralValue()
 {
-    QString code("package main; type T struct { method string }; func main() { var x = map[T]int{{\"foo\"} : 3, }; \
-                  var y = map[T]int { T{\"foo\"} : 3, };  var z = map[int]T{ 3 : {\"foo\"}, };  }");
+    QString code("package main; type T struct { method string }; func main() { var x = map[T]int{{\"foo\"} : 3, }; "
+                  "var y = map[T]int { T{\"foo\"} : 3, };  var z = map[int]T{ 3 : {\"foo\"}, };  }");
     ParseSession session(code.toUtf8(), 0, true);
     QVERIFY(session.startParsing());
 }

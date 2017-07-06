@@ -127,8 +127,8 @@ void TestDuchain::builtinFunctions()
     QFETCH(QString, expression);
     QFETCH(QString, type);
 
-    QString code(QString("package main; type mytype int; var myvar complex64; var myslice []string; func main() { \
-                          testvar := %1; }").arg(expression));
+    QString code(QString("package main; type mytype int; var myvar complex64; var myslice []string; func main() { "
+                          "testvar := %1; }").arg(expression));
 
     DUContext* context = getMainContext(code);
     QVERIFY(context);
@@ -143,9 +143,9 @@ void TestDuchain::builtinFunctions()
 
 void TestDuchain::test_declareVariables()
 {
-    QString code("package main; func multitest() (int, bool) { return 1, true; } \n \
-		func singletest() rune { return 'a'; } \n func main() { test1, test2 := multitest(); \
-		test3, test4 := singletest(), 3., 100; var test5, test6, test7 = multitest(), singletest(); var _, test8, _ = 0., 5, true;}");
+    QString code("package main; func multitest() (int, bool) { return 1, true; } \n "
+		"func singletest() rune { return 'a'; } \n func main() { test1, test2 := multitest(); "
+		"test3, test4 := singletest(), 3., 100; var test5, test6, test7 = multitest(), singletest(); var _, test8, _ = 0., 5, true;}");
 
     DUContext* context = getMainContext(code);
     DUChainReadLocker lock;
@@ -410,12 +410,12 @@ void TestDuchain::test_rangeclause()
 
 void TestDuchain::test_typeswitch()
 {
-    QString code("package main; type mytype int; func main() { var test1 int \n  \
-                switch test2:=2; test3:=test1.(type) { case rune: test4:=4. \n \
-                    case func(int) string: test5:=\'a\' \n \
-                    case nil: \n  \
-                    case byte, float32:  \n \
-                    default:  \n } }");
+    QString code("package main; type mytype int; func main() { var test1 int \n "
+                "switch test2:=2; test3:=test1.(type) { case rune: test4:=4. \n "
+                "    case func(int) string: test5:=\'a\' \n "
+                "    case nil: \n  "
+                "    case byte, float32:  \n "
+                "    default:  \n } }");
     DUContext* context = getMainContext(code);
     QVERIFY(context);
     DUChainReadLocker lock;
@@ -589,8 +589,8 @@ void TestDuchain::test_unaryOps()
 
 void TestDuchain::test_typeAssertions()
 {
-    QString code("package main; type mytype int; func main() { var a int; test := a.(float64); test2 := a.(*uint); \
-                test3 := a.(map[int]string); test4 := a.([]rune); test5 := a.(mytype)}");
+    QString code("package main; type mytype int; func main() { var a int; test := a.(float64); test2 := a.(*uint); "
+                "test3 := a.(map[int]string); test4 := a.([]rune); test5 := a.(mytype)}");
     DUContext* context = getMainContext(code);
     DUChainReadLocker lock;
     Declaration* decl = context->findDeclarations(QualifiedIdentifier("test")).first();

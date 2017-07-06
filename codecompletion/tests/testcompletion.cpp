@@ -238,12 +238,12 @@ void TestCompletion::test_commentCompletion_data()
     QTest::newRow("line comment 2") << "// \n %CURSOR" << 2;
     QTest::newRow("comment") << "/* \"asdf \" %CURSOR */" << 0;
     QTest::newRow("comment 2") << "/* \'asdf \' */ %CURSOR" << 2;
-    QTest::newRow("comment 3") << "/* \` %CURSOR */" << 0;
-    QTest::newRow("comment 4") << "a := \"/* \` \" %CURSOR " << 3;
+    QTest::newRow("comment 3") << "/* ` %CURSOR */" << 0;
+    QTest::newRow("comment 4") << "a := \"/* ` \" %CURSOR " << 3;
     QTest::newRow("string") << " a := \" %CURSOR \"" << 0;
     QTest::newRow("string 2") << " a := \" \" %CURSOR" << 3;
-    QTest::newRow("string 3") << " a := \` %CURSOR \`" << 0;
-    QTest::newRow("string 4") << " a := \` \` %CURSOR" << 3;
+    QTest::newRow("string 3") << " a := ` %CURSOR `" << 0;
+    QTest::newRow("string 4") << " a := ` ` %CURSOR" << 3;
     QTest::newRow("rune") << " a := \' %CURSOR\'" << 0;
     QTest::newRow("rune 2") << " a := \'a\' %CURSOR" << 3;
 }

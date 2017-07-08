@@ -300,7 +300,7 @@ QStack< CodeCompletionContext::ExpressionStackEntry > CodeCompletionContext::exp
 	case Parser::Token_IDENT:
 	    //temporary hack to allow completion in variable declarations
 	    //two identifiers in a row is not possible? 
-	    if(lexer.size() > 0 && lexer.at(lexer.index()-2).kind == Parser::Token_IDENT)
+	    if(lexer.size() > 1 && lexer.at(lexer.index()-2).kind == Parser::Token_IDENT)
 	    {
 		lexer.locationTable()->positionAt(lexer.at(lexer.index()-2).begin, &line, &column);
 		lexer.locationTable()->positionAt(lexer.at(lexer.index()-2).end+1, &lineEnd, &columnEnd);

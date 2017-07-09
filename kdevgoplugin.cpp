@@ -37,8 +37,6 @@ GoPlugin::GoPlugin(QObject* parent, const QVariantList&)
     : KDevelop::IPlugin("kdevgoplugin", parent),
     ILanguageSupport()
 {
-    KDEV_USE_EXTENSION_INTERFACE(ILanguageSupport)
-
     qCDebug(Go) << "Go Language Plugin is loaded\n";
 
     CodeCompletionModel* codeCompletion = new go::CodeCompletionModel(this);

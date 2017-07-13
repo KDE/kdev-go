@@ -25,6 +25,7 @@
 #include <language/backgroundparser/backgroundparser.h>
 #include <interfaces/icore.h>
 #include <interfaces/ilanguagecontroller.h>
+#include <parser/goast.h>
 
 #include <QReadLocker>
 #include <QProcess>
@@ -198,6 +199,17 @@ QList< Declaration* > getDeclarations(QualifiedIdentifier id, DUContext* context
     return QList<Declaration*>();
 }
 
+IdentifierAst* getMethodRecvTypeIdentifier(go::MethodRecvAst* methodRecv)
+{
+    go::IdentifierAst* actualtype = nullptr;
+    if(methodRecv->ptype)
+        actualtype = methodRecv->ptype;
+    else if(methodRecv->type)
+        actualtype = methodRecv->type;
+    else
+        actualtype = methodRecv->nameOrType;
+    return actualtype;
+}
 
 DeclarationPointer getFirstDeclaration(DUContext* context, bool searchInParent)
 {

@@ -23,6 +23,8 @@
 #include <language/duchain/declaration.h>
 #include <language/codecompletion/codecompletionmodel.h>
 #include <language/duchain/duchainutils.h>
+#include <language/duchain/functiondefinition.h>
+#include <duchain/declarations/functiondefinition.h>
 
 #include "types/gofunctiontype.h"
 #include "declarations/functiondeclaration.h"
@@ -30,12 +32,25 @@
 namespace go
 {
 
-FunctionCompletionItem::FunctionCompletionItem(DeclarationPointer decl, int depth, int atArgument):
-                                               CompletionItem(decl, QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), 0),
+FunctionCompletionItem::FunctionCompletionItem(DeclarationPointer declaration, int depth, int atArgument):
+                                               CompletionItem(declaration, QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), 0),
                                                m_depth(depth), m_atArgument(atArgument)
 {
-    auto function = decl.dynamicCast<GoFunctionDeclaration>();
-    GoFunctionType::Ptr type(fastCast<GoFunctionType*>(decl->abstractType().constData()));
+    auto functionDeclaration = declaration.dynamicCast<GoFunctionDeclaration>();
+    auto functionDefinition = declaration.dynamicCast<GoFunctionDefinition>();
+    if(functionDeclaration)
+    {
+        auto decls = declaration->context()->findDeclarations(declaration->qualifiedIdentifier());
+        for(auto decl : decls)
+        {
+            auto definition = dynamic_cast<GoFunctionDefinition*>(decl);
+            if(definition)
+            {
+                functionDefinition = definition;
+            }
+        }
+    }
+    GoFunctionType::Ptr type(fastCast<GoFunctionType*>(declaration->abstractType().constData()));
     if(!type)
         return;
 
@@ -44,16 +59,21 @@ FunctionCompletionItem::FunctionCompletionItem(DeclarationPointer decl, int dept
         variadicArgs = true;
 
     DUContext* argsContext = nullptr;
-    if(function)
+    if(functionDefinition)
     {
         DUChainReadLocker lock;
-        argsContext = DUChainUtils::getArgumentContext(function.data());
+        argsContext = DUChainUtils::getArgumentContext(functionDefinition.data());
+    }
+    else if(functionDeclaration)
+    {
+        DUChainReadLocker lock;
+        argsContext = DUChainUtils::getArgumentContext(functionDeclaration.data());
     }
     m_arguments = "(";
     if(argsContext)
     {
         DUChainReadLocker lock;
-        auto args = argsContext->allDeclarations(CursorInRevision::invalid(), decl->topContext(), false);
+        auto args = argsContext->allDeclarations(CursorInRevision::invalid(), declaration->topContext(), false);
         //highlight last argument if it is variadic
         if(variadicArgs && m_atArgument >= args.size())
             m_atArgument = args.size() - 1;
@@ -96,13 +116,19 @@ FunctionCompletionItem::FunctionCompletionItem(DeclarationPointer decl, int dept
     }
     m_arguments += ")";
     DUContext* returnContext = 0;
-    if(function)
-        returnContext = function->returnArgsContext();
+    if(functionDefinition)
+    {
+        returnContext = functionDefinition->returnArgsContext();
+    }
+    else if(functionDeclaration)
+    {
+        returnContext = functionDeclaration->returnArgsContext();
+    }
     m_prefix = "";
     if(returnContext)
     {
         DUChainReadLocker lock;
-        auto args = returnContext->allDeclarations(CursorInRevision::invalid(), decl->topContext(), false);
+        auto args = returnContext->allDeclarations(CursorInRevision::invalid(), declaration->topContext(), false);
         int count = 0;
         for(auto arg : args)
         {

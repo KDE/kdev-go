@@ -20,7 +20,6 @@
 
 #include <language/duchain/types/arraytype.h>
 #include <language/duchain/types/pointertype.h>
-#include <language/duchain/types/structuretype.h>
 
 #include "types/gointegraltype.h"
 #include "types/gostructuretype.h"
@@ -228,7 +227,10 @@ void TypeBuilder::visitMethodSpec(go::MethodSpecAst* node)
 {
     if(node->signature)
     {
-        parseSignature(node->signature, true, nullptr, node->methodName);
+        DUContext *parametersContext = nullptr;
+        DUContext *returnArgsContext = nullptr;
+        auto type = parseSignature(node->signature, true, &parametersContext, &returnArgsContext, identifierForNode(node->methodName));
+        declareFunction(node->methodName, type, parametersContext, returnArgsContext);
     }else{
         buildTypeName(node->methodName, node->fullName);
         go::IdentifierAst* id = node->fullName ? node->fullName : node->methodName;
@@ -280,46 +282,49 @@ void TypeBuilder::visitParameter(go::ParameterAst* node)
     TypeBuilderBase::visitParameter(node);
 }
 
-
-go::GoFunctionDeclaration* TypeBuilder::parseSignature(go::SignatureAst* node, bool declareParameters, DUContext* bodyContext, go::IdentifierAst* name, const QByteArray& comment)
+go::GoFunctionType::Ptr TypeBuilder::parseSignature(go::SignatureAst *node, bool declareParameters, DUContext **parametersContext, DUContext **returnArgsContext,
+                                                    const QualifiedIdentifier &identifier, const QByteArray &comment)
 {
     go::GoFunctionType::Ptr type(new go::GoFunctionType());
     openType<go::GoFunctionType>(type);
 
-    DUContext* parametersContext = nullptr;
-    if(declareParameters) parametersContext = openContext(node->parameters,
-                                               editorFindRange(node->parameters, 0),
-                                               DUContext::ContextType::Function,
-                                               name);
+    if(declareParameters)
+    {
+        *parametersContext = openContext(node->parameters, editorFindRange(node->parameters, 0), DUContext::ContextType::Function, identifier);
+    }
 
     parseParameters(node->parameters, true, declareParameters);
-    if(declareParameters) closeContext();
 
-    DUContext* returnArgsContext = nullptr;
+    if(declareParameters)
+    {
+        closeContext();
+    }
 
     if(node->result)
     {
         visitResult(node->result);
         if(node->result->parameters)
         {
-            if(declareParameters) returnArgsContext = openContext(node->result,
-                                                editorFindRange(node->result, 0),
-                                                DUContext::ContextType::Function,
-                                                name);
-            parseParameters(node->result->parameters, false, declareParameters);
-            if(declareParameters) closeContext();
+            if(declareParameters)
+            {
+                *returnArgsContext = openContext(node->result, editorFindRange(node->result, 0), DUContext::ContextType::Function, identifier);
+            }
 
+            parseParameters(node->result->parameters, false, declareParameters);
+
+            if(declareParameters)
+            {
+                closeContext();
+            }
         }
         if(!node->result->parameters && lastType())
+        {
             type->addReturnArgument(lastType());
+        }
     }
-    closeType();
 
-    if(declareParameters)
-    {
-        return declareFunction(name, type, parametersContext, returnArgsContext, comment, bodyContext);
-    }
-    return 0;
+    closeType();
+    return type;
 }
 
 void TypeBuilder::parseParameters(go::ParametersAst* node, bool parseArguments, bool declareParameters)

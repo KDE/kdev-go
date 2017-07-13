@@ -29,7 +29,7 @@ namespace go
 class FunctionCompletionItem : public CompletionItem
 {
 public:
-    FunctionCompletionItem(KDevelop::DeclarationPointer decl = KDevelop::DeclarationPointer(),
+    FunctionCompletionItem(KDevelop::DeclarationPointer declaration = KDevelop::DeclarationPointer(),
                                     int depth=0, int atArgument=-1);
 
 

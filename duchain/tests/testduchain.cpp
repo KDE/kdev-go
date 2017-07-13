@@ -344,10 +344,13 @@ void TestDuchain::test_funccontexts()
     QVERIFY(context);
     DUChainReadLocker lock;
     auto decls = context->findDeclarations(QualifiedIdentifier("mytype::main"));
-    QCOMPARE(decls.size(), 1);
-    auto function = dynamic_cast<go::GoFunctionDeclaration*>(decls.first());
+    QCOMPARE(decls.size(), 2);
+    auto firstDeclaration = dynamic_cast<FunctionDefinition*>(decls.first());
+    auto secondDeclaration = dynamic_cast<FunctionDefinition*>(decls.at(1));
+    auto function = firstDeclaration == nullptr ? secondDeclaration : firstDeclaration;
     QVERIFY(function);
     context = function->internalContext();
+    QVERIFY(context);
     QCOMPARE(context->localDeclarations().size(), 2);
     QCOMPARE(context->findDeclarations(QualifiedIdentifier("i")).size(), 1);
     QCOMPARE(context->findDeclarations(QualifiedIdentifier("a")).size(), 1);

@@ -21,7 +21,8 @@ set(duchain_SRC
      types/gomaptype.cpp
      types/gochantype.cpp
      declarations/functiondeclaration.cpp
-     
+     declarations/functiondefinition.cpp
+
      navigation/navigationwidget.cpp
      navigation/declarationnavigationcontext.cpp
      )

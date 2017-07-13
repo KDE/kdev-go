@@ -30,6 +30,9 @@ using namespace KDevelop;
 namespace go
 {
 
+class IdentifierAst;
+class MethodRecvAst;
+
 class KDEVGODUCHAIN_EXPORT Helper
 {
 public:
@@ -44,6 +47,8 @@ private:
 };
 
 KDEVGODUCHAIN_EXPORT DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext* context, bool searchInParent=true);
+
+KDEVGODUCHAIN_EXPORT go::IdentifierAst* getMethodRecvTypeIdentifier(go::MethodRecvAst* methodRecv);
 
 /**
  * This tries to find declaration which has a real type, like Instance and Type

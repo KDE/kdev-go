@@ -20,6 +20,8 @@
 #define TYPEBUILDER_H
 
 #include <language/duchain/builders/abstracttypebuilder.h>
+#include <language/duchain/functiondefinition.h>
+#include <declarations/functiondefinition.h>
 #include "contextbuilder.h"
 #include "duchain/kdevgoduchain_export.h"
 #include "duchain/declarations/functiondeclaration.h"
@@ -70,13 +72,16 @@ protected:
     /**
      * declared here as pure virtual so we can use that when building functions
      **/
-    virtual GoFunctionDeclaration* declareFunction(go::IdentifierAst* id, const GoFunctionType::Ptr& type,
-                                                   DUContext* paramContext, DUContext* retparamContext, const QByteArray& comment=QByteArray(), DUContext* bodyContext = nullptr) = 0;
+    virtual go::GoFunctionDeclaration* declareFunction(go::IdentifierAst* id, const GoFunctionType::Ptr& type,
+                                                       DUContext* paramContext, DUContext* retparamContext,
+                                                       const QByteArray& comment = {}, DUContext* bodyContext = nullptr) = 0;
 
     /**
      * opens GoFunctionType, parses it's parameters and return declaration if @param declareParameters is true.
      **/
-    go::GoFunctionDeclaration* parseSignature(go::SignatureAst* node, bool declareParameters, DUContext* bodyContext = nullptr, go::IdentifierAst* name=0, const QByteArray& comment=QByteArray());
+    go::GoFunctionType::Ptr parseSignature(go::SignatureAst *node, bool declareParameters, DUContext **parametersContext = nullptr,
+                                               DUContext **returnArgsContext = nullptr, const QualifiedIdentifier &identifier = {},
+                                               const QByteArray &comment = {});
 
     /**
      * Convenience function that parses function parameters.

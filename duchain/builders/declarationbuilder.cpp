@@ -18,15 +18,10 @@
 
 #include "declarationbuilder.h"
 
-#include <language/duchain/duchainlock.h>
-#include <language/duchain/duchain.h>
 #include <language/duchain/types/integraltype.h>
 #include <language/duchain/types/arraytype.h>
-#include <language/duchain/types/functiontype.h>
-#include <language/duchain/types/identifiedtype.h>
 #include <language/duchain/types/pointertype.h>
 #include <language/duchain/classdeclaration.h>
-#include <language/duchain/topducontext.h>
 #include <language/duchain/namespacealiasdeclaration.h>
 
 #include "expressionvisitor.h"
@@ -247,49 +242,54 @@ void DeclarationBuilder::visitPrimaryExpr(go::PrimaryExprAst *node)
 
 void DeclarationBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
 {
-    Declaration* declaration=0;
-    bool openedDeclaration = false;
 
-    if(node->methodRecv)
+    go::GoFunctionDeclaration* functionDeclaration = nullptr;
+    QualifiedIdentifier typeIdentifier;
+    auto containerType = go::getMethodRecvTypeIdentifier(node->methodRecv);
+
     {
-        go::IdentifierAst* actualtype=0;
-        if(node->methodRecv->ptype)
-            actualtype = node->methodRecv->ptype;
-        else if(node->methodRecv->type)
-            actualtype = node->methodRecv->type;
-        else
-            actualtype = node->methodRecv->nameOrType;
         DUChainWriteLocker lock;
+        typeIdentifier = identifierForNode(containerType);
+        auto typeDeclaration = go::getTypeDeclaration(typeIdentifier, currentContext());
+        auto toBeInjectedContext = typeDeclaration ? typeDeclaration->internalContext() : nullptr;
+        if(!typeDeclaration || !typeDeclaration->internalContext())
+        {
+            openContext(node->methodName, node->methodName, DUContext::ContextType::Class, typeIdentifier);
+            if(typeDeclaration)
+            {
+                typeDeclaration->setInternalContext(currentContext());
+            }
+            toBeInjectedContext = currentContext();
+            closeContext();
+        }
 
-        QList<Declaration*> declarations = currentContext()->findLocalDeclarations(identifierForNode(actualtype).last(), CursorInRevision::invalid(), this->topContext());
+        injectContext(toBeInjectedContext);
 
-        if(declarations.size() >= 1)
-        {
-            declaration = declarations.at(0);
-        }
-        else
-        {
-            openedDeclaration = true;
-            declaration = openDeclaration<ClassDeclaration>(identifierForNode(actualtype), editorFindRange(actualtype, 0));
-            declaration->setKind(Declaration::Type);
-        }
+        auto range = RangeInRevision(currentContext()->range().start, currentContext()->range().start);
+        functionDeclaration = openDeclaration<go::GoFunctionDeclaration>(identifierForNode(node->methodName).last(), range);
+        functionDeclaration->setAutoDeclaration(true);
+        closeDeclaration();
 
-        if(declaration->internalContext())
-        {
-            openContext(declaration->internalContext());
-        }
-        else
-        {
-            openContext(node, editorFindRange(node, 0), DUContext::Namespace, identifierForNode(actualtype));
-            declaration->setInternalContext(currentContext());
-        }
+        closeInjectedContext();
     }
 
-    auto functionDeclaration = buildFunction(node->signature, node->body, node->methodName, m_session->commentBeforeToken(node->startToken-1));
+    QualifiedIdentifier identifier;
+    {
+        DUChainReadLocker lock;
+        identifier = functionDeclaration->qualifiedIdentifier();
+    }
 
-    if(node->methodRecv->type && functionDeclaration->internalContext())
-    {//declare method receiver variable('this' or 'self' analog in Go)
-        openContext(functionDeclaration->internalContext());
+    openContext(node, editorFindRange(node, 0), DUContext::ContextType::Class, typeIdentifier);
+    DUChainWriteLocker lock;
+    auto functionDefinition = buildMethod(node->signature, node->body, node->methodName, functionDeclaration, m_session->commentBeforeToken(node->startToken-1), identifier);
+    functionDeclaration->setType<go::GoFunctionType>(functionDefinition->type<go::GoFunctionType>());
+    functionDeclaration->setKind(Declaration::Instance);
+    lock.unlock();
+
+    if(node->methodRecv->type && functionDefinition->internalContext())
+    {
+        //declare method receiver variable('this' or 'self' analog in Go)
+        openContext(functionDefinition->internalContext());
         buildTypeName(node->methodRecv->type);
         if(node->methodRecv->star!= -1)
         {
@@ -298,17 +298,14 @@ void DeclarationBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
             injectType(PointerType::Ptr(ptype));
         }
         DUChainWriteLocker n;
-        Declaration* thisVariable = openDeclaration<Declaration>(identifierForNode(node->methodRecv->nameOrType), editorFindRange(node->methodRecv->nameOrType, 0));
+        auto methodReceiverName = node->methodRecv->nameOrType;
+        Declaration* thisVariable = openDeclaration<Declaration>(identifierForNode(methodReceiverName).last(),
+                                                                 editorFindRange(methodReceiverName, 0));
         thisVariable->setAbstractType(lastType());
         closeDeclaration();
         closeContext();
     }
-
-    closeContext();	//namespace
-    if(openedDeclaration)
-    {
-        closeDeclaration();
-    }
+    closeContext();
 }
 
 void DeclarationBuilder::visitTypeSpec(go::TypeSpecAst* node)
@@ -336,6 +333,12 @@ void DeclarationBuilder::visitTypeSpec(go::TypeSpecAst* node)
     decl->setType(lastType());
     
     decl->setIsTypeAlias(true);
+    if(!lastContext())
+    {
+        openContext(node->name, DUContext::ContextType::Class, identifierForNode(node->name));
+        closeContext();
+        qDebug() << lastContext()->scopeIdentifier() << lastContext()->localScopeIdentifier();
+    }
     decl->setInternalContext(lastContext());
     if(node->type && node->type->complexType && node->type->complexType->structType && node->type->complexType->structType->fieldDeclSequence)
     {
@@ -619,7 +622,7 @@ go::GoFunctionDeclaration* DeclarationBuilder::declareFunction(go::IdentifierAst
 {
     setComment(comment);
     DUChainWriteLocker lock;
-    go::GoFunctionDeclaration* dec = openDefinition<go::GoFunctionDeclaration>(identifierForNode(id), editorFindRange(id, 0));
+    auto dec = openDefinition<go::GoFunctionDeclaration>(identifierForNode(id), editorFindRange(id, 0));
     dec->setType<go::GoFunctionType>(type);
     dec->setKind(Declaration::Instance);
     dec->setInternalContext(bodyContext);
@@ -642,7 +645,39 @@ go::GoFunctionDeclaration* DeclarationBuilder::declareFunction(go::IdentifierAst
     return dec;
 }
 
-go::GoFunctionDeclaration* DeclarationBuilder::buildFunction(go::SignatureAst* node, go::BlockAst* block, go::IdentifierAst* name, const QByteArray& comment)
+go::GoFunctionDefinition* DeclarationBuilder::declareMethod(go::IdentifierAst *id, const go::GoFunctionType::Ptr &type,
+                                                      DUContext *paramContext, DUContext *retparamContext,
+                                                      const QByteArray &comment, DUContext *bodyContext,
+                                                      go::GoFunctionDeclaration *declaration,
+                                                      const QualifiedIdentifier &identifier)
+{
+    setComment(comment);
+    DUChainWriteLocker lock;
+    auto dec = openDefinition<go::GoFunctionDefinition>(identifier, editorFindRange(id, 0));
+    dec->setType<go::GoFunctionType>(type);
+    dec->setKind(Declaration::Instance);
+    dec->setInternalContext(bodyContext);
+    dec->setDeclaration(declaration);
+
+    if(bodyContext)
+    {
+        if(paramContext)
+        {
+            bodyContext->addImportedParentContext(paramContext);
+            dec->setInternalFunctionContext(paramContext);
+        }
+        if(retparamContext)
+        {
+            bodyContext->addImportedParentContext(retparamContext);
+            dec->setReturnArgsContext(retparamContext);
+        }
+    }
+    closeDeclaration();
+    return dec;
+}
+
+go::GoFunctionDeclaration* DeclarationBuilder::buildFunction(go::SignatureAst* node, go::BlockAst* block,
+                                                             go::IdentifierAst* name, const QByteArray& comment)
 {
     DUContext* bodyContext = nullptr;
     if(block)
@@ -650,5 +685,24 @@ go::GoFunctionDeclaration* DeclarationBuilder::buildFunction(go::SignatureAst* n
         visitBlock(block);
         bodyContext = lastContext();
     }
-    return parseSignature(node, true, bodyContext, name, comment);
+    DUContext* returnArgsContext = nullptr;
+    DUContext* parametersContext = nullptr;
+    auto type = parseSignature(node, true, &parametersContext, &returnArgsContext, identifierForNode(name), comment);
+    return declareFunction(name, type, parametersContext, returnArgsContext, comment, bodyContext);
+}
+
+go::GoFunctionDefinition* DeclarationBuilder::buildMethod(go::SignatureAst *node, go::BlockAst *block,
+                                                          go::IdentifierAst *name, go::GoFunctionDeclaration *declaration,
+                                                          const QByteArray &comment, const QualifiedIdentifier &identifier)
+{
+    DUContext* bodyContext = nullptr;
+    if(block)
+    {
+        visitBlock(block);
+        bodyContext = lastContext();
+    }
+    DUContext* parametersContext = nullptr;
+    DUContext* returnArgsContext = nullptr;
+    auto type = parseSignature(node, true, &parametersContext, &returnArgsContext, identifier, comment);
+    return declareMethod(name, type, parametersContext, returnArgsContext, comment, bodyContext, declaration, identifier);
 }

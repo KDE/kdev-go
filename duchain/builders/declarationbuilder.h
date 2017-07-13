@@ -21,6 +21,7 @@
 
 #include <language/duchain/builders/abstractdeclarationbuilder.h>
 #include <language/duchain/builders/abstracttypebuilder.h>
+#include <declarations/functiondefinition.h>
 
 #include "duchain/kdevgoduchain_export.h"
 #include "contextbuilder.h"
@@ -69,6 +70,9 @@ public:
      * A shortcut for ExpressionVisitor to build function type
      **/
     go::GoFunctionDeclaration* buildFunction(go::SignatureAst* node, go::BlockAst* block = nullptr, go::IdentifierAst* name = nullptr, const QByteArray& comment = {});
+
+    go::GoFunctionDefinition* buildMethod(go::SignatureAst* node, go::BlockAst* block = nullptr, go::IdentifierAst* name = nullptr,
+                                    go::GoFunctionDeclaration* pDeclaration = nullptr, const QByteArray &array = {}, const QualifiedIdentifier &identifier = {});
     
     /*struct GoImport{
 	GoImport(bool anon, KDevelop::TopDUContext* ctx) : anonymous(anon), context(ctx) {}
@@ -103,6 +107,10 @@ private:
      **/
     virtual go::GoFunctionDeclaration* declareFunction(go::IdentifierAst* id, const go::GoFunctionType::Ptr& type,
                                                        DUContext* paramContext, DUContext* retparamContext, const QByteArray& comment = {}, DUContext* bodyContext = nullptr) override;
+
+    go::GoFunctionDefinition* declareMethod(go::IdentifierAst* id, const go::GoFunctionType::Ptr& type,
+                                              DUContext* paramContext, DUContext* retparamContext, const QByteArray& comment=QByteArray(),
+                                              DUContext* bodyContext = nullptr, go::GoFunctionDeclaration* declaration = nullptr, const QualifiedIdentifier &identifier = {});
 
     void importThisPackage();
     void importBuiltins();

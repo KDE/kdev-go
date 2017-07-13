@@ -17,10 +17,14 @@ namespace go {
 
 REGISTER_DUCHAIN_ITEM(GoFunctionDefinition);
 
-GoFunctionDefinition::GoFunctionDefinition(const KDevelop::RangeInRevision& range, KDevelop::DUContext* context)
-        : FunctionDefinition(range, context)
+GoFunctionDefinition::GoFunctionDefinition(const KDevelop::RangeInRevision& range, KDevelop::DUContext* context):
+        FunctionDefinition(*new GoFunctionDefinitionData)
 {
-
+    setRange(range);
+    d_func_dynamic()->setClassId(this);
+    if (context) {
+        setContext(context);
+    }
 }
 
 GoFunctionDefinition::GoFunctionDefinition(GoFunctionDefinitionData& data) : FunctionDefinition(data)

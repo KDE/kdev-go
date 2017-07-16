@@ -11,17 +11,16 @@
 #include "buildsystem.h"
 
 #include "builder.h"
+#include "executabletargetitem.h"
+#include "utils.h"
+#include "builddirchooser.h"
+#include "preferences.h"
+
 #include <interfaces/icore.h>
-#include <interfaces/iproject.h>
 #include <interfaces/iprojectcontroller.h>
 #include <interfaces/iplugincontroller.h>
 #include <kpluginfactory.h>
-#include <project/projectmodel.h>
 #include <project/helper.h>
-
-#include <QFile>
-#include <KLocalizedString>
-#include <algorithm>
 
 using namespace KDevelop;
 
@@ -114,8 +113,41 @@ QList<ProjectTargetItem*> GoBuildSystem::targets(KDevelop::ProjectFolderItem*) c
 
 KDevelop::ProjectFolderItem * GoBuildSystem::createFolderItem(KDevelop::IProject* project, const KDevelop::Path& path, KDevelop::ProjectBaseItem* parent)
 {
-    return new KDevelop::ProjectBuildFolderItem(project, path, parent);
+    ProjectBuildFolderItem *item = new KDevelop::ProjectBuildFolderItem(project, path, parent);
+    new GoExecutableTargetItem(item, item->folderName());
+
+    return item;
 }
 
+int GoBuildSystem::perProjectConfigPages() const
+{
+    return 1;
+}
+
+KDevelop::ConfigPage* GoBuildSystem::perProjectConfigPage(int number, const KDevelop::ProjectConfigOptions &options, QWidget *parent)
+{
+    if (number == 0)
+    {
+        return new GoPreferences(this, options, parent);
+    }
+    return nullptr;
+}
+
+KDevelop::ProjectFolderItem *GoBuildSystem::import(KDevelop::IProject *project)
+{
+    auto buildDir = Go::currentBuildDir(project);
+    if(buildDir.isEmpty())
+    {
+        auto newBuildDir = Path(project->path().parent(), project->name()+"-build");
+        GoBuildDirChooser buildDirChooser;
+        buildDirChooser.setBuildFolder(newBuildDir);
+        if(buildDirChooser.exec())
+        {
+            newBuildDir = buildDirChooser.buildFolder();
+        }
+        Go::setCurrentBuildDir(project, newBuildDir);
+    }
+    return AbstractFileManagerPlugin::import(project);
+}
 
 #include "buildsystem.moc"

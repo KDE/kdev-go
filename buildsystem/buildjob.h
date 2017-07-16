@@ -18,10 +18,11 @@ class GoBuildJob : public KDevelop::OutputExecuteJob
     Q_OBJECT
 public:
 
-    GoBuildJob(QObject* parent, QString command, QUrl buildDir);
+    GoBuildJob(QObject* parent, QString command, QUrl buildDir, QString resultDir);
     QStringList commandLine() const override;
 private:
     QString m_command;
+    QString m_output;
 };
 #endif // BUILDJOB_H
 

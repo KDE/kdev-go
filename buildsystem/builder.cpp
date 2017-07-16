@@ -10,12 +10,11 @@
 
 #include "builder.h"
 
-#include <interfaces/iproject.h>
-#include <project/projectmodel.h>
-#include <project/interfaces/ibuildsystemmanager.h>
-#include <outputview/outputexecutejob.h>
-
 #include "buildjob.h"
+#include "buildsystem.h"
+#include "utils.h"
+
+#include <project/projectmodel.h>
 
 KJob* GoBuilder::build( KDevelop::ProjectBaseItem *item )
 {
@@ -37,7 +36,7 @@ KJob* GoBuilder::createJobForAction(KDevelop::ProjectBaseItem *item, const QStri
 {
     auto bsm = item->project()->buildSystemManager();
     auto buildDir = bsm->buildDirectory(item);
-    auto job = new GoBuildJob(nullptr, action, buildDir.toUrl());
+    auto job = new GoBuildJob(nullptr, action, buildDir.toUrl(), Go::buildOutputFile(item).toLocalFile());
     job->setWorkingDirectory(buildDir.toUrl());
     return job;
 }

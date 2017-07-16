@@ -14,7 +14,7 @@
 
 using namespace KDevelop;
 
-GoBuildJob::GoBuildJob(QObject* parent, QString command, QUrl buildDir) : OutputExecuteJob(parent), m_command(command)
+GoBuildJob::GoBuildJob(QObject* parent, QString command, QUrl buildDir, QString resultDir) : OutputExecuteJob(parent), m_command(command), m_output(resultDir)
 {
     setStandardToolView(IOutputView::BuildView);
     setFilteringStrategy(new CompilerFilterStrategy(buildDir.toString()));
@@ -24,7 +24,7 @@ GoBuildJob::GoBuildJob(QObject* parent, QString command, QUrl buildDir) : Output
 
 QStringList GoBuildJob::commandLine() const
 {
-    return {"go", m_command};
+    return {"go", m_command, "-o", m_output};
 }
 
 #include "buildjob.moc"

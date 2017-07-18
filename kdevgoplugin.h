@@ -26,6 +26,7 @@
 #define KDEVGOPLUGIN_H
 
 #include <interfaces/iplugin.h>
+#include <interfaces/isourceformatter.h>
 #include <language/interfaces/ilanguagesupport.h>
 
 #include "gohighlighting.h"
@@ -48,6 +49,7 @@ class GoPlugin : public KDevelop::IPlugin, public KDevelop::ILanguageSupport
     
     virtual KDevelop::ParseJob* createParseJob(const KDevelop::IndexedString& url) override;
     virtual QString name() const override;
+    virtual KDevelop::SourceFormatterItemList sourceFormatterItems() const override;
     
     KDevelop::ICodeHighlighting* codeHighlighting() const;
     

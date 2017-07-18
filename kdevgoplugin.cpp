@@ -65,4 +65,17 @@ KDevelop::ICodeHighlighting* GoPlugin::codeHighlighting() const
     return m_highlighting;
 }
 
+KDevelop::SourceFormatterItemList GoPlugin::sourceFormatterItems() const
+{
+    SourceFormatterItemList result;
+    SourceFormatterStyleItem item;
+    item.engine = "customscript";
+    item.style = SourceFormatterStyle("Go fmt");
+    item.style.setMimeTypes({SourceFormatterStyle::MimeHighlightPair{"text/x-go", "Go"}});
+    item.style.setCaption("Go fmt support");
+    item.style.setContent("gofmt $FILE");
+    result.append(item);
+    return result;
+}
+
 #include "kdevgoplugin.moc"

@@ -82,4 +82,34 @@ void UseBuilder::visitBlock(BlockAst* node)
     ContextBuilder::visitBlock(node);
 }
 
+void UseBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
+{
+    IdentifierAst *typeIdentifierNode;
+    if(node->methodRecv->type)
+    {
+        typeIdentifierNode = node->methodRecv->type;
+    }
+    else if(node->methodRecv->nameOrType)
+    {
+        typeIdentifierNode = node->methodRecv->nameOrType;
+    }
+    else
+    {
+        typeIdentifierNode = node->methodRecv->ptype;
+    }
+
+    QualifiedIdentifier id(identifierForNode(typeIdentifierNode));
+    DUContext* context;
+    {
+        DUChainReadLocker lock;
+        context = currentContext()->findContextIncluding(editorFindRange(typeIdentifierNode, 0));
+    }
+    DeclarationPointer declaration = getTypeDeclaration(id, context);
+    if(declaration)
+    {
+        newUse(typeIdentifierNode, declaration);
+    }
+    ContextBuilder::visitMethodDeclaration(node);
+}
+
 }

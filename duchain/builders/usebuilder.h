@@ -43,6 +43,7 @@ public:
     virtual void visitPrimaryExpr(go::PrimaryExprAst* node);
     virtual void visitTypeName(go::TypeNameAst* node);
     virtual void visitBlock(go::BlockAst* node);
+    virtual void visitMethodDeclaration(go::MethodDeclarationAst* node);
     
 private:
     QStack<KDevelop::AbstractType::Ptr> m_types;

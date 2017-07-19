@@ -42,16 +42,16 @@ void UseBuilder::visitTypeName(TypeNameAst* node)
 {
     QualifiedIdentifier id(identifierForNode(node->name));
     if(node->type_resolve->fullName)
-	id.push(identifierForNode(node->type_resolve->fullName));
+        id.push(identifierForNode(node->type_resolve->fullName));
     DUContext* context;
     {
-	DUChainReadLocker lock;
-	context = currentContext()->findContextIncluding(editorFindRange(node, 0));
+        DUChainReadLocker lock;
+        context = currentContext()->findContextIncluding(editorFindRange(node, 0));
     }
     DeclarationPointer decl = getTypeDeclaration(id, context);
     if(decl)
     {
-	newUse(node, decl);
+        newUse(node, decl);
     }
 }
 
@@ -60,9 +60,9 @@ void UseBuilder::visitPrimaryExpr(PrimaryExprAst* node)
 {
     DUContext* context;
     {
-	DUChainReadLocker lock;
-	//context = currentContext()->findContextAt(editorFindRange(node, 0).start);
-	context = currentContext()->findContextIncluding(editorFindRange(node, 0));
+        DUChainReadLocker lock;
+        //context = currentContext()->findContextAt(editorFindRange(node, 0).start);
+        context = currentContext()->findContextIncluding(editorFindRange(node, 0));
     }
     if(!context) return;
     ExpressionVisitor visitor(m_session, context);
@@ -70,9 +70,9 @@ void UseBuilder::visitPrimaryExpr(PrimaryExprAst* node)
     auto ids = visitor.allIds();
     auto decls = visitor.allDeclarations();
     if(ids.size() != decls.size())
-	return;
+        return;
     for(int i=0; i<ids.size(); ++i)
-	newUse(ids.at(i), decls.at(i));
+        newUse(ids.at(i), decls.at(i));
     //build uses in subexpressions
     ContextBuilder::visitPrimaryExpr(node);
 }

@@ -29,9 +29,9 @@ CodeCompletionWorker::CodeCompletionWorker(KDevelop::CodeCompletionModel* model)
 }
 
 KDevelop::CodeCompletionContext* CodeCompletionWorker::createCompletionContext(KDevelop::DUContextPointer context, 
-									       const QString& contextText, 
-									       const QString& followingText, 
-									       const KDevelop::CursorInRevision& position) const
+                                                                               const QString& contextText, 
+                                                                               const QString& followingText, 
+                                                                               const KDevelop::CursorInRevision& position) const
 {
     qCDebug(COMPLETION) << "Completion test";
     //return go::CodeCompletionWorker::createCompletionContext(context, contextText, followingText, position);

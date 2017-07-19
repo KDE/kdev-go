@@ -93,8 +93,6 @@ QString DeclarationNavigationContext::html(bool shorten)
     if( function ) {
       htmlFunction();
     } else if( declaration()->isTypeAlias() || declaration()->kind() == Declaration::Instance ) {
-	
-	
       if( declaration()->isTypeAlias() )
         modifyHtml() += importantHighlight("type ");
 
@@ -305,47 +303,47 @@ void DeclarationNavigationContext::htmlFunction()
     //KDevelop::AbstractDeclarationNavigationContext::htmlFunction();
     const go::GoFunctionDeclaration* function = dynamic_cast<const go::GoFunctionDeclaration*>(declaration().data());
     if(!function) 
-	AbstractDeclarationNavigationContext::htmlFunction();
+        AbstractDeclarationNavigationContext::htmlFunction();
 
     const go::GoFunctionType::Ptr type = declaration()->abstractType().cast<go::GoFunctionType>();
     if( !type ) {
-	modifyHtml() += errorHighlight("Invalid type<br />");
-	return;
+        modifyHtml() += errorHighlight("Invalid type<br />");
+        return;
     }
 
     /*if( !classFunDecl || (!classFunDecl->isConstructor() && !classFunDecl->isDestructor()) ) {
-	// only print return type for global functions and non-ctor/dtor methods
-	eventuallyMakeTypeLinks( type->returnType() );
+        // only print return type for global functions and non-ctor/dtor methods
+        eventuallyMakeTypeLinks( type->returnType() );
     }*/
 
     modifyHtml() += ' ' + identifierHighlight(prettyIdentifier(declaration()).toString().toHtmlEscaped(), declaration());
 
     if( type->indexedArgumentsSize() == 0 )
     {
-	modifyHtml() += "()";
+        modifyHtml() += "()";
     } else {
-	modifyHtml() += "( ";
+        modifyHtml() += "( ";
 
-	bool first = true;
-	//int firstDefaultParam = type->indexedArgumentsSize() - function->defaultParametersSize();
-	int currentArgNum = 0;
+        bool first = true;
+        //int firstDefaultParam = type->indexedArgumentsSize() - function->defaultParametersSize();
+        int currentArgNum = 0;
 
-	QVector<Declaration*> decls;
-	if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(declaration().data())) {
-	    decls = argumentContext->localDeclarations(topContext().data());
-	}
-	foreach(const AbstractType::Ptr& argType, type->arguments()) {
-	    if( !first )
-		modifyHtml() += ", ";
-	    first = false;
+        QVector<Declaration*> decls;
+        if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(declaration().data())) {
+            decls = argumentContext->localDeclarations(topContext().data());
+        }
+        foreach(const AbstractType::Ptr& argType, type->arguments()) {
+            if( !first )
+                modifyHtml() += ", ";
+            first = false;
 
-	    if (currentArgNum < decls.size()) {
-		modifyHtml() += identifierHighlight(decls[currentArgNum]->identifier().toString().toHtmlEscaped(), declaration()) + " ";
-	    }
+            if (currentArgNum < decls.size()) {
+                modifyHtml() += identifierHighlight(decls[currentArgNum]->identifier().toString().toHtmlEscaped(), declaration()) + " ";
+            }
 
-	    if(type->modifiers() == go::GoFunctionType::VariadicArgument && currentArgNum == decls.size()-1)
+            if(type->modifiers() == go::GoFunctionType::VariadicArgument && currentArgNum == decls.size()-1)
             {
-		modifyHtml() += "...";
+                modifyHtml() += "...";
                 if(fastCast<ArrayType*>(argType.constData()))
                 {//show only element type in variadic parameter
                     eventuallyMakeTypeLinks(fastCast<ArrayType*>(argType.constData())->elementType());
@@ -359,68 +357,73 @@ void DeclarationNavigationContext::htmlFunction()
                 eventuallyMakeTypeLinks( argType );
             }
 
-	    /*if( currentArgNum >= firstDefaultParam )
-		modifyHtml() += " = " + Qt::escape(function->defaultParameters()[ currentArgNum - firstDefaultParam ].str());*/
+            /*if( currentArgNum >= firstDefaultParam )
+                modifyHtml() += " = " + Qt::escape(function->defaultParameters()[ currentArgNum - firstDefaultParam ].str());*/
 
-	    ++currentArgNum;
-	}
+            ++currentArgNum;
+        }
 
-	modifyHtml() += " )";
+        modifyHtml() += " )";
     }
     //return types
     qCDebug(DUCHAIN) << type->returnArguments().size();
     if(type->returnArguments().size() != 0)
     {
-	modifyHtml() += " ";
-	int currentArgNum = 0;
-	bool first=true;
-	QVector<Declaration*> decls;
-	/*if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(declaration().data())) {
-	    decls = argumentContext->localDeclarations(topContext().data());
-	}*/
-	if(DUContext* retContext = function->returnArgsContext()) 
-	    decls = retContext->localDeclarations(topContext().data());
-	
-	if(type->returnArguments().size() == 1)
-	{
+        modifyHtml() += " ";
+        int currentArgNum = 0;
+        bool first=true;
+        QVector<Declaration*> decls;
+        /*if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(declaration().data())) {
+            decls = argumentContext->localDeclarations(topContext().data());
+        }*/
+        if(DUContext* retContext = function->returnArgsContext()) 
+            decls = retContext->localDeclarations(topContext().data());
+        
+        if(type->returnArguments().size() == 1)
+        {
             if(decls.size() != 0) //show declaration if one exists
                 modifyHtml() += identifierHighlight(decls[0]->identifier().toString().toHtmlEscaped(), declaration()) + " ";
-	    eventuallyMakeTypeLinks(type->returnArguments().front());
-	    //modifyHtml() += ' ' + nameHighlight(Qt::escape(decls[currentArgNum]->identifier().toString()));
-	}else
-	{
-	    modifyHtml() += "(";
-	    foreach(const AbstractType::Ptr& argType, type->returnArguments()) {
-	    if( !first )
-		modifyHtml() += ", ";
-	    first = false;
+            eventuallyMakeTypeLinks(type->returnArguments().front());
+            //modifyHtml() += ' ' + nameHighlight(Qt::escape(decls[currentArgNum]->identifier().toString()));
+        }
+        else
+        {
+            modifyHtml() += "(";
+            foreach(const AbstractType::Ptr& argType, type->returnArguments())
+            {
+                if( !first )
+                    modifyHtml() += ", ";
+                first = false;
 
-	    //TODO fix parameter names
-	    if (currentArgNum < decls.size()) {
-		modifyHtml() += identifierHighlight(decls[currentArgNum]->identifier().toString().toHtmlEscaped(), declaration()) + " ";
-	    }
-	    eventuallyMakeTypeLinks( argType );
-	    ++currentArgNum;
-	    }
-	    modifyHtml() += ")";
-	}
+                //TODO fix parameter names
+                if (currentArgNum < decls.size()) {
+                    modifyHtml() += identifierHighlight(decls[currentArgNum]->identifier().toString().toHtmlEscaped(), declaration()) + " ";
+                }
+                eventuallyMakeTypeLinks( argType );
+                ++currentArgNum;
+            }
+            modifyHtml() += ")";
+        }
     }
-	
+        
     modifyHtml() += "<br />";
 }
 
 void DeclarationNavigationContext::eventuallyMakeTypeLinks(AbstractType::Ptr type)
 {
-    if( !type) {
-	modifyHtml() += typeHighlight(QString("<no type>").toHtmlEscaped());
-	return;
+    if( !type)
+    {
+        modifyHtml() += typeHighlight(QString("<no type>").toHtmlEscaped());
+        return;
     }
     if(declaration()->isTypeAlias())
     {
-	//Go type declaration. manually creating links
-	QualifiedIdentifier id = declaration()->qualifiedIdentifier();
-	makeLink(id.toString(), DeclarationPointer(declaration()), NavigationAction::NavigateDeclaration );
-	
-    }else 
-	KDevelop::AbstractDeclarationNavigationContext::eventuallyMakeTypeLinks(type);
+        //Go type declaration. manually creating links
+        QualifiedIdentifier id = declaration()->qualifiedIdentifier();
+        makeLink(id.toString(), DeclarationPointer(declaration()), NavigationAction::NavigateDeclaration );
+    }
+    else
+    {
+        KDevelop::AbstractDeclarationNavigationContext::eventuallyMakeTypeLinks(type);
+    }
 }

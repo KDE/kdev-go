@@ -36,7 +36,7 @@ public:
     GoStructureTypeData()
         : KDevelop::AbstractTypeData()
     {
-	m_type=0;
+        m_type=0;
     }
     GoStructureTypeData( const GoStructureTypeData& rhs )
         : KDevelop::AbstractTypeData(rhs), m_context(rhs.m_context), m_prettyName(rhs.m_prettyName), m_type(rhs.m_type)

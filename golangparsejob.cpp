@@ -57,12 +57,12 @@ void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread
 
     ProblemPointer p = readContents();
     if(p) {
-	 return;
+         return;
     }
 
     QByteArray code = contents().contents;
     while(code.endsWith('\0'))
-	code.chop(1);
+        code.chop(1);
 
     //ParseSession session(QString(contents().contents).toUtf8(), priority());
     ParseSession session(code, parsePriority());
@@ -113,40 +113,40 @@ void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread
 
     if(result)
     {
-	QReadLocker parseLock(languageSupport()->parseLock());
-	
-	if(abortRequested())
-	  return abortJob();
-	//qCDebug(Go) << QString(contents().contents);
-	DeclarationBuilder builder(&session, forExport);
-	context = builder.build(document(), session.ast(), context);
-	
-	if(!forExport)
-	{
-	    go::UseBuilder useBuilder(&session);
-	    useBuilder.buildUses(session.ast());
-	}
-	//this notifies other opened files of changes
-	//session.reparseImporters(context);
-	
+        QReadLocker parseLock(languageSupport()->parseLock());
+
+        if(abortRequested())
+            return abortJob();
+        //qCDebug(Go) << QString(contents().contents);
+        DeclarationBuilder builder(&session, forExport);
+        context = builder.build(document(), session.ast(), context);
+
+        if(!forExport)
+        {
+            go::UseBuilder useBuilder(&session);
+            useBuilder.buildUses(session.ast());
+        }
+        //this notifies other opened files of changes
+        //session.reparseImporters(context);
+
     }
     if(!context){
         DUChainWriteLocker lock;
-	ParsingEnvironmentFile* file = new ParsingEnvironmentFile(document());
-	file->setLanguage(ParseSession::languageString());
+        ParsingEnvironmentFile* file = new ParsingEnvironmentFile(document());
+        file->setLanguage(ParseSession::languageString());
         context = new TopDUContext(document(), RangeInRevision(0, 0, INT_MAX, INT_MAX), file);
-	DUChain::self()->addDocumentChain(context);
+        DUChain::self()->addDocumentChain(context);
     }
-	
+        
     setDuChain(context);
     {
         DUChainWriteLocker lock;
         context->setProblems(session.problems());
-	context->setFeatures(minimumFeatures());
+        context->setFeatures(minimumFeatures());
         ParsingEnvironmentFilePointer file = context->parsingEnvironmentFile();
-	Q_ASSERT(file);
+        Q_ASSERT(file);
         file->setModificationRevision(contents().modification);
-	DUChain::self()->updateContextEnvironment(context->topContext(), file.data());
+        DUChain::self()->updateContextEnvironment(context->topContext(), file.data());
     }
     highlightDUChain();
 

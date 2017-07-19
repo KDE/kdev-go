@@ -251,9 +251,9 @@ void ParserTest::testMultiLineStrings_data()
 void ParserTest::testBasicTypes()
 {
     QByteArray code = "struct { array [5][2]string; slice []*int;"
-	  "x, y int \n A *[]int \n F func() \n T1 \n *T2 \n P.T3;"
-	  "*P.T4; afk func(a, b int, z float64, opt ...interface{}) (success bool);"
-	  "afk2 func(int, int) bool; afk3 func(n int) func(p *T); }";
+          "x, y int \n A *[]int \n F func() \n T1 \n *T2 \n P.T3;"
+          "*P.T4; afk func(a, b int, z float64, opt ...interface{}) (success bool);"
+          "afk2 func(int, int) bool; afk3 func(n int) func(p *T); }";
    //QByteArray code = "int";
     go::Parser parser;
     KDevPG::MemoryPool pool;
@@ -263,7 +263,7 @@ void ParserTest::testBasicTypes()
     parser.setTokenStream(&lexer);
     //parser.rewind(0);
     //while((kind = lexer.read().kind) != TokenTypeWrapper::Token_EOF)
-	//qDebug() << tokenText(kind);
+        //qDebug() << tokenText(kind);
     //}
     
     parser.rewind(0);
@@ -284,12 +284,12 @@ void ParserTest::testBasicTypes()
 void ParserTest::testIfClause()
 {
     QByteArray code = "if a:=(A{2}); a==(A{2}) { a += A{1}; }\n"
-		  "if ID(f()) { g(); }\n"
-		  "if ([]int)(A)==hello {} \n"
-		  "if (a)(A{3}) {} \n"
-		  "if ([]a)(A{3}) {}\n"
-		  "if x := f(); x < y { abc; def(); }\n"
-		  "if ([]a)(A{3}); (a)(A{f}) {}\n";
+                  "if ID(f()) { g(); }\n"
+                  "if ([]int)(A)==hello {} \n"
+                  "if (a)(A{3}) {} \n"
+                  "if ([]a)(A{3}) {}\n"
+                  "if x := f(); x < y { abc; def(); }\n"
+                  "if ([]a)(A{3}); (a)(A{f}) {}\n";
    //QByteArray code = "int";
     go::Parser parser;
     KDevPG::MemoryPool pool;
@@ -308,13 +308,13 @@ void ParserTest::testIfClause()
 void ParserTest::testFuncTypes()
 {
     QByteArray code = "func () {} \n"
-	      "func(a) {} \n"
-	      "func(a,) {} \n"
-	      "func(a int,) {}\n"
-	      "func(a, b []int){} \n"
-	      "func(*char, [2]int, f chan float64){} \n"
-	      "func(nums ...int, ){} \n";
-	      
+              "func(a) {} \n"
+              "func(a,) {} \n"
+              "func(a int,) {}\n"
+              "func(a, b []int){} \n"
+              "func(*char, [2]int, f chan float64){} \n"
+              "func(nums ...int, ){} \n";
+              
    //QByteArray code = "int";
     go::Parser parser;
     KDevPG::MemoryPool pool;
@@ -536,6 +536,6 @@ void ParserTest::testMapKeyLiteralValue()
 //  case i1 = <-c1:
 //    print("asdas", i3, "from c3\n");
 //  case c2 <- i2:
-//	f(); g();
+//      f(); g();
  
 }

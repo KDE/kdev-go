@@ -55,14 +55,14 @@ KDevelop::DUContext* ContextBuilder::contextFromNode(go::AstNode* node)
 KDevelop::RangeInRevision ContextBuilder::editorFindRange(go::AstNode* fromNode, go::AstNode* toNode)
 {
     if(!fromNode)
-	return KDevelop::RangeInRevision();
+        return KDevelop::RangeInRevision();
     return m_session->findRange(fromNode, toNode ? toNode : fromNode);
 }
 
 KDevelop::QualifiedIdentifier ContextBuilder::identifierForNode(go::IdentifierAst* node)
 {
     if(!node)
-	return QualifiedIdentifier();
+        return QualifiedIdentifier();
     return QualifiedIdentifier(m_session->symbol(node->id));
 }
 

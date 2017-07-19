@@ -75,9 +75,9 @@ public:
                                     go::GoFunctionDeclaration* pDeclaration = nullptr, const QByteArray &array = {}, const QualifiedIdentifier &identifier = {});
     
     /*struct GoImport{
-	GoImport(bool anon, KDevelop::TopDUContext* ctx) : anonymous(anon), context(ctx) {}
-	bool anonymous;
-	KDevelop::TopDUContext* context;
+        GoImport(bool anon, KDevelop::TopDUContext* ctx) : anonymous(anon), context(ctx) {}
+        bool anonymous;
+        KDevelop::TopDUContext* context;
     };*/
 
 private:
@@ -90,7 +90,7 @@ private:
      * @param declareConstant whether to declare usual variables or constants
      */
     void declareVariables(go::IdentifierAst* id, go::IdListAst* idList, go::ExpressionAst* expression,
-			    go::ExpressionListAst* expressionList, bool declareConstant);
+                          go::ExpressionListAst* expressionList, bool declareConstant);
     /**
      * declares variables or constants with names from id and idList of type type.
      */

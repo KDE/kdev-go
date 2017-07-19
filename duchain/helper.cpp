@@ -135,14 +135,14 @@ DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext* context, bo
     DUChainReadLocker lock;
     if(context)
     {
-	auto declarations = context->findDeclarations(id, CursorInRevision(INT_MAX, INT_MAX));
-	for(Declaration* decl: declarations)
-	{
-	    //import declarations are just decorations and need not be returned
-	    if(decl->kind() == Declaration::Import)
-		continue;
-	    return DeclarationPointer(decl);
-	}
+        auto declarations = context->findDeclarations(id, CursorInRevision(INT_MAX, INT_MAX));
+        for(Declaration* decl: declarations)
+        {
+            //import declarations are just decorations and need not be returned
+            if(decl->kind() == Declaration::Import)
+                continue;
+            return DeclarationPointer(decl);
+        }
     }
     return DeclarationPointer();
 }
@@ -152,13 +152,13 @@ DeclarationPointer getTypeOrVarDeclaration(QualifiedIdentifier id, DUContext* co
     DUChainReadLocker lock;
     if(context)
     {
-	auto declarations = context->findDeclarations(id, CursorInRevision(INT_MAX, INT_MAX));
-	for(Declaration* decl : declarations)
-	{
-	    if((decl->kind() == Declaration::Import) || (decl->kind() == Declaration::Namespace) || (decl->kind() == Declaration::NamespaceAlias))
-		continue; 
-	    return DeclarationPointer(decl);
-	}
+        auto declarations = context->findDeclarations(id, CursorInRevision(INT_MAX, INT_MAX));
+        for(Declaration* decl : declarations)
+        {
+            if((decl->kind() == Declaration::Import) || (decl->kind() == Declaration::Namespace) || (decl->kind() == Declaration::NamespaceAlias))
+                continue; 
+            return DeclarationPointer(decl);
+        }
     }
     return DeclarationPointer();
 }
@@ -168,15 +168,15 @@ DeclarationPointer getTypeDeclaration(QualifiedIdentifier id, DUContext* context
     DUChainReadLocker lock;
     if(context)
     {
-	auto declarations = context->findDeclarations(id, CursorInRevision(INT_MAX, INT_MAX));
-	for(Declaration* decl : declarations)
-	{
-	    //TODO change this to just decl->kind() != Declaration::Type
-	    if((decl->kind() == Declaration::Import) || (decl->kind() == Declaration::Namespace) 
-		|| (decl->kind() == Declaration::NamespaceAlias) || (decl->kind() == Declaration::Instance))
-		continue; 
-	    return DeclarationPointer(decl);
-	}
+        auto declarations = context->findDeclarations(id, CursorInRevision(INT_MAX, INT_MAX));
+        for(Declaration* decl : declarations)
+        {
+            //TODO change this to just decl->kind() != Declaration::Type
+            if((decl->kind() == Declaration::Import) || (decl->kind() == Declaration::Namespace) 
+                || (decl->kind() == Declaration::NamespaceAlias) || (decl->kind() == Declaration::Instance))
+                continue; 
+            return DeclarationPointer(decl);
+        }
     }
     return DeclarationPointer();
 }
@@ -186,15 +186,15 @@ QList< Declaration* > getDeclarations(QualifiedIdentifier id, DUContext* context
     DUChainReadLocker lock;
     if(context)
     {
-	QList<Declaration*> decls;
-	auto declarations = context->findDeclarations(id, CursorInRevision(INT_MAX, INT_MAX));
-	for(Declaration* decl: declarations)
-	{
-	    if(decl->kind() == Declaration::Import)
-		continue;
-	    decls << decl;
-	}
-	return decls;
+        QList<Declaration*> decls;
+        auto declarations = context->findDeclarations(id, CursorInRevision(INT_MAX, INT_MAX));
+        for(Declaration* decl: declarations)
+        {
+            if(decl->kind() == Declaration::Import)
+                continue;
+            decls << decl;
+        }
+        return decls;
     }
     return QList<Declaration*>();
 }
@@ -216,7 +216,7 @@ DeclarationPointer getFirstDeclaration(DUContext* context, bool searchInParent)
     DUChainReadLocker lock;
     auto declarations = context->allDeclarations(CursorInRevision::invalid(), context->topContext(), searchInParent);
     if(declarations.size()>0)
-	return DeclarationPointer(declarations.first().first);
+        return DeclarationPointer(declarations.first().first);
     return DeclarationPointer();
 }
 

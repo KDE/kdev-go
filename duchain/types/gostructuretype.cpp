@@ -45,7 +45,7 @@ GoStructureType::GoStructureType()
 QString GoStructureType::toString() const
 {
     if(d_func()->m_prettyName.index() == 0)
-	return "structure type";
+        return "structure type";
     return d_func()->m_prettyName.str();
 }
 
@@ -81,26 +81,26 @@ uint GoStructureType::hash() const
 bool GoStructureType::equals(const AbstractType* rhs) const
 {
     if(this == rhs)
-	return true;
+        return true;
     
     if(!AbstractType::equals(rhs))
-	return false;
+        return false;
     
     Q_ASSERT( fastCast<const GoStructureType*>(rhs) );
 
     const GoStructureType* type = static_cast<const GoStructureType*>(rhs);
     
     if(d_func()->m_context.topContextIndex() != type->d_func()->m_context.topContextIndex())
-	return false;
+        return false;
     
     if(d_func()->m_context.localIndex() != type->d_func()->m_context.localIndex())
-	return false;
+        return false;
     
     if(d_func()->m_context.context() != type->d_func()->m_context.context())
-	return false;
+        return false;
     
     //if(d_func()->m_context.data()->localScopeIdentifier() != d_func()->m_context.data()->localScopeIdentifier())
-	//return false;
+        //return false;
     return true;
 }
 
@@ -108,8 +108,8 @@ void GoStructureType::setPrettyName(QString name)
 {
     if(name.size() > 40)
     {
-	name = name.left(39);
-	name.append("...");
+        name = name.left(39);
+        name.append("...");
     }
     d_func_dynamic()->m_prettyName = IndexedString(name);
 }

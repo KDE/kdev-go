@@ -59,11 +59,11 @@ QList<AbstractType::Ptr> GoFunctionType::returnArguments() const
 {
     QList<AbstractType::Ptr> ret;
     FOREACH_FUNCTION(const IndexedType& arg , d_func()->m_returnArgs)
-	ret << arg.abstractType();
+        ret << arg.abstractType();
     return ret;
     //QList<AbstractType::Ptr> list;
     //for(const AbstractType::Ptr& type : d_func()->m_returnArguments)
-	//list.append(type);
+        //list.append(type);
     //return list;
 }
     
@@ -74,31 +74,31 @@ QString GoFunctionType::toString() const
     auto args = arguments();
     for(const AbstractType::Ptr& type : args)
     {
-	 output = output.append(!type ? "<no type>" : type->toString());
-	 if(args.back() != type)
-	    output = output.append(", ");
+         output = output.append(!type ? "<no type>" : type->toString());
+         if(args.back() != type)
+            output = output.append(", ");
     }
     output = output.append(") ");
     //auto rargs = d_func()->m_returnArgs;
     auto rargs = returnArguments();
     //qCDebug(DUCHAIN) << "size check again: " << d_func()->m_returnArgs.size();
     if(rargs.size() == 0)
-	return output;
+        return output;
     if(rargs.size() == 1)
     {
-	if(!rargs.first())
-	    return output.append("<no type>");
-	//qCDebug(DUCHAIN) << rargs.first().abstractType()->toString();
-	return output.append(rargs.first()->toString());
+        if(!rargs.first())
+            return output.append("<no type>");
+        //qCDebug(DUCHAIN) << rargs.first().abstractType()->toString();
+        return output.append(rargs.first()->toString());
     }
     
     output = output.append("(");
     foreach(const AbstractType::Ptr& type,  rargs)
     {
-	//auto type = idx.abstractType();
-	output = output.append(!type ? "<no type>" : type->toString());
-	if(rargs.back() != type)
-	    output = output.append(", ");
+        //auto type = idx.abstractType();
+        output = output.append(!type ? "<no type>" : type->toString());
+        if(rargs.back() != type)
+            output = output.append(", ");
     }
     return output.append(")");
 }
@@ -113,7 +113,7 @@ uint GoFunctionType::hash() const
    /* KDevHash hash(6 * KDevelop::FunctionType::hash());
     //for(const IndexedType& idx : d_func()->m_returnArgsList())
     FOREACH_FUNCTION(const IndexedType& idx, d_func()->m_returnArgs)
-	hash << idx.hash();
+        hash << idx.hash();
     return hash;*/
     
     
@@ -121,7 +121,7 @@ uint GoFunctionType::hash() const
     //for ( uint i = 0; i < d_func()->m_returnArgsSize(); i++ ) {
     FOREACH_FUNCTION(const IndexedType& idx, d_func()->m_returnArgs) {
         //h += d_func()->m_returnArgs()[i].hash();
-	h += idx.hash();
+        h += idx.hash();
     }
     return h;
 }
@@ -139,11 +139,11 @@ bool GoFunctionType::equals(const AbstractType* rhs) const
     TYPE_D(GoFunctionType);
     
     if ( d->m_returnArgsSize() != _rhs->d_func()->m_returnArgsSize())
-	return false;
+        return false;
     
     for(unsigned int a = 0; a < d->m_returnArgsSize(); ++a)
-	if(d->m_returnArgs()[a] != _rhs->d_func()->m_returnArgs()[a])
-	return false;
+        if(d->m_returnArgs()[a] != _rhs->d_func()->m_returnArgs()[a])
+        return false;
     
     return true;
 }

@@ -59,7 +59,7 @@ public:
     KDevelop::DUContext* returnArgsContext() const;
     
     enum {
-	Identity = 121 
+        Identity = 121 
     };
     
     virtual KDevelop::Declaration* clonePrivate() const;

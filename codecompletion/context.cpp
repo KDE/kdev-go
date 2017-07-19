@@ -43,9 +43,9 @@ namespace go
 {
     
 CodeCompletionContext::CodeCompletionContext(const KDevelop::DUContextPointer& context,
-					     const QString& text, 
-					     const KDevelop::CursorInRevision& position, int depth): 
-					     KDevelop::CodeCompletionContext(context, extractLastLine(text), position, depth), m_fullText(text)
+                                             const QString& text, 
+                                             const KDevelop::CursorInRevision& position, int depth): 
+                                             KDevelop::CodeCompletionContext(context, extractLastLine(text), position, depth), m_fullText(text)
 {
 }
 
@@ -73,7 +73,7 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::completionItems(bool& 
     QChar lastChar = m_text.size() > 0 ? m_text.at(m_text.size() - 1) : QLatin1Char('\0');
     if(lastChar == QLatin1Char('.'))
     {//imports and member completions
-	items << importAndMemberCompletion();
+        items << importAndMemberCompletion();
     }else
     {
         items << normalCompletion();
@@ -272,17 +272,17 @@ QStack< CodeCompletionContext::ExpressionStackEntry > CodeCompletionContext::exp
     qint64 line, lineEnd, column, columnEnd;
     while(!atEnd)
     {
-	KDevPG::Token token(lexer.read());
-	switch(token.kind)
-	{
-	case Parser::Token_EOF:
-		atEnd=true;
-		break;
-	case Parser::Token_LBRACE:
-	case Parser::Token_LBRACKET:
-	case Parser::Token_LPAREN:
-	    qint64 sline, scolumn;
-	    lexer.locationTable()->positionAt(token.begin, &sline, &scolumn);
+        KDevPG::Token token(lexer.read());
+        switch(token.kind)
+        {
+        case Parser::Token_EOF:
+            atEnd=true;
+            break;
+        case Parser::Token_LBRACE:
+        case Parser::Token_LBRACKET:
+        case Parser::Token_LPAREN:
+            qint64 sline, scolumn;
+            lexer.locationTable()->positionAt(token.begin, &sline, &scolumn);
             entry.startPosition = scolumn+1;
             entry.operatorStart = entry.startPosition;
             entry.operatorEnd = entry.startPosition;
@@ -290,39 +290,38 @@ QStack< CodeCompletionContext::ExpressionStackEntry > CodeCompletionContext::exp
 
             stack.push(entry);
             break;
-	case Parser::Token_RBRACE:
-	case Parser::Token_RBRACKET:
-	case Parser::Token_RPAREN:
+        case Parser::Token_RBRACE:
+        case Parser::Token_RBRACKET:
+        case Parser::Token_RPAREN:
             if (stack.count() > 1) {
                 stack.pop();
             }
             break;
-	case Parser::Token_IDENT:
-	    //temporary hack to allow completion in variable declarations
-	    //two identifiers in a row is not possible? 
-	    if(lexer.size() > 1 && lexer.at(lexer.index()-2).kind == Parser::Token_IDENT)
-	    {
-		lexer.locationTable()->positionAt(lexer.at(lexer.index()-2).begin, &line, &column);
-		lexer.locationTable()->positionAt(lexer.at(lexer.index()-2).end+1, &lineEnd, &columnEnd);
-		stack.top().operatorStart = column;
-		stack.top().operatorEnd = columnEnd;
-	    }
-	    break;
-	case Parser::Token_DOT:
+        case Parser::Token_IDENT:
+            //temporary hack to allow completion in variable declarations
+            //two identifiers in a row is not possible? 
+            if(lexer.size() > 1 && lexer.at(lexer.index()-2).kind == Parser::Token_IDENT)
+            {
+                lexer.locationTable()->positionAt(lexer.at(lexer.index()-2).begin, &line, &column);
+                lexer.locationTable()->positionAt(lexer.at(lexer.index()-2).end+1, &lineEnd, &columnEnd);
+                stack.top().operatorStart = column;
+                stack.top().operatorEnd = columnEnd;
+            }
             break;
-	case Parser::Token_COMMA:
+        case Parser::Token_DOT:
+            break;
+        case Parser::Token_COMMA:
             stack.top().commas++;
         default:
             // The last operator of every sub-expression is stored on the stack
             // so that "A = foo." can know that attributes of foo having the same
             // type as A should be highlighted.
-	    qCDebug(COMPLETION) << token.kind;
-	    lexer.locationTable()->positionAt(token.begin, &line, &column);
-	    lexer.locationTable()->positionAt(token.end+1, &lineEnd, &columnEnd);
+            qCDebug(COMPLETION) << token.kind;
+            lexer.locationTable()->positionAt(token.begin, &line, &column);
+            lexer.locationTable()->positionAt(token.end+1, &lineEnd, &columnEnd);
             stack.top().operatorStart = column;
             stack.top().operatorEnd = columnEnd;
-	    
-	}
+        }
     }
     return stack;
 }
@@ -336,15 +335,15 @@ AbstractType::Ptr CodeCompletionContext::lastType(const QString& expression)
     ParseSession session(lastExpression.toUtf8(), 0, false);
     ExpressionAst* expressionAst;
     if(!session.parseExpression(&expressionAst))
-	return AbstractType::Ptr();
+        return AbstractType::Ptr();
 
 
     ExpressionVisitor expVisitor(&session, this->m_duContext.data());
     expVisitor.visitExpression(expressionAst);
     if(expVisitor.lastTypes().size() != 0)
     {
-	 AbstractType::Ptr type = expVisitor.lastTypes().first();
-	 return type;
+         AbstractType::Ptr type = expVisitor.lastTypes().first();
+         return type;
     }
 
     return AbstractType::Ptr();

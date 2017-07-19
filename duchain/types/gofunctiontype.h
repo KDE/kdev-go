@@ -36,15 +36,15 @@ class GoFunctionTypeData : public KDevelop::FunctionTypeData
 public:
     GoFunctionTypeData() : KDevelop::FunctionTypeData()
     {
-	initializeAppendedLists(m_dynamic);
+        initializeAppendedLists(m_dynamic);
     }
 
     GoFunctionTypeData(const GoFunctionTypeData& rhs) : KDevelop::FunctionTypeData(rhs)
     {
-	//foreach( KDevelop::IndexedType type, rhs.m_returnArgs)
-		//m_returnArgs.append(type);
-	initializeAppendedLists(m_dynamic);
-	copyListsFrom(rhs);
+        //foreach( KDevelop::IndexedType type, rhs.m_returnArgs)
+                //m_returnArgs.append(type);
+        initializeAppendedLists(m_dynamic);
+        copyListsFrom(rhs);
     }
 
 
@@ -84,7 +84,7 @@ public:
     };
 
     enum {
-	VariadicArgument=1<<12
+        VariadicArgument=1<<12
     };
 
   typedef GoFunctionTypeData Data;

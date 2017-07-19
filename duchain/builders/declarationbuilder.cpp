@@ -64,10 +64,10 @@ void DeclarationBuilder::visitVarSpec(go::VarSpecAst* node)
 {
     if(node->type)
     {//if type is supplied we don't visit expressions
-	declareVariablesWithType(node->id, node->idList, node->type, false);
+        declareVariablesWithType(node->id, node->idList, node->type, false);
     }else if(node->expression)
     {
-	declareVariables(node->id, node->idList, node->expression, node->expressionList, false);
+        declareVariables(node->id, node->idList, node->expression, node->expressionList, false);
     }
 }
 
@@ -81,7 +81,7 @@ void DeclarationBuilder::declareVariablesWithType(go::IdentifierAst* id, go::IdL
     m_contextIdentifier = identifierForNode(id);
     visitType(type);
     if(!lastType())
-	injectType(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
+        injectType(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
     lastType()->setModifiers(declareConstant ? AbstractType::ConstModifier : AbstractType::NoModifiers);
     if(identifierForNode(id).toString() != "_")
     {
@@ -91,55 +91,55 @@ void DeclarationBuilder::declareVariablesWithType(go::IdentifierAst* id, go::IdL
 
     if(idList)
     {
-	auto iter = idList->idSequence->front(), end = iter;
-	do
-	{
+        auto iter = idList->idSequence->front(), end = iter;
+        do
+        {
             if(identifierForNode(iter->element).toString() != "_")
             {
                 declareVariable(iter->element, lastType());
             }
-	    if(declareConstant)
+            if(declareConstant)
                 m_constAutoTypes.append(lastType());
-	    iter = iter->next;
-	}
-	while (iter != end);
+            iter = iter->next;
+        }
+        while (iter != end);
     }
 }
 
 
 void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* idList, go::ExpressionAst* expression,
-					    go::ExpressionListAst* expressionList, bool declareConstant)
+                                            go::ExpressionListAst* expressionList, bool declareConstant)
 {
     m_contextIdentifier = identifierForNode(id);
     QList<AbstractType::Ptr> types;
     if(!expression)
-	return;
+        return;
     go::ExpressionVisitor exprVisitor(m_session, currentContext(), this);
     exprVisitor.visitExpression(expression);
     Q_ASSERT(exprVisitor.lastTypes().size() != 0);
     if(!expressionList)
-	types = exprVisitor.lastTypes();
+        types = exprVisitor.lastTypes();
     else
     {
-	types.append(exprVisitor.lastTypes().first());
-	auto iter = expressionList->expressionsSequence->front(), end = iter;
-	do
-	{
-	    exprVisitor.clearAll();
-	    exprVisitor.visitExpression(iter->element);
-	    Q_ASSERT(exprVisitor.lastTypes().size() != 0);
-	    types.append(exprVisitor.lastTypes().first());
-	    iter = iter->next;
-	}
-	while (iter != end);
+        types.append(exprVisitor.lastTypes().first());
+        auto iter = expressionList->expressionsSequence->front(), end = iter;
+        do
+        {
+            exprVisitor.clearAll();
+            exprVisitor.visitExpression(iter->element);
+            Q_ASSERT(exprVisitor.lastTypes().size() != 0);
+            types.append(exprVisitor.lastTypes().first());
+            iter = iter->next;
+        }
+        while (iter != end);
     }
 
     if(types.size() == 0)
-	return;
+        return;
     for(AbstractType::Ptr& type : types)
-	type->setModifiers(declareConstant ? AbstractType::ConstModifier : AbstractType::NoModifiers);
+        type->setModifiers(declareConstant ? AbstractType::ConstModifier : AbstractType::NoModifiers);
     if(declareConstant)
-	m_constAutoTypes = types;
+        m_constAutoTypes = types;
 
     if(identifierForNode(id).toString() != "_")
     {
@@ -148,20 +148,20 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
 
     if(idList)
     {
-	int typeIndex = 1;
+        int typeIndex = 1;
         auto iter = idList->idSequence->front(), end = iter;
         do
-	{
-	    if(typeIndex >= types.size()) //not enough types to declare all variables
-		return;
+        {
+            if(typeIndex >= types.size()) //not enough types to declare all variables
+                return;
             if(identifierForNode(iter->element).toString() != "_")
             {
                 declareVariable(iter->element, types.at(typeIndex));
             }
             iter = iter->next;
-	    typeIndex++;
-	}
-	while (iter != end);
+            typeIndex++;
+        }
+        while (iter != end);
     }
 }
 
@@ -192,34 +192,34 @@ void DeclarationBuilder::visitConstSpec(go::ConstSpecAst* node)
 {
     if(node->type)
     {
-	declareVariablesWithType(node->id, node->idList, node->type, true);
+        declareVariablesWithType(node->id, node->idList, node->type, true);
     }else if(node->expression)
     {
-	declareVariables(node->id, node->idList, node->expression, node->expressionList, true);
+        declareVariables(node->id, node->idList, node->expression, node->expressionList, true);
     }else
     {//this can only happen after a previous constSpec with some expressionList
-	//in this case identifiers assign same types as previous constSpec(http://golang.org/ref/spec#Constant_declarations)
-	if(m_constAutoTypes.size() == 0)
-	    return;
-	{
+        //in this case identifiers assign same types as previous constSpec(http://golang.org/ref/spec#Constant_declarations)
+        if(m_constAutoTypes.size() == 0)
+            return;
+        {
             declareVariable(node->id, m_constAutoTypes.first());
-	}
+        }
 
-	if(node->idList)
-	{
-	    int typeIndex = 1;
-	    auto iter = node->idList->idSequence->front(), end = iter;
-	    do
-	    {
-		if(typeIndex >= m_constAutoTypes.size()) //not enough types to declare all constants
-		    return;
+        if(node->idList)
+        {
+            int typeIndex = 1;
+            auto iter = node->idList->idSequence->front(), end = iter;
+            do
+            {
+                if(typeIndex >= m_constAutoTypes.size()) //not enough types to declare all constants
+                    return;
 
                 declareVariable(iter->element, m_constAutoTypes.at(typeIndex));
-		iter = iter->next;
-		typeIndex++;
-	    }
-	    while (iter != end);
-	}
+                iter = iter->next;
+                typeIndex++;
+            }
+            while (iter != end);
+        }
     }
 }
 
@@ -318,13 +318,13 @@ void DeclarationBuilder::visitTypeSpec(go::TypeSpecAst* node)
     setComment(comment);
     ClassDeclaration* decl;
     {
-	DUChainWriteLocker lock;
-	decl = openDeclaration<ClassDeclaration>(identifierForNode(node->name), editorFindRange(node->name, 0));
-	//decl->setKind(Declaration::Namespace);
-	decl->setKind(Declaration::Type);
-	//force direct here because otherwise DeclarationId will mess up actual type declaration and method declarations
-	//TODO perhaps we can do this with specialization or additional identity?
-	decl->setAlwaysForceDirect(true);
+        DUChainWriteLocker lock;
+        decl = openDeclaration<ClassDeclaration>(identifierForNode(node->name), editorFindRange(node->name, 0));
+        //decl->setKind(Declaration::Namespace);
+        decl->setKind(Declaration::Type);
+        //force direct here because otherwise DeclarationId will mess up actual type declaration and method declarations
+        //TODO perhaps we can do this with specialization or additional identity?
+        decl->setAlwaysForceDirect(true);
     }
     m_contextIdentifier = identifierForNode(node->name);
     visitType(node->type);
@@ -372,11 +372,11 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
     //without preventing recursive imports. importing standart go library(2000+ files) takes minutes and sometimes never stops
     //thankfully go import mechanism doesn't need recursive imports(I think)
     //if(m_export)
-	//return;
+        //return;
     QString import(identifierForIndex(node->importpath->import).toString());
     QList<ReferencedTopDUContext> contexts = m_session->contextForImport(import);
     if(contexts.empty())
-	return;
+        return;
  
     //usually package name matches directory, so try searching for that first
     QualifiedIdentifier packageName(import.mid(1, import.length()-2));
@@ -397,7 +397,7 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
         }
         if(!decl) //contexts belongs to a different package
             continue;
-	
+        
         DUChainWriteLocker lock;
         if(firstContext) //only open declarations once per import(others are redundant)
         {
@@ -423,7 +423,7 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
                 closeDeclaration();
             }
         }
-	topContext()->addImportedParentContext(context.data());
+        topContext()->addImportedParentContext(context.data());
         firstContext = false;
     }
     DUChainWriteLocker lock;
@@ -453,28 +453,28 @@ void DeclarationBuilder::importThisPackage()
 {
     QList<ReferencedTopDUContext> contexts = m_session->contextForThisPackage(document());
     if(contexts.empty())
-	return;
-    
+        return;
+
     for(const ReferencedTopDUContext& context : contexts)
     {
         if(context.data() == topContext())
             continue;
-	//import only contexts with the same package name
+        //import only contexts with the same package name
         DeclarationPointer decl = go::checkPackageDeclaration(m_thisPackage.last(), context);
-	if(!decl)
-	    continue;
+        if(!decl)
+            continue;
         //if our package doesn't have comment, but some file in out package does, copy it
         if(currentDeclaration<Declaration>()->comment().size() == 0 && decl->comment().size() != 0)
             currentDeclaration<Declaration>()->setComment(decl->comment());
-	
-	DUChainWriteLocker lock;
-	//TODO Since package names are identical duchain should find declarations without namespace alias, right?
-	
-	//NamespaceAliasDeclaration* import = openDeclaration<NamespaceAliasDeclaration>(QualifiedIdentifier(globalImportIdentifier()), RangeInRevision());
-	//import->setKind(Declaration::NamespaceAlias);
-	//import->setImportIdentifier(packageName); //this needs to be actual package name
-	//closeDeclaration();
-	topContext()->addImportedParentContext(context.data());
+
+        DUChainWriteLocker lock;
+        //TODO Since package names are identical duchain should find declarations without namespace alias, right?
+        
+        //NamespaceAliasDeclaration* import = openDeclaration<NamespaceAliasDeclaration>(QualifiedIdentifier(globalImportIdentifier()), RangeInRevision());
+        //import->setKind(Declaration::NamespaceAlias);
+        //import->setImportIdentifier(packageName); //this needs to be actual package name
+        //closeDeclaration();
+        topContext()->addImportedParentContext(context.data());
     }
     DUChainWriteLocker lock;
 }

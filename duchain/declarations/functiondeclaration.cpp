@@ -25,14 +25,14 @@ namespace go {
   
 REGISTER_DUCHAIN_ITEM(GoFunctionDeclaration);
 
-GoFunctionDeclaration::GoFunctionDeclaration(const go::GoFunctionDeclaration& rhs): 
-			    FunctionDeclaration(*new GoFunctionDeclarationData(*rhs.d_func()))
+GoFunctionDeclaration::GoFunctionDeclaration(const go::GoFunctionDeclaration& rhs):
+    FunctionDeclaration(*new GoFunctionDeclarationData(*rhs.d_func()))
 {
 
 }
 
-GoFunctionDeclaration::GoFunctionDeclaration(const RangeInRevision& range, DUContext* context): 
-			    FunctionDeclaration(*new GoFunctionDeclarationData, range)
+GoFunctionDeclaration::GoFunctionDeclaration(const RangeInRevision& range, DUContext* context):
+    FunctionDeclaration(*new GoFunctionDeclarationData, range)
 {
     d_func_dynamic()->setClassId(this);
     if (context) {
@@ -45,8 +45,8 @@ GoFunctionDeclaration::GoFunctionDeclaration(go::GoFunctionDeclarationData& data
 
 }
 
-GoFunctionDeclaration::GoFunctionDeclaration(go::GoFunctionDeclarationData& data, const RangeInRevision& range): 
-								FunctionDeclaration(data, range)
+GoFunctionDeclaration::GoFunctionDeclaration(go::GoFunctionDeclarationData& data, const RangeInRevision& range):
+    FunctionDeclaration(data, range)
 {
 
 }

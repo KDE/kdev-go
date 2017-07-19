@@ -38,7 +38,7 @@ public:
     
     
     //virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString& url, AstNode* node,
-	//KDevelop::ReferencedTopDUContext updateContext = KDevelop::ReferencedTopDUContext());
+    //KDevelop::ReferencedTopDUContext updateContext = KDevelop::ReferencedTopDUContext());
     
     virtual void visitPrimaryExpr(go::PrimaryExprAst* node);
     virtual void visitTypeName(go::TypeNameAst* node);

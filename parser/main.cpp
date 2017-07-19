@@ -24,12 +24,12 @@
 int main(int argc, char** argv)
 {
     if(argc < 2)
-	return 2;
+        return 2;
     qDebug() << argv[1];
     QFile file(argv[1]);
     if(! file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-	return 1;
+        return 1;
     }
     QTextStream in(&file);
     in.setCodec("UTF-8");

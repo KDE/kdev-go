@@ -145,6 +145,7 @@ void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread
 	context->setFeatures(minimumFeatures());
         ParsingEnvironmentFilePointer file = context->parsingEnvironmentFile();
 	Q_ASSERT(file);
+        file->setModificationRevision(contents().modification);
 	DUChain::self()->updateContextEnvironment(context->topContext(), file.data());
     }
     highlightDUChain();

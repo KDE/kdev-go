@@ -13,11 +13,11 @@ Some of the most important features include:
 
 **HOWTO install this plugin**
 
-I haven't tested the plugin with stable KDevelop versions so I can't say for sure, but most likely you will need to install KDevelop from git.
+KDevelop from git is required.
 
-1) Follow KDevelop installation instructions here https://techbase.kde.org/Projects/KDevelop4/HowToCompile
+1) Follow KDevelop installation instructions [here](https://community.kde.org/KDevelop/HowToCompile_v5)
 
-2) Install KDevelop-PG-Qt
+2) Install KDevelop-PG-Qt from your distribution repository or from git:
 ```
 git clone git://anongit.kde.org/kdevelop-pg-qt
 mkdir kdevelop-pg-qt/build && cd kdevelop-pg-qt/build
@@ -38,13 +38,12 @@ cmake -DCMAKE_PREFIX_PATH=`your KDevelop install dir`
 make && make install
 ```
 
-If you installed KDevelop into a custom directory don't forget to add this directory to $KDEDIRS and run kbuildsycoca4 afterwards.
 
 **HOWTO use this plugin**
 
 I recommend following official code organization suggestions for example like [here](http://golang.org/doc/code.html) or [here](http://www.youtube.com/watch?v=XCsL89YtqCs). In that case you will need to set $GOPATH environment variable to the root of your project before starting KDevelop. Plugin can also try to find path to your project automatically, but it can fail. For go standart library to work you need the path to your 'go' binary be in $PATH environment variable, which if you installed Go normally(with your package manager) should already be there. After that just start KDevelop and open your Go project. If plugin doesn't work(e.g. highlighting is disabled) check if it's loaded in KDevelop(Help->Loaded Plugins). If not - check if it's installed for example like this: find 'KDevelop installation path' -name "*kdevgo*". If it is installed and loaded but still not working consider opening an issue on github or contacting me directly at onehundredof@gmail.com.
 
-For building and executing your application I recommend using custom build system built into KDevelop.
+For building and executing you can use Go project manager installed as part of Go plugin. See example [here](https://www.youtube.com/watch?v=KxIy53i0RK0).
 
 Also I should mention that there is a very poor support for debugging. GDB can be used to debug Go programs, but it doesn't work well, as stated here http://golang.org/doc/gdb. As a result you can debug Go programs with KDevelop, but it works only as good as it works with gdb. If you are really desperate, somewhat better results can be achieved with gccgo toolchain http://golang.org/doc/install/gccgo.
 

@@ -50,6 +50,7 @@
 
 
 #include <QtGui/QTextDocument>
+#include <declarations/functiondefinition.h>
 
 #include "navigation/declarationnavigationcontext.h"
 #include "declarations/functiondeclaration.h"
@@ -301,8 +302,27 @@ QString DeclarationNavigationContext::html(bool shorten)
 void DeclarationNavigationContext::htmlFunction()
 {
     //KDevelop::AbstractDeclarationNavigationContext::htmlFunction();
-    const go::GoFunctionDeclaration* function = dynamic_cast<const go::GoFunctionDeclaration*>(declaration().data());
-    if(!function) 
+    go::GoFunctionDeclaration* function = dynamic_cast<go::GoFunctionDeclaration*>(declaration().data());
+    go::GoFunctionDefinition* functionDefinition = dynamic_cast<go::GoFunctionDefinition*>(declaration().data());
+    if(!function && functionDefinition)
+    {
+        Declaration *decl = DUChainUtils::declarationForDefinition(functionDefinition, topContext().data());
+        function = dynamic_cast<go::GoFunctionDeclaration*>(decl);
+    }
+    if(function && !functionDefinition)
+    {
+        DUChainReadLocker lock;
+        auto decls = function->context()->findDeclarations(function->qualifiedIdentifier());
+        for(auto decl : decls)
+        {
+            auto definition = dynamic_cast<go::GoFunctionDefinition*>(decl);
+            if(definition)
+            {
+                functionDefinition = definition;
+            }
+        }
+    }
+    if(!function && !functionDefinition)
         AbstractDeclarationNavigationContext::htmlFunction();
 
     const go::GoFunctionType::Ptr type = declaration()->abstractType().cast<go::GoFunctionType>();
@@ -329,7 +349,10 @@ void DeclarationNavigationContext::htmlFunction()
         int currentArgNum = 0;
 
         QVector<Declaration*> decls;
-        if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(declaration().data())) {
+        if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(function)) {
+            decls = argumentContext->localDeclarations(topContext().data());
+        }
+        else if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(functionDefinition)) {
             decls = argumentContext->localDeclarations(topContext().data());
         }
         foreach(const AbstractType::Ptr& argType, type->arguments()) {
@@ -376,7 +399,9 @@ void DeclarationNavigationContext::htmlFunction()
         /*if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(declaration().data())) {
             decls = argumentContext->localDeclarations(topContext().data());
         }*/
-        if(DUContext* retContext = function->returnArgsContext()) 
+        if(DUContext* retContext = function->returnArgsContext())
+            decls = retContext->localDeclarations(topContext().data());
+        else if(DUContext* retContext = functionDefinition->returnArgsContext())
             decls = retContext->localDeclarations(topContext().data());
         
         if(type->returnArguments().size() == 1)

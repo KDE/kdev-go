@@ -40,6 +40,7 @@ FunctionCompletionItem::FunctionCompletionItem(DeclarationPointer declaration, i
     auto functionDefinition = declaration.dynamicCast<GoFunctionDefinition>();
     if(functionDeclaration)
     {
+        DUChainReadLocker lock;
         auto decls = declaration->context()->findDeclarations(declaration->qualifiedIdentifier());
         for(auto decl : decls)
         {

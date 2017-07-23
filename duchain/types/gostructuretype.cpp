@@ -28,17 +28,17 @@ namespace go
 REGISTER_TYPE(GoStructureType);
 
 GoStructureType::GoStructureType(const GoStructureType& rhs)
-  : KDevelop::AbstractType(copyData<GoStructureType>(*rhs.d_func()))
+  : KDevelop::StructureType(copyData<GoStructureType>(*rhs.d_func()))
 {
 }
 
 GoStructureType::GoStructureType(GoStructureTypeData& data)
-  : KDevelop::AbstractType(data)
+  : KDevelop::StructureType(data)
 {
 }
 
 GoStructureType::GoStructureType()
-  : KDevelop::AbstractType(createData<GoStructureType>())
+  : KDevelop::StructureType(createData<GoStructureType>())
 {
 }
 
@@ -67,7 +67,7 @@ KDevelop::AbstractType* GoStructureType::clone() const
 
 void GoStructureType::accept0(TypeVisitor *v) const
 {
-  v->visit (this);
+  v->visit(this);
 }
 
 uint GoStructureType::hash() const
@@ -86,7 +86,7 @@ bool GoStructureType::equals(const AbstractType* rhs) const
     if(!AbstractType::equals(rhs))
         return false;
     
-    Q_ASSERT( fastCast<const GoStructureType*>(rhs) );
+    Q_ASSERT(dynamic_cast<const GoStructureType*>(rhs) );
 
     const GoStructureType* type = static_cast<const GoStructureType*>(rhs);
     

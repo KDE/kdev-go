@@ -201,7 +201,7 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::importAndMemberComplet
                 items << getImportableDeclarations(declaration);
             }
         }
-        if(auto structure = fastCast<GoStructureType*>(type.constData()))
+        if(auto structure = dynamic_cast<GoStructureType*>(type.data()))
         {
             DUContext* context = structure->context();
             DUChainReadLocker lock;

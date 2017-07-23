@@ -298,6 +298,7 @@ void DeclarationBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
             injectType(PointerType::Ptr(ptype));
         }
         DUChainWriteLocker n;
+        functionDefinition->setDeclaration(functionDeclaration);
         auto methodReceiverName = node->methodRecv->nameOrType;
         Declaration* thisVariable = openDeclaration<Declaration>(identifierForNode(methodReceiverName).last(),
                                                                  editorFindRange(methodReceiverName, 0));
@@ -331,13 +332,15 @@ void DeclarationBuilder::visitTypeSpec(go::TypeSpecAst* node)
     DUChainWriteLocker lock;
     //qCDebug(DUCHAIN) << lastType()->toString();
     decl->setType(lastType());
-    
-    decl->setIsTypeAlias(true);
+    auto structType = fastCast<StructureType*>(lastType().data());
+    if(structType)
+    {
+        structType->setDeclaration(decl);
+    }
     if(!lastContext())
     {
         openContext(node->name, DUContext::ContextType::Class, identifierForNode(node->name));
         closeContext();
-        qDebug() << lastContext()->scopeIdentifier() << lastContext()->localScopeIdentifier();
     }
     decl->setInternalContext(lastContext());
     if(node->type && node->type->complexType && node->type->complexType->structType && node->type->complexType->structType->fieldDeclSequence)
@@ -657,7 +660,6 @@ go::GoFunctionDefinition* DeclarationBuilder::declareMethod(go::IdentifierAst *i
     dec->setType<go::GoFunctionType>(type);
     dec->setKind(Declaration::Instance);
     dec->setInternalContext(bodyContext);
-    dec->setDeclaration(declaration);
 
     if(bodyContext)
     {

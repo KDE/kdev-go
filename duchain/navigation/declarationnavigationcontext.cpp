@@ -93,8 +93,8 @@ QString DeclarationNavigationContext::html(bool shorten)
     const AbstractFunctionDeclaration* function = dynamic_cast<const AbstractFunctionDeclaration*>(declaration().data());
     if( function ) {
       htmlFunction();
-    } else if( declaration()->isTypeAlias() || declaration()->kind() == Declaration::Instance ) {
-      if( declaration()->isTypeAlias() )
+    } else if( declaration()->kind() == Declaration::Type || declaration()->kind() == Declaration::Instance ) {
+      if( declaration()->kind() == Declaration::Type )
         modifyHtml() += importantHighlight("type ");
 
       if(declaration()->type<EnumeratorType>())
@@ -441,7 +441,7 @@ void DeclarationNavigationContext::eventuallyMakeTypeLinks(AbstractType::Ptr typ
         modifyHtml() += typeHighlight(QString("<no type>").toHtmlEscaped());
         return;
     }
-    if(declaration()->isTypeAlias())
+    if(declaration()->kind() == Declaration::Type)
     {
         //Go type declaration. manually creating links
         QualifiedIdentifier id = declaration()->qualifiedIdentifier();

@@ -30,16 +30,16 @@
 namespace go
 {
 
-class GoStructureTypeData : public KDevelop::AbstractTypeData
+class GoStructureTypeData : public KDevelop::StructureTypeData
 {
 public:
     GoStructureTypeData()
-        : KDevelop::AbstractTypeData()
+        : KDevelop::StructureTypeData()
     {
         m_type=0;
     }
     GoStructureTypeData( const GoStructureTypeData& rhs )
-        : KDevelop::AbstractTypeData(rhs), m_context(rhs.m_context), m_prettyName(rhs.m_prettyName), m_type(rhs.m_type)
+        : KDevelop::StructureTypeData(rhs), m_context(rhs.m_context), m_prettyName(rhs.m_prettyName), m_type(rhs.m_type)
     {
     }
 
@@ -49,7 +49,7 @@ public:
 };
 
 
-class KDEVGODUCHAIN_EXPORT GoStructureType: public KDevelop::AbstractType
+class KDEVGODUCHAIN_EXPORT GoStructureType: public KDevelop::StructureType
 {
 public:
     typedef KDevelop::TypePtr<GoStructureType> Ptr;

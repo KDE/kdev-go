@@ -143,7 +143,7 @@ void ExpressionVisitor::visitPrimaryExpr(PrimaryExprAst* node)
             //qCDebug(DUCHAIN) << "Expression Visitor for "<< id;
         
             //this handles stuff like mytype{}, mytype()
-            if((node->literalValue || node->callOrBuiltinParam) && decl->isTypeAlias())
+            if((node->literalValue || node->callOrBuiltinParam) && decl->kind() == Declaration::Type)
             {
                 if(node->literalValue)
                 {
@@ -241,8 +241,10 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
         {//we have to look for namespace declarations
             DUChainReadLocker lock;
             Declaration* declaration = fastCast<StructureType*>(type.constData())->declaration(m_context->topContext());
-            //if(decl->kind() == Declaration::Namespace || decl->kind() == Declaration::NamespaceAlias)
-            //{
+            if(declaration)
+            {
+                //if(decl->kind() == Declaration::Namespace || decl->kind() == Declaration::NamespaceAlias)
+                //{
                 QualifiedIdentifier id(declaration->qualifiedIdentifier());
                 id.push(identifierForNode(node->selector));
                 lock.unlock();
@@ -257,7 +259,8 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
                     m_declaration = decl;
                     success = true;
                 }
-            //}
+                //}
+            }
         }
         //this construction will descend through type hierarchy till it hits basic types
         //e.g. type mystruct struct{}; type mystruct2 mystruct; ...
@@ -265,7 +268,7 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
         if(!success) {
             do {
                 count++;
-                GoStructureType::Ptr structure(fastCast<GoStructureType*>(type.constData()));
+                GoStructureType::Ptr structure(dynamic_cast<GoStructureType*>(type.data()));
                 if(structure)
                 {//get members
                     DUContext* context = structure->context();
@@ -284,7 +287,11 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
                 if(identType)
                 {
                     DUChainReadLocker lock;
-                    type = identType->declaration(m_context->topContext())->abstractType();
+                    auto typeDecl = identType->declaration(m_context->topContext());
+                    if(typeDecl)
+                    {
+                        type = typeDecl->abstractType();
+                    }
                 }
                 else
                     break;
@@ -548,7 +555,7 @@ void ExpressionVisitor::pushType(AbstractType::Ptr type)
 
 AbstractType::Ptr ExpressionVisitor::resolveTypeAlias(AbstractType::Ptr type)
 {
-    if(fastCast<StructureType*>(type.constData()))
+    if(fastCast<StructureType*>(type.constData()) && type->whichType() == AbstractType::TypeAlias)
     {
         DUChainReadLocker lock;
         return fastCast<StructureType*>(type.constData())->declaration(m_context->topContext())->abstractType();
@@ -604,7 +611,7 @@ QualifiedIdentifier ExpressionVisitor::identifierForNode(IdentifierAst* node)
 bool ExpressionVisitor::handleComplexLiteralsAndConversions(PrimaryExprResolveAst* node, Declaration* decl)
 {
     //we have to separately handle expressions like imp.mytype{3} because of the way grammar was written
-    if(node->primaryExprResolve && (node->primaryExprResolve->literalValue || node->primaryExprResolve->callParam) && decl->isTypeAlias())
+    if(node->primaryExprResolve && (node->primaryExprResolve->literalValue || node->primaryExprResolve->callParam) && decl->kind() == Declaration::Type)
     {
         pushUse(node->selector, decl);
         StructureType* type = new StructureType();

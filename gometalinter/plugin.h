@@ -27,7 +27,7 @@ class Plugin : public KDevelop::IPlugin
 public:
     explicit Plugin(QObject *parent, const QVariantList&);
     ~Plugin() override;
-    KDevelop::ContextMenuExtension contextMenuExtension(KDevelop::Context* context) override;
+    KDevelop::ContextMenuExtension contextMenuExtension(KDevelop::Context* context, QWidget* parent) override;
     void run(KDevelop::IProject* project, const QString &path);
     bool isRunning();
 private:

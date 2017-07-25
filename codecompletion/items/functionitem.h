@@ -34,10 +34,10 @@ public:
 
 
     virtual void executed(KTextEditor::View* view, const KTextEditor::Range& word) override;
-    virtual QVariant data(const QModelIndex& index, int role, const KDevelop::CodeCompletionModel* model) const;
-    virtual KTextEditor::CodeCompletionModel::CompletionProperties completionProperties() const;
-    virtual int argumentHintDepth() const;
-    virtual int inheritanceDepth() const;
+    virtual QVariant data(const QModelIndex& index, int role, const KDevelop::CodeCompletionModel* model) const override;
+    virtual KTextEditor::CodeCompletionModel::CompletionProperties completionProperties() const override;
+    virtual int argumentHintDepth() const override;
+    virtual int inheritanceDepth() const override;
 
 private:
     int m_depth;

@@ -86,7 +86,7 @@ void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread
         translateDUChainToRevision(context);
         context->setRange(RangeInRevision(0, 0, INT_MAX, INT_MAX));
     }
-    qCDebug(Go) << "Job features: " << minimumFeatures();
+    qCDebug(Go) << "Job features: " << (quint16) minimumFeatures();
     qCDebug(Go) << "Job priority: " << parsePriority();
 
     qCDebug(Go) << document();

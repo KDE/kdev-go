@@ -34,6 +34,7 @@ add_subdirectory(buildsystem)
 add_subdirectory(parser)
 add_subdirectory(duchain)
 add_subdirectory(codecompletion)
+add_subdirectory(gometalinter)
 
 include_directories(
     ${KDEVPGQT_INCLUDE_DIR}

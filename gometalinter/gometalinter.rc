@@ -1,0 +1,13 @@
+<!DOCTYPE gui SYSTEM "kpartgui.dtd">
+<gui name="gometalinter" version="9" translationDomain="gometalinter">
+<MenuBar>
+  <Menu name="code">
+    <Menu name="analyze_file">
+      <Action name="gometalinter_file"/>
+    </Menu>
+    <Menu name="analyze_project">
+      <Action name="gometalinter_project"/>
+    </Menu>
+  </Menu>
+</MenuBar>
+</gui>

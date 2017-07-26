@@ -349,11 +349,19 @@ void DeclarationNavigationContext::htmlFunction()
         int currentArgNum = 0;
 
         QVector<Declaration*> decls;
-        if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(function)) {
-            decls = argumentContext->localDeclarations(topContext().data());
+        if(function)
+        {
+            if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(function))
+            {
+                decls = argumentContext->localDeclarations(topContext().data());
+            }
         }
-        else if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(functionDefinition)) {
-            decls = argumentContext->localDeclarations(topContext().data());
+        if(decls.isEmpty() && functionDefinition)
+        {
+            if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(functionDefinition))
+            {
+                decls = argumentContext->localDeclarations(topContext().data());
+            }
         }
         foreach(const AbstractType::Ptr& argType, type->arguments()) {
             if( !first )
@@ -399,11 +407,17 @@ void DeclarationNavigationContext::htmlFunction()
         /*if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(declaration().data())) {
             decls = argumentContext->localDeclarations(topContext().data());
         }*/
-        if(DUContext* retContext = function->returnArgsContext())
-            decls = retContext->localDeclarations(topContext().data());
-        else if(DUContext* retContext = functionDefinition->returnArgsContext())
-            decls = retContext->localDeclarations(topContext().data());
-        
+        if(function)
+        {
+            if(DUContext* retContext = function->returnArgsContext())
+                decls = retContext->localDeclarations(topContext().data());
+        }
+        if(decls.isEmpty() && functionDefinition)
+        {
+            if(DUContext* retContext = functionDefinition->returnArgsContext())
+                decls = retContext->localDeclarations(topContext().data());
+        }
+
         if(type->returnArguments().size() == 1)
         {
             if(decls.size() != 0) //show declaration if one exists

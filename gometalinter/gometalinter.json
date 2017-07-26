@@ -1,27 +1,24 @@
 {
-  "GenericName": "Gometalinter Support",
-  "GenericName[x-test]": "xxGometalinter Supportxx",
-  "KPlugin": {
-    "Authors": [
-      {
-        "Name": "Mikhail Ivchenko",
-        "Name[x-test]": "xxMikhail Ivchenkoxx"
-      }
+    "GenericName": "Gometalinter Support",
+    "GenericName[x-test]": "xxGometalinter Supportxx",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Mikhail Ivchenko"
+            }
+        ],
+        "Category": "Analyzers",
+        "Description": "This plugin integrates gometalinter (static analysis tool) to KDevelop",
+        "Id": "gometalinter",
+        "License": "GPL",
+        "Name": "Gometalinter Support",
+        "ServiceTypes": [
+            "KDevelop/Plugin"
+        ]
+    },
+    "X-KDevelop-Category": "Global",
+    "X-KDevelop-IRequired": [
+        "org.kdevelop.IExecutePlugin"
     ],
-    "Category": "Analyzers",
-    "Description": "This plugin integrates gometalinter (static analysis tool) to KDevelop",
-    "Description[x-test]": "xxThis plugin integrates gometalinter (static analysis tool) to KDevelopxx",
-    "Id": "gometalinter",
-    "License": "GPL",
-    "Name": "Gometalinter Support",
-    "Name[x-test]": "xxGometalinter Supportxx",
-    "ServiceTypes": [
-      "KDevelop/Plugin"
-    ]
-  },
-  "X-KDevelop-Category": "Global",
-  "X-KDevelop-IRequired": [
-    "org.kdevelop.IExecutePlugin"
-  ],
-  "X-KDevelop-Mode": "GUI"
+    "X-KDevelop-Mode": "GUI"
 }

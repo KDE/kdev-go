@@ -11,24 +11,24 @@ find_package(ECM 0.0.9 REQUIRED NO_MODULE)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
 
+include(KDECompilerSettings NO_POLICY_SCOPE)
 include(ECMAddTests)
 include(KDEInstallDirs)
 include(KDECMakeSettings)
-include(KDECompilerSettings)
 include(GenerateExportHeader)
 
 set(QT_MIN_VERSION "5.5.0")
 find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED Core Widgets Test)
 set(KF5_DEP_VERSION "5.15.0")
 find_package(KF5 ${KF5_DEP_VERSION} REQUIRED COMPONENTS ItemModels ThreadWeaver TextEditor I18n)
-find_package(KDevPlatform ${KDEVPLATFORM_VERSION} REQUIRED)
-find_package(KDevelop-PG-Qt REQUIRED)
+find_package(KDevPlatform ${KDEVPLATFORM_VERSION} CONFIG REQUIRED)
+find_package(KDevelop-PG-Qt CONFIG REQUIRED)
 
 include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_SOURCE_DIR}
 )
-    
+
 enable_testing()
 
 add_subdirectory(app_templates)
@@ -37,10 +37,6 @@ add_subdirectory(parser)
 add_subdirectory(duchain)
 add_subdirectory(codecompletion)
 add_subdirectory(gometalinter)
-
-include_directories(
-    ${KDEVPGQT_INCLUDE_DIR}
-)
 
 kdevplatform_add_plugin(kdevgoplugin JSON kdevgo.json SOURCES
     kdevgoplugin.cpp

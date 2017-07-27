@@ -4,14 +4,26 @@
     "KPlugin": {
         "Authors": [
             {
-                "Name": "Mikhail Ivchenko"
+                "Name": "Mikhail Ivchenko",
+                "Name[uk]": "Михайло Івченко",
+                "Name[x-test]": "xxMikhail Ivchenkoxx"
             }
         ],
         "Category": "Analyzers",
         "Description": "This plugin integrates gometalinter (static analysis tool) to KDevelop",
+        "Description[nl]": "Deze plugin integreert gometalinter (statisch analyse hulpmiddel) in KDevelop",
+        "Description[pt]": "Este 'plugin' integra o 'gometalinter' (ferramenta de análise estática) com o KDevelop",
+        "Description[sv]": "Insticksprogrammet integrerar gometalinter (statiskt analysverktyg) i KDevelop",
+        "Description[uk]": "За допомогою цього додатка можна інтегрувати gometalinter (засіб статичного аналізу) до KDevelop",
+        "Description[x-test]": "xxThis plugin integrates gometalinter (static analysis tool) to KDevelopxx",
         "Id": "gometalinter",
         "License": "GPL",
         "Name": "Gometalinter Support",
+        "Name[nl]": "Ondersteuning voor Gometalinter",
+        "Name[pt]": "Suporte para o Gometalinter",
+        "Name[sv]": "Gometalinter-stöd",
+        "Name[uk]": "Підтримка Gometalinter",
+        "Name[x-test]": "xxGometalinter Supportxx",
         "ServiceTypes": [
             "KDevelop/Plugin"
         ]

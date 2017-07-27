@@ -26,5 +26,3 @@ QStringList GoBuildJob::commandLine() const
 {
     return {"go", m_command, "-o", m_output};
 }
-
-#include "buildjob.moc"

@@ -27,7 +27,7 @@ public:
      GoParseJob(const KDevelop::IndexedString& url, KDevelop::ILanguageSupport* languageSupport);
   
 protected:
-    virtual void run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread) override;
+    void run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread) override;
 
 private:
     /**

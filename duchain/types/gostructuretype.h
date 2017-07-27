@@ -71,15 +71,15 @@ public:
     void setInterfaceType() { d_func_dynamic()->m_type = 1; }
     
     
-    void accept0(KDevelop::TypeVisitor *v) const;
+    void accept0(KDevelop::TypeVisitor *v) const override;
 
-    virtual QString toString() const;
+    QString toString() const override;
 
-    virtual KDevelop::AbstractType* clone() const;
+    KDevelop::AbstractType* clone() const override;
 
-    virtual uint hash() const;
+    uint hash() const override;
     
-    virtual bool equals(const AbstractType* rhs) const;
+    bool equals(const AbstractType* rhs) const override;
 
     enum {
         Identity = 104 

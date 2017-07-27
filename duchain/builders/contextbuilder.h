@@ -50,39 +50,39 @@ class KDEVGODUCHAIN_EXPORT ContextBuilder: public ContextBuilderBase, public go:
 {
 public:
     ContextBuilder();
-    virtual ~ContextBuilder();
+    ~ContextBuilder() override;
 
     /*virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString& url, go::AstNode* node,
             KDevelop::ReferencedTopDUContext updateContext
             = KDevelop::ReferencedTopDUContext());*/
     
-    virtual void startVisiting(go::AstNode* node);
-    virtual void visitIfStmt(go::IfStmtAst* node);
-    virtual void visitBlock(go::BlockAst* node);
+    void startVisiting(go::AstNode* node) override;
+    void visitIfStmt(go::IfStmtAst* node) override;
+    void visitBlock(go::BlockAst* node) override;
 
     /**
      * In go all imports must appear before first top level declaration.
      * This gives us the opportunity to call updateImportsCache() only once, when first
      * TopLevelDeclaration is encountered.
      **/
-    virtual void visitTopLevelDeclaration(go::TopLevelDeclarationAst* node);
+    void visitTopLevelDeclaration(go::TopLevelDeclarationAst* node) override;
 
-    virtual KDevelop::DUContext* contextFromNode(go::AstNode* node);
+    KDevelop::DUContext* contextFromNode(go::AstNode* node) override;
     
-    virtual void setContextOnNode(go::AstNode* node, KDevelop::DUContext* context);
+    void setContextOnNode(go::AstNode* node, KDevelop::DUContext* context) override;
     
-    virtual KDevelop::RangeInRevision editorFindRange(go::AstNode* fromNode, go::AstNode* toNode);
+    KDevelop::RangeInRevision editorFindRange(go::AstNode* fromNode, go::AstNode* toNode) override;
     
-    virtual KDevelop::QualifiedIdentifier identifierForNode(go::IdentifierAst* node);
+    KDevelop::QualifiedIdentifier identifierForNode(go::IdentifierAst* node) override;
   
     KDevelop::QualifiedIdentifier identifierForIndex(qint64 index); 
    
     void setParseSession(ParseSession* session);
     
     
-    virtual KDevelop::TopDUContext* newTopContext(const KDevelop::RangeInRevision& range, KDevelop::ParsingEnvironmentFile* file=0) override;
+    KDevelop::TopDUContext* newTopContext(const KDevelop::RangeInRevision& range, KDevelop::ParsingEnvironmentFile* file=0) override;
     
-    virtual KDevelop::DUContext* newContext(const KDevelop::RangeInRevision& range) override;
+    KDevelop::DUContext* newContext(const KDevelop::RangeInRevision& range) override;
     
     
     KDevelop::QualifiedIdentifier createFullName(go::IdentifierAst* package, go::IdentifierAst* typeName);

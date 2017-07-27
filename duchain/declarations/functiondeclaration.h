@@ -52,7 +52,7 @@ public:
     GoFunctionDeclaration(GoFunctionDeclarationData& data, const KDevelop::RangeInRevision& range);
     
     
-    virtual QString toString() const;
+    QString toString() const override;
     
     void setReturnArgsContext(KDevelop::DUContext* context);
     
@@ -62,7 +62,7 @@ public:
         Identity = 121 
     };
     
-    virtual KDevelop::Declaration* clonePrivate() const;
+    KDevelop::Declaration* clonePrivate() const override;
     
 private:
     DUCHAIN_DECLARE_DATA(GoFunctionDeclaration);

@@ -31,7 +31,7 @@ class KDEVGOCOMPLETION_EXPORT CodeCompletionModel : public KDevelop::CodeComplet
 public:
     CodeCompletionModel(QObject* parent);
 protected:
-    virtual KDevelop::CodeCompletionWorker* createCompletionWorker();
+    KDevelop::CodeCompletionWorker* createCompletionWorker() override;
 };
 
 }

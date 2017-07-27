@@ -67,17 +67,17 @@ public:
     
     GoFunctionType(const GoFunctionType& rhs);
     
-    virtual QString toString() const;
+    QString toString() const override;
     
-    virtual KDevelop::AbstractType* clone() const;
+    KDevelop::AbstractType* clone() const override;
 
-    virtual uint hash() const;
+    uint hash() const override;
     
     void addReturnArgument(AbstractType::Ptr arg);
     
     QList<AbstractType::Ptr> returnArguments() const;
     
-    virtual bool equals(const KDevelop::AbstractType* rhs) const;
+    bool equals(const KDevelop::AbstractType* rhs) const override;
 
     enum {
         Identity = 79

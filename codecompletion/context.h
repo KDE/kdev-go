@@ -35,7 +35,7 @@ public:
     CodeCompletionContext(const KDevelop::DUContextPointer& context, const QString& text,
                           const KDevelop::CursorInRevision& position, int depth = 0);
 
-    virtual QList<KDevelop::CompletionTreeItemPointer> completionItems(bool& abort, bool fullCompletion = true);
+    QList<KDevelop::CompletionTreeItemPointer> completionItems(bool& abort, bool fullCompletion = true) override;
 
     KDevelop::AbstractType::Ptr typeToMatch() { return m_typeToMatch; }
 

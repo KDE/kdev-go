@@ -45,13 +45,13 @@ class GoPlugin : public KDevelop::IPlugin, public KDevelop::ILanguageSupport
   public:
     explicit GoPlugin(QObject* parent, const QVariantList &args);
     
-    virtual ~GoPlugin();
+    ~GoPlugin() override;
     
-    virtual KDevelop::ParseJob* createParseJob(const KDevelop::IndexedString& url) override;
-    virtual QString name() const override;
-    virtual KDevelop::SourceFormatterItemList sourceFormatterItems() const override;
+    KDevelop::ParseJob* createParseJob(const KDevelop::IndexedString& url) override;
+    QString name() const override;
+    KDevelop::SourceFormatterItemList sourceFormatterItems() const override;
     
-    KDevelop::ICodeHighlighting* codeHighlighting() const;
+    KDevelop::ICodeHighlighting* codeHighlighting() const override;
     
 private:
     Highlighting* m_highlighting;

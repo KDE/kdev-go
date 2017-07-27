@@ -35,17 +35,17 @@ typedef KDevelop::AbstractTypeBuilder<AstNode, IdentifierAst, ContextBuilder> Ty
 class KDEVGODUCHAIN_EXPORT TypeBuilder : public TypeBuilderBase
 {
 public:
-    virtual void visitTypeName(go::TypeNameAst* node);
-    virtual void visitArrayOrSliceType(go::ArrayOrSliceTypeAst* node);
-    virtual void visitPointerType(go::PointerTypeAst* node);
-    virtual void visitStructType(go::StructTypeAst* node);
-    virtual void visitFieldDecl(go::FieldDeclAst* node);
-    virtual void visitInterfaceType(go::InterfaceTypeAst* node);
-    virtual void visitMethodSpec(go::MethodSpecAst* node);
-    virtual void visitMapType(go::MapTypeAst* node);
-    virtual void visitChanType(go::ChanTypeAst* node);
-    virtual void visitFunctionType(go::FunctionTypeAst* node);
-    virtual void visitParameter(go::ParameterAst* node);
+    void visitTypeName(go::TypeNameAst* node) override;
+    void visitArrayOrSliceType(go::ArrayOrSliceTypeAst* node) override;
+    void visitPointerType(go::PointerTypeAst* node) override;
+    void visitStructType(go::StructTypeAst* node) override;
+    void visitFieldDecl(go::FieldDeclAst* node) override;
+    void visitInterfaceType(go::InterfaceTypeAst* node) override;
+    void visitMethodSpec(go::MethodSpecAst* node) override;
+    void visitMapType(go::MapTypeAst* node) override;
+    void visitChanType(go::ChanTypeAst* node) override;
+    void visitFunctionType(go::FunctionTypeAst* node) override;
+    void visitParameter(go::ParameterAst* node) override;
 
     /**
      * When building named types we often have IdentifierAst instead of TypeNameAst,

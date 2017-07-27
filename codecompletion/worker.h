@@ -30,9 +30,9 @@ public:
     CodeCompletionWorker(KDevelop::CodeCompletionModel* model);
 
 protected:
-    virtual KDevelop::CodeCompletionContext* createCompletionContext(
+    KDevelop::CodeCompletionContext* createCompletionContext(
         KDevelop::DUContextPointer context, const QString& contextText,
-        const QString& followingText, const KDevelop::CursorInRevision& position) const;
+        const QString& followingText, const KDevelop::CursorInRevision& position) const override;
 
 };
 }

@@ -40,10 +40,10 @@ public:
     //virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString& url, AstNode* node,
     //KDevelop::ReferencedTopDUContext updateContext = KDevelop::ReferencedTopDUContext());
     
-    virtual void visitPrimaryExpr(go::PrimaryExprAst* node);
-    virtual void visitTypeName(go::TypeNameAst* node);
-    virtual void visitBlock(go::BlockAst* node);
-    virtual void visitMethodDeclaration(go::MethodDeclarationAst* node);
+    void visitPrimaryExpr(go::PrimaryExprAst* node) override;
+    void visitTypeName(go::TypeNameAst* node) override;
+    void visitBlock(go::BlockAst* node) override;
+    void visitMethodDeclaration(go::MethodDeclarationAst* node) override;
     
 private:
     QStack<KDevelop::AbstractType::Ptr> m_types;

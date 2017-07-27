@@ -72,15 +72,15 @@ public:
 
     AbstractType::Ptr valueType();
 
-    virtual QString toString() const;
+    QString toString() const override;
 
-    virtual KDevelop::AbstractType* clone() const;
+    KDevelop::AbstractType* clone() const override;
 
-    virtual uint hash() const;
+    uint hash() const override;
 
-    virtual bool equals(const AbstractType* rhs) const;
+    bool equals(const AbstractType* rhs) const override;
 
-    void accept0(KDevelop::TypeVisitor *v) const;
+    void accept0(KDevelop::TypeVisitor *v) const override;
 
     enum {
         Identity = 105

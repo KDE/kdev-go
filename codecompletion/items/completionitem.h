@@ -33,7 +33,7 @@ public:
                    QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext> context=QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(),
                    int inheritanceDepth = 0);
 
-    virtual QVariant data(const QModelIndex& index, int role, const KDevelop::CodeCompletionModel* model) const;
+    QVariant data(const QModelIndex& index, int role, const KDevelop::CodeCompletionModel* model) const override;
 
 private:
     QString m_prefix;

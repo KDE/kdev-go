@@ -37,34 +37,34 @@ class KDEVGODUCHAIN_EXPORT DeclarationBuilder : public DeclarationBuilderBase
 public:
     DeclarationBuilder(ParseSession* session, bool forExport);
     
-    virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString& url,
+    KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString& url,
                                                    go::AstNode* node,
-                                                   KDevelop::ReferencedTopDUContext updateContext = KDevelop::ReferencedTopDUContext());
-    virtual void startVisiting(go::AstNode* node);
+                                                   KDevelop::ReferencedTopDUContext updateContext = KDevelop::ReferencedTopDUContext()) override;
+    void startVisiting(go::AstNode* node) override;
 
-    virtual void visitVarSpec(go::VarSpecAst* node);
-    virtual void visitShortVarDecl(go::ShortVarDeclAst* node);
-    virtual void visitConstSpec(go::ConstSpecAst* node);
-    virtual void visitConstDecl(go::ConstDeclAst* node);
-    virtual void visitFuncDeclaration(go::FuncDeclarationAst* node);
-    virtual void visitMethodDeclaration(go::MethodDeclarationAst* node);
-    virtual void visitTypeSpec(go::TypeSpecAst* node);
-    virtual void visitImportSpec(go::ImportSpecAst* node);
-    virtual void visitSourceFile(go::SourceFileAst* node);
-    virtual void visitForStmt(go::ForStmtAst* node);
-    virtual void visitSwitchStmt(go::SwitchStmtAst* node);
-    virtual void visitTypeCaseClause(go::TypeCaseClauseAst* node);
-    virtual void visitExprCaseClause(go::ExprCaseClauseAst* node);
-    virtual void visitPrimaryExpr(go::PrimaryExprAst *node);
+    void visitVarSpec(go::VarSpecAst* node) override;
+    void visitShortVarDecl(go::ShortVarDeclAst* node) override;
+    void visitConstSpec(go::ConstSpecAst* node) override;
+    void visitConstDecl(go::ConstDeclAst* node) override;
+    void visitFuncDeclaration(go::FuncDeclarationAst* node) override;
+    void visitMethodDeclaration(go::MethodDeclarationAst* node) override;
+    void visitTypeSpec(go::TypeSpecAst* node) override;
+    void visitImportSpec(go::ImportSpecAst* node) override;
+    void visitSourceFile(go::SourceFileAst* node) override;
+    void visitForStmt(go::ForStmtAst* node) override;
+    void visitSwitchStmt(go::SwitchStmtAst* node) override;
+    void visitTypeCaseClause(go::TypeCaseClauseAst* node) override;
+    void visitExprCaseClause(go::ExprCaseClauseAst* node) override;
+    void visitPrimaryExpr(go::PrimaryExprAst *node) override;
 
     /**
      * this handles variable declaration in select statements, e.g.
      * select { case i := <-mychan: bla bla...  }
      * NOTE: right hand side expression must be a receive operator, returning two values */
-    virtual void visitCommCase(go::CommCaseAst* node);
-    virtual void visitCommClause(go::CommClauseAst* node);
+    void visitCommCase(go::CommCaseAst* node) override;
+    void visitCommClause(go::CommClauseAst* node) override;
 
-    virtual void visitTypeDecl(go::TypeDeclAst* node);
+    void visitTypeDecl(go::TypeDeclAst* node) override;
 
     /**
      * A shortcut for ExpressionVisitor to build function type
@@ -99,13 +99,13 @@ private:
     /**
      * Declares variable with identifier @param id of type @param type
      **/
-    virtual void declareVariable(go::IdentifierAst* id, const AbstractType::Ptr& type) override;
+    void declareVariable(go::IdentifierAst* id, const AbstractType::Ptr& type) override;
 
     /**
      * Declares GoFunction and assigns contexts to it.
      * Called from typebuilder when building functions and methods
      **/
-    virtual go::GoFunctionDeclaration* declareFunction(go::IdentifierAst* id, const go::GoFunctionType::Ptr& type,
+    go::GoFunctionDeclaration* declareFunction(go::IdentifierAst* id, const go::GoFunctionType::Ptr& type,
                                                        DUContext* paramContext, DUContext* retparamContext, const QByteArray& comment = {}, DUContext* bodyContext = nullptr) override;
 
     go::GoFunctionDefinition* declareMethod(go::IdentifierAst* id, const go::GoFunctionType::Ptr& type,

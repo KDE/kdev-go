@@ -30,11 +30,11 @@ public:
                                  KDevelop::TopDUContextPointer topContext,
                                  KDevelop::AbstractNavigationContext* previousContext = 0);
 protected: 
-    virtual void htmlFunction();
+    void htmlFunction() override;
     
-    virtual void eventuallyMakeTypeLinks( KDevelop::AbstractType::Ptr type );
+    void eventuallyMakeTypeLinks( KDevelop::AbstractType::Ptr type ) override;
     
-    virtual QString html(bool shorten);
+    QString html(bool shorten) override;
 };
 
 

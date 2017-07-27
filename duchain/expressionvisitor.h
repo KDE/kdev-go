@@ -34,22 +34,22 @@ public:
 
     QList<AbstractType::Ptr> lastTypes();
 
-    virtual void visitExpression(go::ExpressionAst* node);
-    virtual void visitUnaryExpression(go::UnaryExpressionAst* node);
-    virtual void visitPrimaryExpr(go::PrimaryExprAst* node);
-    virtual void visitBasicLit(go::BasicLitAst* node);
-    virtual void visitPrimaryExprResolve(go::PrimaryExprResolveAst* node);
-    virtual void visitCallOrBuiltinParam(go::CallOrBuiltinParamAst* node);
-    virtual void visitCallParam(go::CallParamAst* node);
-    virtual void visitTypeName(go::TypeNameAst* node);
-    virtual void visitStructType(go::StructTypeAst* node);
-    virtual void visitMapType(go::MapTypeAst* node);
-    virtual void visitPointerType(go::PointerTypeAst* node);
-    virtual void visitInterfaceType(go::InterfaceTypeAst* node);
-    virtual void visitChanType(go::ChanTypeAst* node);
-    virtual void visitParenType(go::ParenTypeAst* node);
+    void visitExpression(go::ExpressionAst* node) override;
+    void visitUnaryExpression(go::UnaryExpressionAst* node) override;
+    void visitPrimaryExpr(go::PrimaryExprAst* node) override;
+    void visitBasicLit(go::BasicLitAst* node) override;
+    void visitPrimaryExprResolve(go::PrimaryExprResolveAst* node) override;
+    void visitCallOrBuiltinParam(go::CallOrBuiltinParamAst* node) override;
+    void visitCallParam(go::CallParamAst* node) override;
+    void visitTypeName(go::TypeNameAst* node) override;
+    void visitStructType(go::StructTypeAst* node) override;
+    void visitMapType(go::MapTypeAst* node) override;
+    void visitPointerType(go::PointerTypeAst* node) override;
+    void visitInterfaceType(go::InterfaceTypeAst* node) override;
+    void visitChanType(go::ChanTypeAst* node) override;
+    void visitParenType(go::ParenTypeAst* node) override;
 
-    virtual void visitBlock(go::BlockAst* node);
+    void visitBlock(go::BlockAst* node) override;
     /**
      * Visits range expression.
      * There isn't an actual range expression rule in grammar, so you have to manually

@@ -39,13 +39,13 @@ public:
     /// Constructor using raw data. \param data internal data.
     GoIntegralType(GoIntegralTypeData& data);
 
-    virtual KDevelop::AbstractType* clone() const;
+    KDevelop::AbstractType* clone() const override;
     
-    virtual QString toString() const;
+    QString toString() const override;
 
-    virtual bool equals(const KDevelop::AbstractType* rhs) const;
+    bool equals(const KDevelop::AbstractType* rhs) const override;
 
-    virtual uint hash() const;
+    uint hash() const override;
     
     enum GoIntegralTypes {
        TypeUint8=201,

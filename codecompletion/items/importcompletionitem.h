@@ -30,7 +30,7 @@ class ImportCompletionItem : public KDevelop::NormalDeclarationCompletionItem
 {
 public:
     ImportCompletionItem(QString packagename);
-    virtual QVariant data(const QModelIndex& index, int role, const KDevelop::CodeCompletionModel* model) const;
+    QVariant data(const QModelIndex& index, int role, const KDevelop::CodeCompletionModel* model) const override;
     void execute(KTextEditor::View* view, const KTextEditor::Range& word) override;
 
 private:

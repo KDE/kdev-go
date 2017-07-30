@@ -256,3 +256,24 @@ void TestCompletion::test_commentCompletion()
     auto completions = getCompletions(code);
     QCOMPARE(completions.size(), size);
 }
+
+void TestCompletion::test_membersCompletion_data()
+{
+    QTest::addColumn<QString>("declaration");
+    QTest::addColumn<QString>("expression");
+    QTest::addColumn<QString>("result");
+    QTest::addColumn<int>("size");
+    QTest::newRow("method multiple lines") << "type mytype int; func (m mytype) myfunc() (t mytype) {}; func (m mytype) myfunc2(c rune) {}" << "var myvar mytype; myvar.myfunc().\n%CURSOR x;" << " myfunc2 (rune c)" << 2;
+}
+
+void TestCompletion::test_membersCompletion()
+{
+    QFETCH(QString, declaration);
+    QFETCH(QString, expression);
+    QFETCH(QString, result);
+    QFETCH(int, size);
+    QString code(QString("package main; %1; func main() { %2 }").arg(declaration).arg(expression));
+    auto completions = getCompletions(code);
+    QCOMPARE(completions.size(), size);
+    QVERIFY(containsDeclaration(result, completions));
+}

@@ -33,7 +33,6 @@
 #include "items/importcompletionitem.h"
 #include "helper.h"
 #include "completiondebug.h"
-#include "types/gofunctiontype.h"
 
 using namespace KDevelop;
 
@@ -45,8 +44,20 @@ namespace go
 CodeCompletionContext::CodeCompletionContext(const KDevelop::DUContextPointer& context,
                                              const QString& text, 
                                              const KDevelop::CursorInRevision& position, int depth): 
-                                             KDevelop::CodeCompletionContext(context, extractLastLine(text), position, depth), m_fullText(text)
+                                             KDevelop::CodeCompletionContext(context,
+                                                                             extractLastExpression(text), position, depth), m_fullText(text)
 {
+}
+
+bool CodeCompletionContext::isImportAndMemberCompletion()
+{
+    int pos = m_text.size() - 1;
+    QChar lastChar;
+    do {
+        lastChar = m_text.size() > 0 ? m_text.at(pos) : QLatin1Char('\0');
+        --pos;
+    } while((lastChar == QLatin1Char(' ') || lastChar == QLatin1Char('\n') || lastChar == QLatin1Char('\t')) && pos >= 0);
+    return lastChar == QLatin1Char('.');
 }
 
 QList< CompletionTreeItemPointer > CodeCompletionContext::completionItems(bool& abort, bool fullCompletion)
@@ -69,15 +80,7 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::completionItems(bool& 
         return items;
 
     items << functionCallTips();
-    
-    QChar lastChar = m_text.size() > 0 ? m_text.at(m_text.size() - 1) : QLatin1Char('\0');
-    if(lastChar == QLatin1Char('.'))
-    {//imports and member completions
-        items << importAndMemberCompletion();
-    }else
-    {
-        items << normalCompletion();
-    }
+    items << (isImportAndMemberCompletion() ? importAndMemberCompletion() : normalCompletion());
     return items;
 }
 
@@ -180,7 +183,15 @@ QList<CompletionTreeItemPointer> CodeCompletionContext::getImportableDeclaration
 QList< CompletionTreeItemPointer > CodeCompletionContext::importAndMemberCompletion()
 {
     QList<CompletionTreeItemPointer> items;
-    AbstractType::Ptr type = lastType(m_text.left(m_text.size()-1));
+
+    int pos = m_text.size();
+    QChar lastChar;
+    do {
+        --pos;
+        lastChar = m_text.size() > 0 ? m_text.at(pos) : QLatin1Char('\0');
+    } while(lastChar != QLatin1Char('.') && lastChar != QLatin1Char('\0'));
+
+    AbstractType::Ptr type = lastType(m_text.left(pos));
 
     if(type)
     {
@@ -447,6 +458,44 @@ bool CodeCompletionContext::isInsideCommentOrString()
     return false;
 }
 
+QString CodeCompletionContext::extractLastExpression(const QString &str)
+{
+    QString result;
+    int prevLineEnd = str.lastIndexOf('\n');
+    if(prevLineEnd != -1)
+    {
+        result = str.mid(prevLineEnd+1);
+        if(prevLineEnd - 1 >= 0)
+        {
+            auto previousText = str.left(prevLineEnd);
+            if(endsWithDot(previousText))
+            {
+                result = extractLastExpression(previousText) + "\n" + result;
+            }
+        }
+    }
+    else
+    {
+        result = str;
+    }
+    return result;
+}
 
+bool CodeCompletionContext::endsWithDot(const QString &str)
+{
+    auto dotPos = str.lastIndexOf('.');
+    if(dotPos == -1)
+    {
+        return false;
+    }
+    for(auto i = dotPos + 1; i < str.size(); ++i)
+    {
+        if(!str[i].isSpace())
+        {
+            return false;
+        }
+    }
+    return true;
+}
 
 }

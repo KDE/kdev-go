@@ -76,9 +76,12 @@ private:
      * returns true if cursor is in comment and completion is not needed
      **/
     bool isInsideCommentOrString();
+    bool isImportAndMemberCompletion();
 
     KDevelop::AbstractType::Ptr m_typeToMatch;
     QString m_fullText;
+    QString extractLastExpression(const QString &str);
+    bool endsWithDot(const QString &str);
 };
 }
 

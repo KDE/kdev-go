@@ -34,7 +34,8 @@ private slots:
     void test_typeMatching();
     void test_commentCompletion_data();
     void test_commentCompletion();
-
+    void test_membersCompletion_data();
+    void test_membersCompletion();
 };
 
 #endif

@@ -79,6 +79,7 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::completionItems(bool& 
     if(isInsideCommentOrString())
         return items;
 
+    setTypeToMatch();
     items << functionCallTips();
     items << (isImportAndMemberCompletion() ? importAndMemberCompletion() : normalCompletion());
     return items;
@@ -111,22 +112,6 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::functionCallTips()
     while(!stack.empty())
     {
         ExpressionStackEntry entry = stack.pop();
-        if(isTopOfStack && entry.operatorStart > entry.startPosition)
-        {
-            //for type matching in things like a = %CURSOR
-            //see kdev-qmljs for details
-            //TODO type matching in multiple assignments e.g. "a, b = c, %CURSOR"
-
-            //don't show matching in var declarations e.g. "a := b"
-            //and expression lists e.g. "a(), b()
-            if(m_text.mid(entry.operatorStart, entry.operatorEnd-entry.operatorStart) != "," &&
-                m_text.mid(entry.operatorStart, entry.operatorEnd-entry.operatorStart) != ":=")
-            {
-                AbstractType::Ptr type = lastType(m_text.left(entry.operatorStart));
-                if(type)
-                    m_typeToMatch = type;
-            }
-        }
         if (entry.startPosition > 0 && m_text.at(entry.startPosition - 1) == QLatin1Char('('))
         {
             DeclarationPointer function = lastDeclaration(m_text.left(entry.startPosition - 1));
@@ -151,6 +136,50 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::functionCallTips()
         isTopOfStack = false;
     }
     return items;
+}
+
+void CodeCompletionContext::setTypeToMatch()
+{
+    QStack<ExpressionStackEntry> stack = expressionStack(m_text);
+    if(stack.empty())
+    {
+        return;
+    }
+
+    ExpressionStackEntry entry = stack.pop();
+    if(entry.operatorStart <= entry.startPosition)
+    {
+        return;
+    }
+
+    auto operatorText = m_text.mid(entry.operatorStart, entry.operatorEnd-entry.operatorStart);
+    if(operatorText == "=")
+    {
+        auto leftText = m_text.mid(entry.startPosition, entry.operatorStart - entry.startPosition);
+        auto rightText = m_text.mid(entry.operatorEnd);
+        // On left side we have comma-separated declarations while on right side we can have function calls
+        // whose can have extra commas. Since entry.commas contains *all* commas in *current* expression,
+        // (e.g. commas inside function calls will not be counted) use it and amount of commas on left side to determine
+        // amount of commas on right side.
+        auto pos = entry.commas - leftText.count(',');
+        auto declarations = leftText.split(',');
+        if(declarations.size() > pos)
+        {
+            if(auto type = lastType(declarations[pos]))
+            {
+                m_typeToMatch = type;
+            }
+        }
+    }
+    //don't show matching in var declarations e.g. "a := b"
+    //and expression lists e.g. "a(), b()
+    else if(operatorText != "," && operatorText != ":=")
+    {
+        if(auto type = lastType(m_text.left(entry.operatorStart)))
+        {
+            m_typeToMatch = type;
+        }
+    }
 }
 
 QList<CompletionTreeItemPointer> CodeCompletionContext::getImportableDeclarations(Declaration *sourceDeclaration)
@@ -323,6 +352,7 @@ QStack< CodeCompletionContext::ExpressionStackEntry > CodeCompletionContext::exp
             break;
         case Parser::Token_COMMA:
             stack.top().commas++;
+            break;
         default:
             // The last operator of every sub-expression is stored on the stack
             // so that "A = foo." can know that attributes of foo having the same

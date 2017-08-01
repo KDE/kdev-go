@@ -212,8 +212,9 @@ void TestCompletion::test_typeMatching_data()
     QTest::newRow("function type var") << "func test() int {}" << "f := test; var a func() int; a = %CURSOR a" << "function () int f " << 5 << 10;
     QTest::newRow("arguments") << "func test(a int) {}" << "var a int; test(%CURSOR);" << "int a " << 5 << 10;
     QTest::newRow("sum") << "var a int" << "var b int; b + %CURSOR c" << "int a " << 4 << 10;
-    //QTest::newRow("multiple assignments") << "var a int = 1; var b bool = true" << "a, b = %CURSOR a, b" << "int a " << 4 << 10;
-    //QTest::newRow("multiple assignments 2") << "var a int = 1; var b bool = true" << "a, b = a, %CURSOR b" << "bool b " << 4 << 10;
+    QTest::newRow("multiple assignments") << "var a int = 1; var b bool = true" << "a, b = %CURSOR a, b" << "int a " << 4 << 10;
+    QTest::newRow("multiple assignments 2") << "var a int = 1; var b bool = true" << "a, b = a, %CURSOR b" << "bool b " << 4 << 10;
+    QTest::newRow("multiple assignments with function return args assigment") << "var a int = 1; var b bool = true" << "a, b = test(1, 3, 4), %CURSOR b" << "bool b " << 4 << 10;
 }
 
 void TestCompletion::test_typeMatching()

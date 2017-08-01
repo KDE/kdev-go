@@ -65,6 +65,8 @@ private:
      **/
     QList<KDevelop::CompletionTreeItemPointer> functionCallTips();
 
+    void setTypeToMatch();
+
     QList<KDevelop::CompletionTreeItemPointer> importCompletion();
 
     /**

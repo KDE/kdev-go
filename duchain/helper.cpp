@@ -143,6 +143,10 @@ DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext* context, bo
                 continue;
             return DeclarationPointer(decl);
         }
+        if(searchInParent && context->parentContext())
+        {
+            return getDeclaration(id, context->parentContext(), searchInParent);
+        }
     }
     return DeclarationPointer();
 }
@@ -158,6 +162,10 @@ DeclarationPointer getTypeOrVarDeclaration(QualifiedIdentifier id, DUContext* co
             if((decl->kind() == Declaration::Import) || (decl->kind() == Declaration::Namespace) || (decl->kind() == Declaration::NamespaceAlias))
                 continue; 
             return DeclarationPointer(decl);
+        }
+        if(searchInParent && context->parentContext())
+        {
+            return getTypeOrVarDeclaration(id, context->parentContext(), searchInParent);
         }
     }
     return DeclarationPointer();
@@ -176,6 +184,10 @@ DeclarationPointer getTypeDeclaration(QualifiedIdentifier id, DUContext* context
                 || (decl->kind() == Declaration::NamespaceAlias) || (decl->kind() == Declaration::Instance))
                 continue; 
             return DeclarationPointer(decl);
+        }
+        if(searchInParent && context->parentContext())
+        {
+            return getTypeDeclaration(id, context->parentContext(), searchInParent);
         }
     }
     return DeclarationPointer();

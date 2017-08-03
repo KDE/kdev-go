@@ -22,6 +22,7 @@
 #include <language/codecompletion/codecompletioncontext.h>
 #include <language/codecompletion/codecompletionitem.h>
 
+#include "typematch.h"
 #include "kdevgocompletion_export.h"
 #include <QStack>
 #include <language/duchain/declaration.h>
@@ -37,7 +38,7 @@ public:
 
     QList<KDevelop::CompletionTreeItemPointer> completionItems(bool& abort, bool fullCompletion = true) override;
 
-    KDevelop::AbstractType::Ptr typeToMatch() { return m_typeToMatch; }
+    TypeMatch typeToMatch() { return m_typeMatch; }
 
 private:
     //See QmlJS plugin completion for details
@@ -80,7 +81,7 @@ private:
     bool isInsideCommentOrString();
     bool isImportAndMemberCompletion();
 
-    KDevelop::AbstractType::Ptr m_typeToMatch;
+    TypeMatch m_typeMatch;
     QString m_fullText;
     QString extractLastExpression(const QString &str);
     bool endsWithDot(const QString &str);

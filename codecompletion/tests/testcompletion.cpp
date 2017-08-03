@@ -215,6 +215,7 @@ void TestCompletion::test_typeMatching_data()
     QTest::newRow("multiple assignments") << "var a int = 1; var b bool = true" << "a, b = %CURSOR a, b" << "int a " << 4 << 10;
     QTest::newRow("multiple assignments 2") << "var a int = 1; var b bool = true" << "a, b = a, %CURSOR b" << "bool b " << 4 << 10;
     QTest::newRow("multiple assignments with function return args assigment") << "var a int = 1; var b bool = true" << "a, b = test(1, 3, 4), %CURSOR b" << "bool b " << 4 << 10;
+    QTest::newRow("multiple assignments with function returning multiple args") << "var a int = 1; var b bool = true; func test() (x int, y bool) {}" << "a, b = %CURSOR b" << "int x, bool y test ()" << 5 << 20;
 }
 
 void TestCompletion::test_typeMatching()

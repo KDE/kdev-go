@@ -13,6 +13,7 @@ set(completion_SRCS
     items/functionitem.cpp
     items/importcompletionitem.cpp
     completiondebug.cpp
+    typematch.cpp
 )
 
 add_library(kdevgocompletion SHARED ${completion_SRCS})

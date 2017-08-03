@@ -121,14 +121,14 @@ QList< CompletionTreeItemPointer > CodeCompletionContext::functionCallTips()
                 depth++;
                 items << CompletionTreeItemPointer(item);
 
-                if(isTopOfStack && !m_typeToMatch)
+                if(isTopOfStack && !m_typeMatch.singleType())
                 {
                     GoFunctionType::Ptr ftype(fastCast<GoFunctionType*>(function->abstractType().constData()));
                     auto args = ftype->arguments();
                     if(args.count() != 0)
                     {
                         int argument = entry.commas >= args.count() ? args.count()-1 : entry.commas;
-                        m_typeToMatch = args.at(argument);
+                        m_typeMatch.setSingleType(args.at(argument));
                     }
                 }
             }
@@ -163,11 +163,20 @@ void CodeCompletionContext::setTypeToMatch()
         // amount of commas on right side.
         auto pos = entry.commas - leftText.count(',');
         auto declarations = leftText.split(',');
+        if(pos == 0 && declarations.size() > 1)
+        {
+            QList<KDevelop::AbstractType::Ptr> types;
+            for(auto i = 0; i < declarations.size(); ++i)
+            {
+                types.append(lastType(declarations[i]));
+            }
+            m_typeMatch.setMultipleTypes(types);
+        }
         if(declarations.size() > pos)
         {
             if(auto type = lastType(declarations[pos]))
             {
-                m_typeToMatch = type;
+                m_typeMatch.setSingleType(type);
             }
         }
     }
@@ -177,7 +186,7 @@ void CodeCompletionContext::setTypeToMatch()
     {
         if(auto type = lastType(m_text.left(entry.operatorStart)))
         {
-            m_typeToMatch = type;
+            m_typeMatch.setSingleType(type);
         }
     }
 }

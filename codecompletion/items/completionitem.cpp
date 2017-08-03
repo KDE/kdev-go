@@ -62,7 +62,12 @@ QVariant CompletionItem::data(const QModelIndex& index, int role, const KDevelop
             //type aliases are actually different types
             if(declaration()->isTypeAlias())
                 return QVariant();
-            AbstractType::Ptr typeToMatch = static_cast<go::CodeCompletionContext*>(model->completionContext().data())->typeToMatch();
+            auto codeCompletionContext = static_cast<go::CodeCompletionContext*>(model->completionContext().data());
+            if(!codeCompletionContext->typeToMatch().singleType())
+            {
+                return QVariant();
+            }
+            AbstractType::Ptr typeToMatch = codeCompletionContext->typeToMatch().singleType();
             if(!typeToMatch)
                 return QVariant();
             AbstractType::Ptr declType = declaration()->abstractType();
@@ -73,7 +78,7 @@ QVariant CompletionItem::data(const QModelIndex& index, int role, const KDevelop
             declType->setModifiers(AbstractType::NoModifiers);
             if(declType->equals(typeToMatch.constData()))
             {
-                return QVariant(10);
+                return 10;
             }
             else if(declType->whichType() == AbstractType::TypeFunction)
             {
@@ -81,12 +86,37 @@ QVariant CompletionItem::data(const QModelIndex& index, int role, const KDevelop
                 auto args = function->returnArguments();
                 if(args.size() != 0)
                 {
+                    auto multipleTypesMatch = codeCompletionContext->typeToMatch().multipleTypes();
+                    if(args.size() == multipleTypesMatch.size())
+                    {
+                        bool allTypesMatches = true;
+                        for(auto pos = 0; pos < args.size(); ++pos)
+                        {
+                            auto expected = multipleTypesMatch[pos];
+                            auto actual = args[pos];
+                            expected->setModifiers(AbstractType::NoModifiers);
+                            actual->setModifiers(AbstractType::NoModifiers);
+                            if(!actual->equals(expected.constData()) && expected->toString() != "_")
+                            {
+                                allTypesMatches = false;
+                                break;
+                            }
+                        }
+                        if(allTypesMatches)
+                        {
+                            return 20;
+                        }
+                    }
+
                     AbstractType::Ptr first = args.first();
                     first->setModifiers(AbstractType::NoModifiers);
-                    if(first->equals(typeToMatch.constData()))
-                        return QVariant(10);
+                    if(args.size() == 1 && first->equals(typeToMatch.constData()))
+                    {
+                        return 10;
+                    }
                 }
-            }else
+            }
+            else
             {
                 return QVariant();
             }

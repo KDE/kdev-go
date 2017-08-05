@@ -22,7 +22,10 @@
 
 #include <language/codecompletion/normaldeclarationcompletionitem.h>
 #include <language/duchain/types/pointertype.h>
+#include <language/duchain/types/arraytype.h>
 #include <language/duchain/classdeclaration.h>
+#include <duchain/types/gointegraltype.h>
+#include <duchain/types/gomaptype.h>
 
 #include "parser/golexer.h"
 #include "parser/goparser.h"
@@ -149,6 +152,22 @@ void CodeCompletionContext::setTypeToMatch()
     ExpressionStackEntry entry = stack.pop();
     if(entry.operatorStart <= entry.startPosition)
     {
+        // handle indexing a[%CURSOR]
+        if(entry.startPosition > 0 && m_text.at(entry.startPosition - 1) == QLatin1Char('['))
+        {
+            auto declEntry = stack.pop();
+            auto declText = m_text.mid(declEntry.startPosition, entry.startPosition - 1 - declEntry.startPosition);
+            auto type = lastType(declText);
+            if(fastCast<ArrayType*>(type.data()))
+            {
+                m_typeMatch.setSingleType(GoIntegralType::Ptr(new GoIntegralType(GoIntegralType::TypeInt)));
+            }
+            else if(auto map = fastCast<GoMapType*>(type.data()))
+            {
+                auto keyType = map->keyType();
+                m_typeMatch.setSingleType(map->keyType());
+            }
+        }
         return;
     }
 

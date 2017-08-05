@@ -153,7 +153,7 @@ void CodeCompletionContext::setTypeToMatch()
     }
 
     auto operatorText = m_text.mid(entry.operatorStart, entry.operatorEnd-entry.operatorStart);
-    if(operatorText == "=")
+    if(operatorText == "=" || operatorText == ":=")
     {
         auto leftText = m_text.mid(entry.startPosition, entry.operatorStart - entry.startPosition);
         auto rightText = m_text.mid(entry.operatorEnd);
@@ -182,7 +182,7 @@ void CodeCompletionContext::setTypeToMatch()
     }
     //don't show matching in var declarations e.g. "a := b"
     //and expression lists e.g. "a(), b()
-    else if(operatorText != "," && operatorText != ":=")
+    else if(operatorText != ",")
     {
         if(auto type = lastType(m_text.left(entry.operatorStart)))
         {

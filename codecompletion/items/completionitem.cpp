@@ -96,7 +96,14 @@ QVariant CompletionItem::data(const QModelIndex& index, int role, const KDevelop
                             auto actual = args[pos];
                             expected->setModifiers(AbstractType::NoModifiers);
                             actual->setModifiers(AbstractType::NoModifiers);
-                            if(!actual->equals(expected.constData()) && expected->toString() != "_")
+                            bool isSkipped;
+                            bool isDelayed;
+                            {
+                                DUChainReadLocker lock;
+                                isSkipped = expected->toString() == "_";
+                                isDelayed = expected->whichType() == AbstractType::TypeDelayed;
+                            }
+                            if(!actual->equals(expected.constData()) && !isSkipped && !isDelayed)
                             {
                                 allTypesMatches = false;
                                 break;

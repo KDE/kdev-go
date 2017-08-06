@@ -78,7 +78,7 @@ QVariant CompletionItem::data(const QModelIndex& index, int role, const KDevelop
             declType->setModifiers(AbstractType::NoModifiers);
             if(declType->equals(typeToMatch.constData()))
             {
-                return 10;
+                return 5;
             }
             else if(declType->whichType() == AbstractType::TypeFunction)
             {
@@ -111,7 +111,7 @@ QVariant CompletionItem::data(const QModelIndex& index, int role, const KDevelop
                         }
                         if(allTypesMatches)
                         {
-                            return 20;
+                            return 10;
                         }
                     }
 
@@ -119,7 +119,7 @@ QVariant CompletionItem::data(const QModelIndex& index, int role, const KDevelop
                     first->setModifiers(AbstractType::NoModifiers);
                     if(args.size() == 1 && first->equals(typeToMatch.constData()))
                     {
-                        return 10;
+                        return 5;
                     }
                 }
             }

@@ -204,21 +204,21 @@ void TestCompletion::test_typeMatching_data()
     QTest::addColumn<int>("size");
     QTest::addColumn<int>("quality");
 
-    QTest::newRow("assignment") << "var pi int = 3.14" << "var a int; a = %CURSOR a" << "int pi " << 4 << 10;
-    QTest::newRow("const") << "const pi int = 3.14" << "var a int; a = %CURSOR a" << "int pi " << 4 << 10;
-    QTest::newRow("function") << "func test() int {}" << "var a int; a = %CURSOR a" << "int test ()" << 4 << 10;
-    QTest::newRow("function var") << "func test() int {}" << "f := test; var a int; a = %CURSOR a" << "function () int f " << 5 << 10;
-    QTest::newRow("function type") << "func test() int {}" << "var a func() int; a = %CURSOR a" << "int test ()" << 4 << 10;
-    QTest::newRow("function type var") << "func test() int {}" << "f := test; var a func() int; a = %CURSOR a" << "function () int f " << 5 << 10;
-    QTest::newRow("arguments") << "func test(a int) {}" << "var a int; test(%CURSOR);" << "int a " << 5 << 10;
-    QTest::newRow("sum") << "var a int" << "var b int; b + %CURSOR c" << "int a " << 4 << 10;
-    QTest::newRow("multiple assignments") << "var a int = 1; var b bool = true" << "a, b = %CURSOR a, b" << "int a " << 4 << 10;
-    QTest::newRow("multiple assignments 2") << "var a int = 1; var b bool = true" << "a, b = a, %CURSOR b" << "bool b " << 4 << 10;
-    QTest::newRow("multiple assignments with function return args assigment") << "var a int = 1; var b bool = true" << "a, b = test(1, 3, 4), %CURSOR b" << "bool b " << 4 << 10;
-    QTest::newRow("multiple assignments with function returning multiple args") << "var a int = 1; var b bool = true; func test() (x int, y bool) {}" << "a, b = %CURSOR b" << "int x, bool y test ()" << 5 << 20;
-    QTest::newRow("multiple assignments with not declared var") << "var a int = 1; func test() (x int, y bool) {}" << "a, b := %CURSOR b" << "int x, bool y test ()" << 5 << 20;
-    QTest::newRow("array index") << "var a int = 1" << "x := make([]int, 0, 10); x[%CURSOR 1]" << "int a " << 4 << 10;
-    QTest::newRow("map index") << "var a string" << "x := make(map [string]int, 0, 10); x[%CURSOR 1]" << "string a " << 4 << 10;
+    QTest::newRow("assignment") << "var pi int = 3.14" << "var a int; a = %CURSOR a" << "int pi " << 4 << 5;
+    QTest::newRow("const") << "const pi int = 3.14" << "var a int; a = %CURSOR a" << "int pi " << 4 << 5;
+    QTest::newRow("function") << "func test() int {}" << "var a int; a = %CURSOR a" << "int test ()" << 4 << 5;
+    QTest::newRow("function var") << "func test() int {}" << "f := test; var a int; a = %CURSOR a" << "function () int f " << 5 << 5;
+    QTest::newRow("function type") << "func test() int {}" << "var a func() int; a = %CURSOR a" << "int test ()" << 4 << 5;
+    QTest::newRow("function type var") << "func test() int {}" << "f := test; var a func() int; a = %CURSOR a" << "function () int f " << 5 << 5;
+    QTest::newRow("arguments") << "func test(a int) {}" << "var a int; test(%CURSOR);" << "int a " << 5 << 5;
+    QTest::newRow("sum") << "var a int" << "var b int; b + %CURSOR c" << "int a " << 4 << 5;
+    QTest::newRow("multiple assignments") << "var a int = 1; var b bool = true" << "a, b = %CURSOR a, b" << "int a " << 4 << 5;
+    QTest::newRow("multiple assignments 2") << "var a int = 1; var b bool = true" << "a, b = a, %CURSOR b" << "bool b " << 4 << 5;
+    QTest::newRow("multiple assignments with function return args assigment") << "var a int = 1; var b bool = true" << "a, b = test(1, 3, 4), %CURSOR b" << "bool b " << 4 << 5;
+    QTest::newRow("multiple assignments with function returning multiple args") << "var a int = 1; var b bool = true; func test() (x int, y bool) {}" << "a, b = %CURSOR b" << "int x, bool y test ()" << 5 << 10;
+    QTest::newRow("multiple assignments with not declared var") << "var a int = 1; func test() (x int, y bool) {}" << "a, b := %CURSOR b" << "int x, bool y test ()" << 5 << 10;
+    QTest::newRow("array index") << "var a int = 1" << "x := make([]int, 0, 10); x[%CURSOR 1]" << "int a " << 4 << 5;
+    QTest::newRow("map index") << "var a string" << "x := make(map [string]int, 0, 10); x[%CURSOR 1]" << "string a " << 4 << 5;
 }
 
 void TestCompletion::test_typeMatching()

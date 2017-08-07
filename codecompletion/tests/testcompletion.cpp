@@ -219,6 +219,7 @@ void TestCompletion::test_typeMatching_data()
     QTest::newRow("multiple assignments with not declared var") << "var a int = 1; func test() (x int, y bool) {}" << "a, b := %CURSOR b" << "int x, bool y test ()" << 5 << 10;
     QTest::newRow("array index") << "var a int = 1" << "x := make([]int, 0, 10); x[%CURSOR 1]" << "int a " << 4 << 5;
     QTest::newRow("map index") << "var a string" << "x := make(map [string]int, 0, 10); x[%CURSOR 1]" << "string a " << 4 << 5;
+    QTest::newRow("writing to channel") << "var a string" << "x := make(chan string); x <- %CURSOR t" << "string a " << 4 << 5;
 }
 
 void TestCompletion::test_typeMatching()

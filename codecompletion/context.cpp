@@ -26,6 +26,7 @@
 #include <language/duchain/classdeclaration.h>
 #include <duchain/types/gointegraltype.h>
 #include <duchain/types/gomaptype.h>
+#include <duchain/types/gochantype.h>
 
 #include "parser/golexer.h"
 #include "parser/goparser.h"
@@ -196,6 +197,20 @@ void CodeCompletionContext::setTypeToMatch()
             if(auto type = lastType(declarations[pos]))
             {
                 m_typeMatch.setSingleType(type);
+            }
+        }
+    }
+    else if(operatorText == "<-")
+    {
+        auto leftText = m_text.left(entry.operatorStart);
+        if(auto type = lastType(leftText))
+        {
+            if(auto channelType = fastCast<GoChanType*>(type.data()))
+            {
+                if(channelType->valueType())
+                {
+                    m_typeMatch.setSingleType(channelType->valueType());
+                }
             }
         }
     }

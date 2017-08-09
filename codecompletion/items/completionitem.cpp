@@ -21,6 +21,7 @@
 #include <language/duchain/declaration.h>
 #include <language/codecompletion/codecompletionmodel.h>
 #include <language/duchain/duchainlock.h>
+#include <duchain/types/gochantype.h>
 
 #include "context.h"
 #include "types/gofunctiontype.h"
@@ -79,6 +80,25 @@ QVariant CompletionItem::data(const QModelIndex& index, int role, const KDevelop
             if(declType->equals(typeToMatch.constData()))
             {
                 return 5;
+            }
+            else if(auto gochanTypeToMatch = fastCast<GoChanType*>(typeToMatch.data()))
+            {
+                // Handle special cases - "Type" placeholder in builtin functions and passing a bidirectional channel in place of single-directional.
+                if(auto gochanType = fastCast<GoChanType*>(declType.data()))
+                {
+                    auto valueTypeToMatch = gochanTypeToMatch->valueType();
+                    bool isTypePlaceholder = valueTypeToMatch->toString() == "Type" && valueTypeToMatch->whichType() == AbstractType::TypeDelayed;
+                    if(isTypePlaceholder)
+                    {
+                        valueTypeToMatch = gochanType->valueType();
+                    }
+                    auto valueTypesMatches = valueTypeToMatch->equals(gochanType->valueType().constData());
+                    auto channelTypeMatches = gochanTypeToMatch->kind() == gochanType->kind() || gochanType->kind() == GoChanType::SendAndReceive;
+                    if(valueTypesMatches && channelTypeMatches)
+                    {
+                        return 5;
+                    }
+                }
             }
             else if(declType->whichType() == AbstractType::TypeFunction)
             {

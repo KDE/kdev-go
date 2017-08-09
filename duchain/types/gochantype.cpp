@@ -104,10 +104,7 @@ bool GoChanType::equals(const AbstractType* rhs) const
 
     const GoChanType* type = static_cast<const GoChanType*>(rhs);
 
-    if(d_func()->valueType != type->d_func()->valueType)
-        return false;
-
-    return true;
+    return d_func()->valueType == type->d_func()->valueType && d_func()->kind == type->d_func()->kind;
 }
 
 }

@@ -30,6 +30,7 @@
 #include <tests/testcore.h>
 #include <tests/autotestshell.h>
 #include <tests/testhelpers.h>
+#include <duchain/helper.h>
 
 using namespace KDevelop;
 
@@ -134,6 +135,20 @@ void TestCompletion::initTestCase()
 {
     AutoTestShell::init();
     TestCore::initialize(Core::NoUi);
+
+    //build builtins file, because it won't be scheduled automatically
+    QString builtinsFile = go::Helper::getBuiltinFile();
+    QFile f(builtinsFile);
+    f.open(QIODevice::ReadOnly);
+    QByteArray contents = f.readAll();
+    f.close();
+    ParseSession session(QString(contents).toUtf8(), 0);
+    session.setCurrentDocument(IndexedString(builtinsFile));
+    if(session.startParsing())
+    {
+        DeclarationBuilder builder(&session, false);
+        builder.build(session.currentDocument(), session.ast());
+    }
 }
 
 void TestCompletion::cleanupTestCase()
@@ -220,6 +235,11 @@ void TestCompletion::test_typeMatching_data()
     QTest::newRow("array index") << "var a int = 1" << "x := make([]int, 0, 10); x[%CURSOR 1]" << "int a " << 4 << 5;
     QTest::newRow("map index") << "var a string" << "x := make(map [string]int, 0, 10); x[%CURSOR 1]" << "string a " << 4 << 5;
     QTest::newRow("writing to channel") << "var a string" << "x := make(chan string); x <- %CURSOR t" << "string a " << 4 << 5;
+    QTest::newRow("closing a channel") << "var x chan string" << "close(%CURSOR x)" << "chan string x " << 4 << 5;
+    QTest::newRow("closing a write-only channel") << "var x chan <- string" << "close(%CURSOR x)" << "chan <- string x " << 4 << 5;
+    QTest::newRow("passing a read-only channel") << "var x <- chan string; func test (p <- chan string) {}" << "test(%CURSOR x)" << "<- chan string x " << 5 << 5;
+    QTest::newRow("passing a read-write channel when expected read-only channel") << "var x chan string; func test (p <- chan string) {}" << "test(%CURSOR x)" << "chan string x " << 5 << 5;
+    QTest::newRow("passing a write-only channel when expected read-only channel") << "var x chan <- string; func test (p <- chan string) {}" << "test(%CURSOR x)" << "chan <- string x " << 5 << 0;
 }
 
 void TestCompletion::test_typeMatching()

@@ -17,6 +17,8 @@
 *************************************************************************************/
 
 #include <language/duchain/types/delayedtype.h>
+#include <helper.h>
+#include <language/duchain/declaration.h>
 
 #include "contextbuilder.h"
 #include "goducontext.h"
@@ -146,5 +148,54 @@ void ContextBuilder::visitTopLevelDeclaration(go::TopLevelDeclarationAst* node)
     go::DefaultVisitor::visitTopLevelDeclaration(node);
 }
 
-
+void ContextBuilder::visitPrimaryExpr(go::PrimaryExprAst *node)
+{
+    if(node->id) {
+        QualifiedIdentifier id(identifierForNode(node->id));
+        DeclarationPointer declaration = go::getTypeOrVarDeclaration(id, currentContext());
+        if (!declaration)
+        {
+            declaration = go::getDeclaration(id, currentContext());
+        }
+        if (declaration && (node->literalValue) && declaration->kind() == Declaration::Type)
+        {
+            if (node->literalValue)
+            {
+                openContext(node->id, editorFindRange(node->literalValue, 0), DUContext::Other, id);
+                visitLiteralValue(node->literalValue);
+                closeContext();
+                return;
+            }
+        }
+        else
+        {
+            auto primaryExprResolveNode = node->primaryExprResolve;
+            while(primaryExprResolveNode)
+            {
+                if(primaryExprResolveNode->selector)
+                {
+                    id = id + identifierForNode(primaryExprResolveNode->selector);
+                }
+                if(primaryExprResolveNode->literalValue)
+                {
+                    declaration = go::getTypeOrVarDeclaration(id, currentContext());
+                    if (!declaration)
+                    {
+                        declaration = go::getDeclaration(id, currentContext());
+                    }
+                    if(declaration && declaration->kind() == Declaration::Type)
+                    {
+                        const RangeInRevision &range = editorFindRange(primaryExprResolveNode->literalValue, 0);
+                        openContext(node->id, editorFindRange(primaryExprResolveNode->literalValue, 0), DUContext::Other, id);
+                        visitPrimaryExprResolve(node->primaryExprResolve);
+                        closeContext();
+                        return;
+                    }
+                }
+                primaryExprResolveNode = primaryExprResolveNode->primaryExprResolve;
+            }
+        }
+    }
+    go::DefaultVisitor::visitPrimaryExpr(node);
+}
 

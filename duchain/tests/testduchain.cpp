@@ -186,13 +186,13 @@ void TestDuchain::test_declareVariablesInParametersOfNestedFunction()
     auto declaration = declarations.first();
     QCOMPARE(fastCast<go::GoIntegralType*>(declaration->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeInt));
 
-    auto secondFunctionContext = mainContext->childContexts().at(2);
+    auto secondFunctionContext = mainContext->childContexts().at(3);
     declarations = secondFunctionContext->findDeclarations(QualifiedIdentifier("test2"));
     QCOMPARE(declarations.size(), 1);
     declaration = declarations.first();
     QCOMPARE(fastCast<go::GoIntegralType*>(declaration->abstractType().constData())->dataType(), uint(go::GoIntegralType::TypeInt));
 
-    auto thirdFunctionContext = mainContext->childContexts().at(4);
+    auto thirdFunctionContext = mainContext->childContexts().at(5);
     declarations = thirdFunctionContext->findDeclarations(QualifiedIdentifier("test3"));
     QCOMPARE(declarations.size(), 1);
     declaration = declarations.first();
@@ -649,9 +649,12 @@ void TestDuchain::test_usesAreAddedInCorrectContext()
 void TestDuchain::test_functionContextIsCreatedWhenDeclaringAsMemberOfStruct_data()
 {
     QTest::addColumn<QString>("declaration");
-    QTest::newRow("short variable declaration") << "t := ";
-    QTest::newRow("variable declaration") << "var t = ";
-    QTest::newRow("assignment") << "t = ";
+    QTest::newRow("short variable declaration") << "t := Test ";
+    QTest::newRow("variable declaration") << "var t = Test ";
+    QTest::newRow("assignment") << "t = Test ";
+    QTest::newRow("short variable declaration with complex name") << "t := main.Test ";
+    QTest::newRow("variable declaration with complex name") << "var t = main.Test ";
+    QTest::newRow("assignment with complex name") << "t = main.Test ";
 }
 
 void TestDuchain::test_functionContextIsCreatedWhenDeclaringAsMemberOfStruct()
@@ -662,11 +665,7 @@ void TestDuchain::test_functionContextIsCreatedWhenDeclaringAsMemberOfStruct()
                     "TestFunc func() ()\n"
                  "}\n"
                  "func main() {\n"
-                    "%1 Test{\n"
-                        "TestFunc: func() () {\n"
-                            "fmt.Println(\"Works!\")\n"
-                        "}\n"
-                    "}\n"
+                    "%1{ TestFunc: func() () { fmt.Println(\"Works!\"); } }\n"
                  "}").arg(declaration);
 
     ParseSession session(code.toUtf8(), 0);
@@ -677,8 +676,9 @@ void TestDuchain::test_functionContextIsCreatedWhenDeclaringAsMemberOfStruct()
     QVERIFY(topContext.data());
     auto mainContext = getMainContext(getPackageContext(topContext));
     DUChainReadLocker lock;
-
-    QCOMPARE(mainContext->childContexts().size(), 3);
+    QCOMPARE(mainContext->childContexts().size(), 1);
+    auto context = mainContext->childContexts().first();
+    QCOMPARE(context->childContexts().size(), 3);
 }
 
 DUContext* getPackageContext(const ReferencedTopDUContext &topContext)

@@ -116,6 +116,7 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
         return;
     go::ExpressionVisitor exprVisitor(m_session, currentContext(), this);
     exprVisitor.visitExpression(expression);
+    visitExpression(expression);
     Q_ASSERT(exprVisitor.lastTypes().size() != 0);
     if(!expressionList)
         types = exprVisitor.lastTypes();
@@ -137,7 +138,12 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
     if(types.size() == 0)
         return;
     for(AbstractType::Ptr& type : types)
-        type->setModifiers(declareConstant ? AbstractType::ConstModifier : AbstractType::NoModifiers);
+    {
+        if(type != nullptr)
+        {
+            type->setModifiers(declareConstant ? AbstractType::ConstModifier : AbstractType::NoModifiers);
+        }
+    }
     if(declareConstant)
         m_constAutoTypes = types;
 
@@ -236,7 +242,7 @@ void DeclarationBuilder::visitPrimaryExpr(go::PrimaryExprAst *node)
     }
     else
     {
-        go::DefaultVisitor::visitPrimaryExpr(node);
+        DeclarationBuilderBase::visitPrimaryExpr(node);
     }
 }
 

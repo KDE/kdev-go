@@ -66,6 +66,7 @@ public:
      * TopLevelDeclaration is encountered.
      **/
     void visitTopLevelDeclaration(go::TopLevelDeclarationAst* node) override;
+    void visitPrimaryExpr(go::PrimaryExprAst* node) override;
 
     KDevelop::DUContext* contextFromNode(go::AstNode* node) override;
     

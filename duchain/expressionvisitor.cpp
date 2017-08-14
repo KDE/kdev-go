@@ -145,10 +145,6 @@ void ExpressionVisitor::visitPrimaryExpr(PrimaryExprAst* node)
             //this handles stuff like mytype{}, mytype()
             if((node->literalValue || node->callOrBuiltinParam) && decl->kind() == Declaration::Type)
             {
-                if(node->literalValue)
-                {
-                    visitLiteralValue(node->literalValue);
-                }
                 //type aliases are custom types
                 pushUse(node->id, decl.data());
                 StructureType* type = new StructureType();

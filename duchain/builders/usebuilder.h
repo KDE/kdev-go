@@ -44,10 +44,12 @@ public:
     void visitTypeName(go::TypeNameAst* node) override;
     void visitBlock(go::BlockAst* node) override;
     void visitMethodDeclaration(go::MethodDeclarationAst* node) override;
-    
+    void visitShortVarDecl(go::ShortVarDeclAst* node) override;
+
 private:
+    void createUseInDeclaration(IdentifierAst *idNode);
+
     QStack<KDevelop::AbstractType::Ptr> m_types;
-    
 };
     
 }

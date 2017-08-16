@@ -31,6 +31,8 @@ private slots:
     void builtinFunctions_data();
     void builtinFunctions();
     void test_declareVariables();
+    void test_redeclareVariables_data();
+    void test_redeclareVariables();
     void test_constants();
     void test_constants_omittedType();
     void test_indexexpressions_data();

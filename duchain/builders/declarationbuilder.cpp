@@ -147,10 +147,7 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
     if(declareConstant)
         m_constAutoTypes = types;
 
-    if(identifierForNode(id).toString() != "_")
-    {
-        declareVariable(id, types.first());
-    }
+    declareVariable(id, types.first());
 
     if(idList)
     {
@@ -160,10 +157,7 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
         {
             if(typeIndex >= types.size()) //not enough types to declare all variables
                 return;
-            if(identifierForNode(iter->element).toString() != "_")
-            {
-                declareVariable(iter->element, types.at(typeIndex));
-            }
+            declareVariable(iter->element, types.at(typeIndex));
             iter = iter->next;
             typeIndex++;
         }
@@ -173,13 +167,21 @@ void DeclarationBuilder::declareVariables(go::IdentifierAst* id, go::IdListAst* 
 
 void DeclarationBuilder::declareVariable(go::IdentifierAst* id, const AbstractType::Ptr& type)
 {
-    if(type->modifiers() & AbstractType::ConstModifier)
-        setComment(m_lastConstComment);
-    DUChainWriteLocker lock;
-    Declaration* dec = openDeclaration<Declaration>(identifierForNode(id), editorFindRange(id, 0));
-    dec->setType<AbstractType>(type);
-    dec->setKind(Declaration::Instance);
-    closeDeclaration();
+    auto identifier = identifierForNode(id);
+    auto declaration = go::getDeclaration(identifier, currentContext(), false);
+    auto wasDeclaredInCurrentContext = declaration && declaration.data()->range() != editorFindRange(id, 0);
+    if(identifier.toString() != "_" && !wasDeclaredInCurrentContext)
+    {
+        if(type->modifiers() & AbstractType::ConstModifier)
+        {
+            setComment(m_lastConstComment);
+        }
+        DUChainWriteLocker lock;
+        Declaration* dec = openDeclaration<Declaration>(identifierForNode(id), editorFindRange(id, 0));
+        dec->setType<AbstractType>(type);
+        dec->setKind(Declaration::Instance);
+        closeDeclaration();
+    }
 }
 
 

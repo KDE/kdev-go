@@ -171,6 +171,66 @@ void TestDuchain::test_declareVariables()
     QCOMPARE(declarations.size(), 0);
 }
 
+void TestDuchain::test_redeclareVariables_data()
+{
+    QTest::addColumn<QString>("globalDeclarations");
+    QTest::addColumn<QString>("localDeclarations");
+    QTest::addColumn<QString>("assignmentStatement");
+    QTest::addColumn<QString>("redeclaredIdentifier");
+    QTest::addColumn<QString>("usedIdentifier");
+
+    QTest::newRow("no redeclaration") << "" << "" << "a := 3" << "" << "";
+    QTest::newRow("redeclaration of top context var") << "var a int" << "" << "a := 3" << "a" << "";
+    QTest::newRow("use of current context var") << "" << "a, b := 3, 4" << "a, c := 3, 5" << "" << "a";
+    QTest::newRow("use of current context var 2") << "" << "a, b := 3, 4" << "c, b := 3, 5" << "" << "b";
+}
+
+void TestDuchain::test_redeclareVariables()
+{
+    QFETCH(QString, globalDeclarations);
+    QFETCH(QString, localDeclarations);
+    QFETCH(QString, assignmentStatement);
+    QFETCH(QString, redeclaredIdentifier);
+    QFETCH(QString, usedIdentifier);
+    QString code(QString("package main;\n"
+                         "%1\n"
+                         "func main () {\n"
+                         "    %2\n"
+                         "    %3\n"
+                         "};")
+                     .arg(globalDeclarations, localDeclarations, assignmentStatement));
+
+
+    ParseSession session(code.toUtf8(), 0);
+    session.setCurrentDocument(IndexedString("file:///temp/1"));
+    QVERIFY(session.startParsing());
+    DeclarationBuilder builder(&session, false);
+    ReferencedTopDUContext topContext =  builder.build(session.currentDocument(), session.ast());
+    QVERIFY(topContext.data());
+    go::UseBuilder builder2(&session);
+    builder2.buildUses(session.ast());
+    auto packageContext = getPackageContext(topContext);
+    auto mainContext = getMainContext(packageContext);
+    QVERIFY(packageContext);
+    DUChainReadLocker lock;
+
+    if(usedIdentifier.isEmpty())
+    {
+        QCOMPARE(mainContext->usesCount(), 0);
+    }
+    else
+    {
+        QCOMPARE(mainContext->usesCount(), 1);
+        QCOMPARE(mainContext->uses()->usedDeclaration(mainContext->topContext())->identifier().toString(), usedIdentifier);
+    }
+
+    if(!redeclaredIdentifier.isEmpty())
+    {
+        auto declarations = go::getDeclarations(QualifiedIdentifier(redeclaredIdentifier), mainContext, false);
+        QCOMPARE(declarations.size(), 1);
+    }
+}
+
 void TestDuchain::test_declareVariablesInParametersOfNestedFunction()
 {
     QString code("package main; func main() {\n"

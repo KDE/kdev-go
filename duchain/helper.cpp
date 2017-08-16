@@ -135,7 +135,7 @@ DeclarationPointer getDeclaration(QualifiedIdentifier id, DUContext* context, bo
     DUChainReadLocker lock;
     if(context)
     {
-        auto declarations = context->findDeclarations(id, CursorInRevision(INT_MAX, INT_MAX));
+        auto declarations = context->findDeclarations(id, CursorInRevision(INT_MAX, INT_MAX), AbstractType::Ptr(), nullptr, searchInParent ? DUContext::NoSearchFlags : DUContext::DontSearchInParent);
         for(Declaration* decl: declarations)
         {
             //import declarations are just decorations and need not be returned

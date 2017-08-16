@@ -112,4 +112,31 @@ void UseBuilder::visitMethodDeclaration(go::MethodDeclarationAst* node)
     ContextBuilder::visitMethodDeclaration(node);
 }
 
+void UseBuilder::visitShortVarDecl(go::ShortVarDeclAst *node)
+{
+    createUseInDeclaration(node->id);
+    if(node->idList)
+    {
+        auto iter = node->idList->idSequence->front(), end = iter;
+        do
+        {
+            createUseInDeclaration(iter->element);
+            iter = iter->next;
+        }
+        while (iter != end);
+    }
+    ContextBuilder::visitShortVarDecl(node);
+}
+
+void UseBuilder::createUseInDeclaration(IdentifierAst *idNode)
+{
+    auto identifier = identifierForNode(idNode);
+    auto declaration = getDeclaration(identifier, currentContext(), false);
+    auto wasDeclaredInCurrentContext = declaration && declaration.data()->range() != editorFindRange(idNode, 0);
+    if(identifier.toString() != "_" && wasDeclaredInCurrentContext)
+    {
+        newUse(idNode, declaration);
+    }
+}
+
 }

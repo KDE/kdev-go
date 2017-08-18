@@ -73,8 +73,53 @@ void UseBuilder::visitPrimaryExpr(PrimaryExprAst* node)
         return;
     for(int i=0; i<ids.size(); ++i)
         newUse(ids.at(i), decls.at(i));
+
+    if(node->literalValue)
+    {
+        auto id = identifierForNode(node->id);
+        createUseForField(node->literalValue->element, id, context);
+        if(node->literalValue->elementsSequence)
+        {
+            auto iter = node->literalValue->elementsSequence->front(), end = iter;
+            do
+            {
+                auto element = iter->element;
+                createUseForField(element, id, context);
+                iter = iter->next;
+            }
+            while (iter != end);
+        }
+    }
+
     //build uses in subexpressions
     ContextBuilder::visitPrimaryExpr(node);
+}
+
+void UseBuilder::createUseForField(const ElementAst *fieldElement, const QualifiedIdentifier &typeId, DUContext *context)
+{
+    if(fieldElement)
+    {
+        if(auto keyOrValue = fieldElement->keyOrValue)
+        {
+            if(auto indexOrValue = keyOrValue->indexOrValue)
+            {
+                if(auto unaryExpression = indexOrValue->unaryExpression)
+                {
+                    if(auto primaryExpr = unaryExpression->primaryExpr)
+                    {
+                        if(auto idNode = primaryExpr->id)
+                        {
+                            auto identifier = typeId + identifierForNode(idNode);
+                            if(auto declaration = getDeclaration(identifier, context))
+                            {
+                                newUse(idNode, declaration);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void UseBuilder::visitBlock(BlockAst* node)
@@ -137,6 +182,11 @@ void UseBuilder::createUseInDeclaration(IdentifierAst *idNode)
     {
         newUse(idNode, declaration);
     }
+}
+
+void UseBuilder::visitLiteralValue(go::LiteralValueAst *node)
+{
+    ContextBuilder::visitLiteralValue(node);
 }
 
 }

@@ -706,6 +706,34 @@ void TestDuchain::test_usesAreAddedInCorrectContext()
     QCOMPARE(context->uses()->usedDeclaration(context->topContext()), context->parentContext()->localDeclarations().at(1));
 }
 
+void TestDuchain::test_usesAreCreatedInPlaceOfStructFields()
+{
+    QString code("package main\n"
+                 "type Test struct { Name string }\n"
+                 "func main() {\n"
+                 "    var t = Test { Name: \"Works!\" }\n"
+                 "}");
+    ParseSession session(code.toUtf8(), 0);
+    session.setCurrentDocument(IndexedString("file:///temp/1"));
+    QVERIFY(session.startParsing());
+    DeclarationBuilder builder(&session, false);
+    ReferencedTopDUContext topContext =  builder.build(session.currentDocument(), session.ast());
+    QVERIFY(topContext.data());
+    go::UseBuilder builder2(&session);
+    builder2.buildUses(session.ast());
+    auto packageContext = getPackageContext(topContext);
+    auto context = getMainContext(packageContext);
+    DUChainReadLocker lock;
+
+    QCOMPARE(context->usesCount(), 2);
+
+    auto fieldDeclaration = go::getDeclaration(QualifiedIdentifier("Test::Name"), packageContext);
+    auto firstUsedDeclaration = context->uses()->usedDeclaration(topContext);
+    auto secondUsedDeclaration = (context->uses()+1)->usedDeclaration(topContext);
+
+    QVERIFY(firstUsedDeclaration == fieldDeclaration.data() || secondUsedDeclaration == fieldDeclaration.data());
+}
+
 void TestDuchain::test_functionContextIsCreatedWhenDeclaringAsMemberOfStruct_data()
 {
     QTest::addColumn<QString>("declaration");

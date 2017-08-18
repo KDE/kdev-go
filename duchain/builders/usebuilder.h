@@ -45,9 +45,11 @@ public:
     void visitBlock(go::BlockAst* node) override;
     void visitMethodDeclaration(go::MethodDeclarationAst* node) override;
     void visitShortVarDecl(go::ShortVarDeclAst* node) override;
+    void visitLiteralValue(go::LiteralValueAst* node) override;
 
 private:
     void createUseInDeclaration(IdentifierAst *idNode);
+    void createUseForField(const ElementAst *fieldElement, const KDevelop::QualifiedIdentifier &typeId, KDevelop::DUContext *context);
 
     QStack<KDevelop::AbstractType::Ptr> m_types;
 };

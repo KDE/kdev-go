@@ -371,6 +371,21 @@ void DeclarationBuilder::visitTypeSpec(go::TypeSpecAst* node)
                     }
                 }
             }
+            auto varId = sequence->at(i)->element->varid;
+            if(varId && !sequence->at(i)->element->type)
+            {
+                buildTypeName(varId);
+
+                StructureType::Ptr baseClassType = lastType().cast<StructureType>();
+                if(baseClassType)
+                {
+                    auto baseClassDeclaration = baseClassType->declaration(topContext());
+                    if(baseClassDeclaration && baseClassDeclaration->internalContext())
+                    {
+                        decl->internalContext()->addImportedParentContext(baseClassType->declaration(topContext())->internalContext());
+                    }
+                }
+            }
         }
     }
     closeDeclaration();

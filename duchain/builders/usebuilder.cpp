@@ -74,9 +74,9 @@ void UseBuilder::visitPrimaryExpr(PrimaryExprAst* node)
     for(int i=0; i<ids.size(); ++i)
         newUse(ids.at(i), decls.at(i));
 
+    auto id = identifierForNode(node->id);
     if(node->literalValue)
     {
-        auto id = identifierForNode(node->id);
         createUseForField(node->literalValue->element, id, context);
         if(node->literalValue->elementsSequence)
         {
@@ -88,6 +88,33 @@ void UseBuilder::visitPrimaryExpr(PrimaryExprAst* node)
                 iter = iter->next;
             }
             while (iter != end);
+        }
+    }
+    else
+    {
+        auto primaryExprResolveNode = node->primaryExprResolve;
+        while(primaryExprResolveNode)
+        {
+            if(primaryExprResolveNode->selector)
+            {
+                id = id + identifierForNode(primaryExprResolveNode->selector);
+            }
+            if(primaryExprResolveNode->literalValue)
+            {
+                createUseForField(primaryExprResolveNode->literalValue->element, id, currentContext());
+                if(primaryExprResolveNode->literalValue->elementsSequence)
+                {
+                    auto iter = primaryExprResolveNode->literalValue->elementsSequence->front(), end = iter;
+                    do
+                    {
+                        auto element = iter->element;
+                        createUseForField(element, id, currentContext());
+                        iter = iter->next;
+                    }
+                    while (iter != end);
+                }
+            }
+            primaryExprResolveNode = primaryExprResolveNode->primaryExprResolve;
         }
     }
 

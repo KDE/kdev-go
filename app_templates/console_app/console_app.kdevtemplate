@@ -25,6 +25,7 @@ Comment[nl]=Genereer een bestandsstructuur om een Go console-toepassing te start
 Comment[pt]=Gerar a estrutura de ficheiros para iniciar uma aplicação de consola em Go
 Comment[sk]=Generovať súborovú štruktúru na spustenie konzolovej aplikácie Go
 Comment[sv]=Skapa filstruktur för att starta ett Go terminalprogram
+Comment[tr]=Bir Go uygulaması başlatmak için dosya yapısını oluştur
 Comment[uk]=Створити структуру файлів для запуску консольної програми мовою Go
 Comment[x-test]=xxGenerate filestructure to start a Go console applicationxx
 Comment[zh_CN]=生成文件结构以启动 Go 控制台应用

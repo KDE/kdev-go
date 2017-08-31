@@ -16,13 +16,20 @@ include(ECMAddTests)
 include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(GenerateExportHeader)
+include(FeatureSummary)
 
 set(QT_MIN_VERSION "5.5.0")
 find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED Core Widgets Test)
 set(KF5_DEP_VERSION "5.15.0")
 find_package(KF5 ${KF5_DEP_VERSION} REQUIRED COMPONENTS ItemModels ThreadWeaver TextEditor I18n)
-find_package(KDevPlatform ${KDEVPLATFORM_VERSION} CONFIG REQUIRED)
-find_package(KDevelop-PG-Qt CONFIG REQUIRED)
+find_package(KDevPlatform ${KDEVPLATFORM_VERSION} CONFIG)
+set_package_properties(KDevPlatform PROPERTIES
+    TYPE REQUIRED
+)
+find_package(KDevelop-PG-Qt CONFIG)
+set_package_properties(KDevelop-PG-Qt PROPERTIES
+    TYPE REQUIRED
+)
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -56,3 +63,5 @@ target_link_libraries(kdevgoplugin
 )
 
 install(FILES builtins.go DESTINATION ${DATA_INSTALL_DIR}/kdev-go)
+
+feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)

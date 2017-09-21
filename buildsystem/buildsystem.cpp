@@ -58,6 +58,11 @@ QHash<QString,QString> GoBuildSystem::defines(KDevelop::ProjectBaseItem*) const
     return {};
 }
 
+QString GoBuildSystem::extraArguments(KDevelop::ProjectBaseItem*) const
+{
+    return {};
+}
+
 ProjectTargetItem* GoBuildSystem::createTarget(const QString& target, KDevelop::ProjectFolderItem *parent)
 {
     Q_UNUSED(target)

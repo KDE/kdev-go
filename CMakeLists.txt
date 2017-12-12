@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 project(kdevgoplugin)
 
-set(VERSION_MAJOR 1)
-set(VERSION_MINOR 90)
-set(VERSION_PATCH 90)
-
 find_package (ECM "5.15.0" REQUIRED NO_MODULE)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})

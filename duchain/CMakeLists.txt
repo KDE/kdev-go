@@ -1,10 +1,4 @@
 
-include_directories(
-    #${CMAKE_CURRENT_BINARY_DIR}
-    #${CMAKE_CURRENT_SOURCE_DIR}
-    ${KDEVPGQT_INCLUDE_DIR}
-    )
-    
 set(duchain_SRC
      builders/declarationbuilder.cpp
      builders/contextbuilder.cpp

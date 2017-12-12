@@ -30,6 +30,7 @@ set_package_properties(KDevelop-PG-Qt PROPERTIES
     TYPE REQUIRED
 )
 
+# needed for parser/ module prefix with includes for some minimal namespacing
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}

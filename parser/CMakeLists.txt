@@ -1,10 +1,6 @@
 kdevpgqt_generate(go_parser_SRC go NAMESPACE go DEBUG_VISITOR TOKEN_TEXT GENERATE_LEXER
       "${CMAKE_CURRENT_SOURCE_DIR}/go.g")
 
-include_directories(
-    ${CMAKE_CURRENT_BINARY_DIR}
-)
-
 set(go_parser_lib_SRC 
     parsesession.cpp
 )

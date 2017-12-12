@@ -1,10 +1,3 @@
-include_directories(
-    ${CMAKE_CURRENT_BINARY_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/duchain
-    ${KDEVPGQT_INCLUDE_DIR}
-)
-
 set(completion_SRCS
     model.cpp
     worker.cpp

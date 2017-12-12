@@ -36,8 +36,6 @@ include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-enable_testing()
-
 add_subdirectory(app_templates)
 add_subdirectory(buildsystem)
 add_subdirectory(parser)

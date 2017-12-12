@@ -1,5 +1,3 @@
-add_definitions(-DTRANSLATION_DOMAIN=\"gometalinter\")
-
 set(gometalinter_SRCS plugin.cpp job.cpp problemmodel.cpp)
 
 qt5_add_resources(gometalinter_SRCS

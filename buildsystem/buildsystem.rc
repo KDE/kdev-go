@@ -1,5 +1,5 @@
 <!DOCTYPE kpartgui>
-<gui name="buildsystem" library="libkdevgobuildsystem" version="5" translationDomain="buildsystem">
+<gui name="buildsystem" library="libkdevgobuildsystem" version="5" translationDomain="kdevgo">
   <MenuBar>
   <Menu name="run">
    <text context="@title:menu">Run</text>

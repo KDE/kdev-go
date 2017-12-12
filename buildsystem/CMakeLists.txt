@@ -1,5 +1,3 @@
-add_definitions(-DTRANSLATION_DOMAIN=\"buildsystem\")
-
 set(buildsystem_PART_SRCS
     buildsystem.cpp
     builder.cpp

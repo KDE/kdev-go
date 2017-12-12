@@ -30,6 +30,8 @@ set_package_properties(KDevelop-PG-Qt PROPERTIES
     TYPE REQUIRED
 )
 
+add_definitions(-DTRANSLATION_DOMAIN=\"kdevgo\")
+
 # needed for parser/ module prefix with includes for some minimal namespacing
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}

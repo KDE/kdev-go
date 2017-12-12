@@ -60,6 +60,6 @@ target_link_libraries(kdevgoplugin
     kdevgocompletion
 )
 
-install(FILES builtins.go DESTINATION ${DATA_INSTALL_DIR}/kdev-go)
+install(FILES builtins.go DESTINATION ${KDE_INSTALL_DATADIR}/kdev-go)
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)

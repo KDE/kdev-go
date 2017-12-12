@@ -1,6 +1,4 @@
 {
-    "GenericName": "Gometalinter Support",
-    "GenericName[x-test]": "xxGometalinter Supportxx",
     "KPlugin": {
         "Authors": [
             {

@@ -4,8 +4,6 @@ project(kdevgoplugin)
 set(VERSION_MAJOR 1)
 set(VERSION_MINOR 90)
 set(VERSION_PATCH 90)
-# KDevplatform dependency version
-set(KDEVPLATFORM_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 
 find_package(ECM 0.0.9 REQUIRED NO_MODULE)
 
@@ -22,7 +20,8 @@ set(QT_MIN_VERSION "5.5.0")
 find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED Core Widgets Test)
 set(KF5_DEP_VERSION "5.15.0")
 find_package(KF5 ${KF5_DEP_VERSION} REQUIRED COMPONENTS ItemModels ThreadWeaver TextEditor I18n)
-find_package(KDevPlatform ${KDEVPLATFORM_VERSION} CONFIG)
+set(KDEVPLATFORM_DEP_VERSION "5.2.40")
+find_package(KDevPlatform ${KDEVPLATFORM_DEP_VERSION} CONFIG)
 set_package_properties(KDevPlatform PROPERTIES
     TYPE REQUIRED
 )

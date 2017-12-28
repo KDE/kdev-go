@@ -1,7 +1,7 @@
 {
     "KPlugin": {
         "Category": "Project Management",
-        "Description": "Imports go projects",
+        "Description": "Imports Go projects",
         "Description[ca@valencia]": "Importa projectes del Go",
         "Description[ca]": "Importa projectes del Go",
         "Description[cs]": "Importuje projekty go",

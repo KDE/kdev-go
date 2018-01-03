@@ -26,6 +26,7 @@ Comment[ca@valencia]=Genera l'estructura de fitxers per iniciar una aplicació d
 Comment[en_GB]=Generate the file structure to start a Go console application
 Comment[nl]=Genereer de bestandsstructuur om een Go console-toepassing te starten
 Comment[pt]=Gerar a estrutura de ficheiros para iniciar uma aplicação de consola em Go
+Comment[sv]=Skapa filstrukturen för att starta ett Go terminalprogram
 Comment[uk]=Створити структуру файлів для запуску консольної програми мовою Go
 Comment[x-test]=xxGenerate the file structure to start a Go console applicationxx
 ShowFilesAfterGeneration=main.go

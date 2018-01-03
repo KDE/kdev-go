@@ -6,6 +6,7 @@
         "Description[ca]": "Importa projectes del Go",
         "Description[nl]": "Importeert Go-projecten",
         "Description[pt]": "Importa projectos de Go",
+        "Description[sv]": "Importerar Go-projekt",
         "Description[uk]": "Імпортування проектів Go",
         "Description[x-test]": "xxImports Go projectsxx",
         "Icon": "kdevelop",

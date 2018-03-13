@@ -23,6 +23,7 @@ Category=Go
 Comment=Generate the file structure to start a Go console application
 Comment[ca]=Genera l'estructura de fitxers per iniciar una aplicació de consola en Go
 Comment[ca@valencia]=Genera l'estructura de fitxers per iniciar una aplicació de consola en Go
+Comment[de]=Erstellt die Dateistruktur für eine Go-Konsole-Anwendung
 Comment[en_GB]=Generate the file structure to start a Go console application
 Comment[es]=Generar una estructura de archivos para iniciar una aplicación de consola Go
 Comment[gl]=Xera a estrutura de ficheiros para comezar un aplicativo de consola en Go.

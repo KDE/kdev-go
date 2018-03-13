@@ -10,7 +10,7 @@
         ],
         "Category": "Analyzers",
         "Description": "This plugin integrates gometalinter (static analysis tool) to KDevelop",
-        "Description[ca@valencia]": "Este connector integra «gometalinter» (eina d'anàlisi estàtica) al KDevelop",
+        "Description[ca@valencia]": "Aquest connector integra «gometalinter» (eina d'anàlisi estàtica) al KDevelop",
         "Description[ca]": "Aquest connector integra «gometalinter» (eina d'anàlisi estàtica) al KDevelop",
         "Description[cs]": "Tento modul integruje gometalinter (statický analytický nástroj) do KDevelop",
         "Description[de]": "Dieses Modul integriert gometalinter (Werkzeug zur statischen Analyse) in KDevelop",

@@ -73,7 +73,7 @@ public:
 
     go::GoFunctionDefinition* buildMethod(go::SignatureAst* node, go::BlockAst* block = nullptr, go::IdentifierAst* name = nullptr,
                                     go::GoFunctionDeclaration* pDeclaration = nullptr, const QByteArray &array = {}, const QualifiedIdentifier &identifier = {});
-    
+
     /*struct GoImport{
         GoImport(bool anon, KDevelop::TopDUContext* ctx) : anonymous(anon), context(ctx) {}
         bool anonymous;
@@ -115,9 +115,9 @@ private:
     void importThisPackage();
     void importBuiltins();
     bool m_export;
-    
+
     //QHash<QString, TopDUContext*> m_anonymous_imports;
-    
+
     bool m_preBuilding;
     QList<AbstractType::Ptr> m_constAutoTypes;
     QualifiedIdentifier m_thisPackage;

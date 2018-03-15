@@ -26,7 +26,8 @@ using namespace KDevelop;
 
 namespace go 
 {
-    
+
+
 UseBuilder::UseBuilder(ParseSession* session)
 {
     setParseSession(session);

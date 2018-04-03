@@ -48,7 +48,5 @@
     "X-KDevelop-ProjectFilesFilter": [
         "*.go"
     ],
-    "X-KDevelop-ProjectFilesFilterDescription": [
-        "Go projects"
-    ]
+    "X-KDevelop-ProjectFilesFilterDescription": "Go projects"
 }

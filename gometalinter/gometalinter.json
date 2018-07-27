@@ -15,6 +15,7 @@
         "Description[cs]": "Tento modul integruje gometalinter (statický analytický nástroj) do KDevelop",
         "Description[de]": "Dieses Modul integriert gometalinter (Werkzeug zur statischen Analyse) in KDevelop",
         "Description[es]": "Este complemento integra gometalinter (herramienta de análisis sintáctico) en KDevelop",
+        "Description[fr]": "Ce module intègre gometalinter (outil d'analyse statique) dans KDevelop.",
         "Description[gl]": "Este complemento integra gometalinter (ferramenta de análise sintáctica) en KDevelop",
         "Description[it]": "Questa estensione integra gometalinter (strumento per l'analisi statica) in KDevelop",
         "Description[nl]": "Deze plugin integreert gometalinter (statisch analyse hulpmiddel) in KDevelop",
@@ -24,6 +25,7 @@
         "Description[tr]": "Bu eklenti gometalinteri (değişmeyen çözümleme aracı) KDevelop'a tümleştirir.",
         "Description[uk]": "За допомогою цього додатка можна інтегрувати gometalinter (засіб статичного аналізу) до KDevelop",
         "Description[x-test]": "xxThis plugin integrates gometalinter (static analysis tool) to KDevelopxx",
+        "Description[zh_TW]": "此外掛整合了 gometalinter (靜態分析工具) 到 KDevelop",
         "Id": "gometalinter",
         "License": "GPL",
         "Name": "Gometalinter Support",
@@ -32,6 +34,7 @@
         "Name[cs]": "Podpora Gometalinter",
         "Name[de]": "Unterstützung für Gometalinter",
         "Name[es]": "Implementación de Gometalinter",
+        "Name[fr]": "Prise en charge de Gometalinter",
         "Name[gl]": "Compatibilidade con Gometalinter",
         "Name[it]": "Supporto per gometalinter",
         "Name[nl]": "Ondersteuning voor Gometalinter",
@@ -41,6 +44,7 @@
         "Name[tr]": "Gometalinter Desteği",
         "Name[uk]": "Підтримка Gometalinter",
         "Name[x-test]": "xxGometalinter Supportxx",
+        "Name[zh_TW]": "Gometalinter 支援",
         "ServiceTypes": [
             "KDevelop/Plugin"
         ]

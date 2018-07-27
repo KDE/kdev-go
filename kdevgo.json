@@ -27,6 +27,7 @@
         "Name[uk]": "Підтримка Go",
         "Name[x-test]": "xxGo Supportxx",
         "Name[zh_CN]": "Go 支持",
+        "Name[zh_TW]": "Go 支援",
         "ServiceTypes": [
             "KDevelop/Plugin"
         ]

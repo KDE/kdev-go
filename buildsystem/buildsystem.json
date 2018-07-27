@@ -7,6 +7,7 @@
         "Description[cs]": "Importuje projekty Go",
         "Description[de]": "Import von Go-Projekten",
         "Description[es]": "Importa proyectos de Go",
+        "Description[fr]": "Importe des projets Go",
         "Description[gl]": "Importa proxectos de Go.",
         "Description[it]": "Importa progetti Go",
         "Description[nl]": "Importeert Go-projecten",
@@ -14,6 +15,7 @@
         "Description[sv]": "Importerar Go-projekt",
         "Description[uk]": "Імпортування проектів Go",
         "Description[x-test]": "xxImports Go projectsxx",
+        "Description[zh_TW]": "匯入 Go 專案",
         "Icon": "kdevelop",
         "Id": "KDevGoBuildSystem",
         "Name": "Go Project Manager",
@@ -22,6 +24,7 @@
         "Name[cs]": "Správce projektu Go",
         "Name[de]": "Go-Projektverwaltung",
         "Name[es]": "Gestor de proyectos de Go",
+        "Name[fr]": "Gestionnaire de projets Go",
         "Name[gl]": "Xestor de proxectos de Go",
         "Name[it]": "Gestore progetto Go",
         "Name[nl]": "Projectmanager van Go",
@@ -32,6 +35,7 @@
         "Name[tr]": "Go Proje Yöneticisi",
         "Name[uk]": "Керування проектами go",
         "Name[x-test]": "xxGo Project Managerxx",
+        "Name[zh_TW]": "Go 專案管理員",
         "ServiceTypes": [
             "KDevelop/Plugin"
         ]

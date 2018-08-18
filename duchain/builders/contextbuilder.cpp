@@ -38,7 +38,7 @@ ContextBuilder::~ContextBuilder()
 
 }
 
-/*KDevelop::ReferencedTopDUContext ContextBuilder::build(const KDevelop::IndexedString& url, go::AstNode* node, KDevelop::ReferencedTopDUContext updateContext)
+/*KDevelop::ReferencedTopDUContext ContextBuilder::build(const KDevelop::IndexedString& url, go::AstNode* node, const KDevelop::ReferencedTopDUContext& updateContext)
 {
     return KDevelop::AbstractContextBuilder< go::AstNode, go::ExpressionAst >::build(url, node, updateContext);
 }*/

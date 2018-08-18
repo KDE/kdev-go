@@ -53,7 +53,7 @@ public:
     ~ContextBuilder() override;
 
     /*virtual KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString& url, go::AstNode* node,
-            KDevelop::ReferencedTopDUContext updateContext
+            const KDevelop::ReferencedTopDUContext& updateContext
             = KDevelop::ReferencedTopDUContext());*/
     
     void startVisiting(go::AstNode* node) override;

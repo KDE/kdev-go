@@ -20,7 +20,7 @@ find_package(KF5 ${KF5_DEP_VERSION} REQUIRED COMPONENTS
     TextEditor
     I18n
 )
-set(KDEVPLATFORM_DEP_VERSION "5.2.40")
+set(KDEVPLATFORM_DEP_VERSION "5.2.80")
 find_package(KDevPlatform ${KDEVPLATFORM_DEP_VERSION} CONFIG)
 set_package_properties(KDevPlatform PROPERTIES
     TYPE REQUIRED

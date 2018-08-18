@@ -36,9 +36,10 @@ DeclarationBuilder::DeclarationBuilder(ParseSession* session, bool forExport) : 
     setParseSession(session);
 }
 
-KDevelop::ReferencedTopDUContext DeclarationBuilder::build(const KDevelop::IndexedString& url, go::AstNode* node, KDevelop::ReferencedTopDUContext updateContext)
+KDevelop::ReferencedTopDUContext DeclarationBuilder::build(const KDevelop::IndexedString& url, go::AstNode* node, const KDevelop::ReferencedTopDUContext& updateContext_)
 {
   qCDebug(DUCHAIN) << "DeclarationBuilder start";
+  ReferencedTopDUContext updateContext(updateContext_);
   if(!m_preBuilding)
   {
       qCDebug(DUCHAIN) << "Running prebuilder";

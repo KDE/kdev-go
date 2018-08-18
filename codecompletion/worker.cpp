@@ -28,7 +28,7 @@ CodeCompletionWorker::CodeCompletionWorker(KDevelop::CodeCompletionModel* model)
 
 }
 
-KDevelop::CodeCompletionContext* CodeCompletionWorker::createCompletionContext(KDevelop::DUContextPointer context, 
+KDevelop::CodeCompletionContext* CodeCompletionWorker::createCompletionContext(const KDevelop::DUContextPointer& context,
                                                                                const QString& contextText, 
                                                                                const QString& followingText, 
                                                                                const KDevelop::CursorInRevision& position) const

@@ -31,7 +31,7 @@ public:
 
 protected:
     KDevelop::CodeCompletionContext* createCompletionContext(
-        KDevelop::DUContextPointer context, const QString& contextText,
+        const KDevelop::DUContextPointer& context, const QString& contextText,
         const QString& followingText, const KDevelop::CursorInRevision& position) const override;
 
 };

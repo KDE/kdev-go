@@ -39,7 +39,7 @@ public:
     
     KDevelop::ReferencedTopDUContext build(const KDevelop::IndexedString& url,
                                                    go::AstNode* node,
-                                                   KDevelop::ReferencedTopDUContext updateContext = KDevelop::ReferencedTopDUContext()) override;
+                                                   const KDevelop::ReferencedTopDUContext& updateContext = KDevelop::ReferencedTopDUContext()) override;
     void startVisiting(go::AstNode* node) override;
 
     void visitVarSpec(go::VarSpecAst* node) override;

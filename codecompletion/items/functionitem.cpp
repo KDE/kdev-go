@@ -63,12 +63,12 @@ FunctionCompletionItem::FunctionCompletionItem(DeclarationPointer declaration, i
     if(functionDefinition)
     {
         DUChainReadLocker lock;
-        argsContext = DUChainUtils::getArgumentContext(functionDefinition.data());
+        argsContext = DUChainUtils::argumentContext(functionDefinition.data());
     }
     else if(functionDeclaration)
     {
         DUChainReadLocker lock;
-        argsContext = DUChainUtils::getArgumentContext(functionDeclaration.data());
+        argsContext = DUChainUtils::argumentContext(functionDeclaration.data());
     }
     m_arguments = "(";
     if(argsContext)

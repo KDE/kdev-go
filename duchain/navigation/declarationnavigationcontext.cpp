@@ -351,14 +351,14 @@ void DeclarationNavigationContext::htmlFunction()
         QVector<Declaration*> decls;
         if(function)
         {
-            if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(function))
+            if (KDevelop::DUContext* argumentContext = DUChainUtils::argumentContext(function))
             {
                 decls = argumentContext->localDeclarations(topContext().data());
             }
         }
         if(decls.isEmpty() && functionDefinition)
         {
-            if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(functionDefinition))
+            if (KDevelop::DUContext* argumentContext = DUChainUtils::argumentContext(functionDefinition))
             {
                 decls = argumentContext->localDeclarations(topContext().data());
             }
@@ -404,7 +404,7 @@ void DeclarationNavigationContext::htmlFunction()
         int currentArgNum = 0;
         bool first=true;
         QVector<Declaration*> decls;
-        /*if (KDevelop::DUContext* argumentContext = DUChainUtils::getArgumentContext(declaration().data())) {
+        /*if (KDevelop::DUContext* argumentContext = DUChainUtils::argumentContext(declaration().data())) {
             decls = argumentContext->localDeclarations(topContext().data());
         }*/
         if(function)

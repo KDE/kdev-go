@@ -3,9 +3,25 @@
         "Authors": [
             {
                 "Name": "Mikhail Ivchenko",
+                "Name[ca@valencia]": "Mikhail Ivchenko",
+                "Name[ca]": "Mikhail Ivchenko",
+                "Name[cs]": "Mikhail Ivchenko",
+                "Name[de]": "Mikhail Ivchenko",
+                "Name[en_GB]": "Mikhail Ivchenko",
+                "Name[es]": "Mikhail Ivchenko",
+                "Name[fi]": "Mikhail Ivchenko",
+                "Name[fr]": "Mikhail Ivchenko",
+                "Name[gl]": "Mikhail Ivchenko",
+                "Name[it]": "Mikhail Ivchenko",
+                "Name[nl]": "Mikhail Ivchenko",
+                "Name[pl]": "Mikhail Ivchenko",
+                "Name[pt]": "Mikhail Ivchenko",
                 "Name[ru]": "Михаил Ивченко",
+                "Name[sv]": "Mikhail Ivchenko",
+                "Name[tr]": "Mikhail Ivchenko",
                 "Name[uk]": "Михайло Івченко",
-                "Name[x-test]": "xxMikhail Ivchenkoxx"
+                "Name[x-test]": "xxMikhail Ivchenkoxx",
+                "Name[zh_TW]": "Mikhail Ivchenko"
             }
         ],
         "Category": "Analyzers",
@@ -14,6 +30,7 @@
         "Description[ca]": "Aquest connector integra «gometalinter» (eina d'anàlisi estàtica) al KDevelop",
         "Description[cs]": "Tento modul integruje gometalinter (statický analytický nástroj) do KDevelop",
         "Description[de]": "Dieses Modul integriert gometalinter (Werkzeug zur statischen Analyse) in KDevelop",
+        "Description[en_GB]": "This plugin integrates gometalinter (static analysis tool) to KDevelop",
         "Description[es]": "Este complemento integra gometalinter (herramienta de análisis sintáctico) en KDevelop",
         "Description[fi]": "Tämä liitännäinen yhdistää gometalinterin (staattisen analyysityökalun) KDevelopiin",
         "Description[fr]": "Ce module intègre gometalinter (outil d'analyse statique) dans KDevelop.",
@@ -34,6 +51,7 @@
         "Name[ca]": "Implementació del «gometalinter»",
         "Name[cs]": "Podpora Gometalinter",
         "Name[de]": "Unterstützung für Gometalinter",
+        "Name[en_GB]": "Gometalinter Support",
         "Name[es]": "Implementación de Gometalinter",
         "Name[fi]": "Gometalinter-tuki",
         "Name[fr]": "Prise en charge de Gometalinter",

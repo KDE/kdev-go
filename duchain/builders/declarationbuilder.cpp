@@ -678,6 +678,7 @@ go::GoFunctionDefinition* DeclarationBuilder::declareMethod(go::IdentifierAst *i
                                                       go::GoFunctionDeclaration *declaration,
                                                       const QualifiedIdentifier &identifier)
 {
+    (void)declaration;
     setComment(comment);
     DUChainWriteLocker lock;
     auto dec = openDefinition<go::GoFunctionDefinition>(identifier, editorFindRange(id, 0));

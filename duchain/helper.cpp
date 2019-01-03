@@ -195,6 +195,7 @@ DeclarationPointer getTypeDeclaration(QualifiedIdentifier id, DUContext* context
 
 QList< Declaration* > getDeclarations(QualifiedIdentifier id, DUContext* context, bool searchInParent)
 {
+    (void)searchInParent;
     DUChainReadLocker lock;
     if(context)
     {

@@ -83,7 +83,7 @@ bool ParseSession::startParsing()
 
 bool ParseSession::lex()
 {
-    KDevPG::Token token;
+//     KDevPG::Token token;
     int kind = go::Parser::Token_EOF;
     while((kind = m_lexer->read().kind) != go::Parser::Token_EOF)
     {

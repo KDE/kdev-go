@@ -96,10 +96,11 @@ public:
 
     void setCanonicalImports(QHash<QString, QString>* imports);
 
+
     /**
      * Returns doc comment preceding given token.
-     * GoDoc comments are multilined /*-style comments
-     * or several consecutive single-lined //-style comments
+     * GoDoc comments are multilined dash-star-style comments (/\*)
+     * or several consecutive single-lined dash-dash-style comments (//)
      * with no empty line between them.
      * Comment must start on a new line and end a line before given declaration.
      **/

@@ -285,6 +285,7 @@ void TypeBuilder::visitParameter(go::ParameterAst* node)
 go::GoFunctionType::Ptr TypeBuilder::parseSignature(go::SignatureAst *node, bool declareParameters, DUContext **parametersContext, DUContext **returnArgsContext,
                                                     const QualifiedIdentifier &identifier, const QByteArray &comment)
 {
+    (void)comment;
     go::GoFunctionType::Ptr type(new go::GoFunctionType());
     openType<go::GoFunctionType>(type);
 

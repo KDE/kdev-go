@@ -47,6 +47,8 @@ GoParseJob::GoParseJob(const KDevelop::IndexedString& url, KDevelop::ILanguageSu
 
 void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 {
+   (void)self;
+   (void)thread;
    qCDebug(Go) << "GoParseJob succesfully created for document " << document(); 
 
    UrlParseLock urlLock(document());

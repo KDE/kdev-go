@@ -185,7 +185,7 @@ void ContextBuilder::visitPrimaryExpr(go::PrimaryExprAst *node)
                     }
                     if(declaration && declaration->kind() == Declaration::Type)
                     {
-                        const RangeInRevision &range = editorFindRange(primaryExprResolveNode->literalValue, 0);
+//                         const RangeInRevision &range = editorFindRange(primaryExprResolveNode->literalValue, 0); // Unused
                         openContext(node->id, editorFindRange(primaryExprResolveNode->literalValue, 0), DUContext::Other, id);
                         visitPrimaryExprResolve(node->primaryExprResolve);
                         closeContext();

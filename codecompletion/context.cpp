@@ -66,6 +66,8 @@ bool CodeCompletionContext::isImportAndMemberCompletion()
 
 QList< CompletionTreeItemPointer > CodeCompletionContext::completionItems(bool& abort, bool fullCompletion)
 {
+    (void)abort;
+    (void)fullCompletion;
     qCDebug(COMPLETION) << m_text;
     QList<CompletionTreeItemPointer> items;
 
@@ -506,7 +508,7 @@ bool CodeCompletionContext::isInsideCommentOrString()
         }
         else if(inBackQuotes)
         {
-            if(c != QLatin1Char('\\') && next == QLatin1Char('\`'))
+            if(c != QLatin1Char('\\') && next == QLatin1Char('`'))
             {
                 inBackQuotes = false;
                 continue;
@@ -522,7 +524,7 @@ bool CodeCompletionContext::isInsideCommentOrString()
                 inQuotes = true;
             if(next == QLatin1Char('\"'))
                 inDoubleQuotes = true;
-            if(next == QLatin1Char('\`'))
+            if(next == QLatin1Char('`'))
                 inBackQuotes = true;
         }
     }

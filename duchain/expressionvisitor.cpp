@@ -539,6 +539,7 @@ void ExpressionVisitor::handleLiteralsAndConversions(PrimaryExprAst* node)
 
 void ExpressionVisitor::visitBlock(BlockAst* node)
 {
+  (void)node;
 }
 
 

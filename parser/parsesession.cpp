@@ -51,12 +51,12 @@ ParseSession::ParseSession(const QByteArray& contents, int priority, bool append
     // See more in Go Language Specification http://golang.org/ref/spec#Semicolons
     if(appendWithNewline)
         m_contents.append("\n");
-    KDevPG::QByteArrayIterator iter(m_contents); 
+    KDevPG::QByteArrayIterator iter(m_contents);
     m_lexer = new go::Lexer(iter);
     m_parser->setMemoryPool(m_pool);
     m_parser->setTokenStream(m_lexer);
     forExport=false;
-    
+
 }
 
 ParseSession::~ParseSession()
@@ -77,13 +77,12 @@ bool ParseSession::startParsing()
 {
     if(!lex())
         return false;
-    
+
     return m_parser->parseStart(&m_ast);
 }
 
 bool ParseSession::lex()
 {
-//     KDevPG::Token token;
     int kind = go::Parser::Token_EOF;
     while((kind = m_lexer->read().kind) != go::Parser::Token_EOF)
     {
@@ -104,7 +103,7 @@ bool ParseSession::parseExpression(go::ExpressionAst** node)
 {
     if(!lex())
         return false;
-    
+
     return m_parser->parseExpression(node);
 }
 
@@ -215,7 +214,7 @@ QList<ReferencedTopDUContext> ParseSession::contextForImport(QString package)
                 shouldReparse = true;
         }
     }
-    if(shouldReparse) 
+    if(shouldReparse)
     //reparse this file after its imports are done
         scheduleForParsing(m_document, priority+1, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));
 
@@ -236,13 +235,13 @@ bool ParseSession::scheduleForParsing(const IndexedString& url, int priority, To
     if(forExport && priority >= BackgroundParser::InitialParsePriority && priority < BackgroundParser::WorstPriority - 2*levels)
     //if(forExport)
         return false;
-        
-    if (bgparser->isQueued(url)) 
+
+    if (bgparser->isQueued(url))
     {
-        if (bgparser->priorityForDocument(url) > priority ) 
+        if (bgparser->priorityForDocument(url) > priority )
             // Remove the document and re-queue it with a greater priority
             bgparser->removeDocument(url);
-        else 
+        else
             return true;
     }
     bgparser->addDocument(url, features, priority, 0, ParseJob::FullSequentialProcessing);
@@ -295,9 +294,9 @@ QList< ReferencedTopDUContext > ParseSession::contextForThisPackage(IndexedStrin
                 continue;
             if(forExport && filename.endsWith("_test.go"))
                 continue;
-        
+
             IndexedString url(filename);
-            DUChainReadLocker lock; 
+            DUChainReadLocker lock;
             ReferencedTopDUContext context = DUChain::self()->chainForDocument(url);
             lock.unlock();
             if(context)
@@ -307,7 +306,7 @@ QList< ReferencedTopDUContext > ParseSession::contextForThisPackage(IndexedStrin
                 if(scheduleForParsing(url, priority, (TopDUContext::Features)(TopDUContext::ForceUpdate | TopDUContext::AllDeclarationsAndContexts)))
                     shouldReparse=true;
             }
-             
+
         }
         if(shouldReparse)
             scheduleForParsing(m_document, priority+1, (TopDUContext::Features)(m_features | TopDUContext::ForceUpdate));

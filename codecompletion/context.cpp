@@ -44,10 +44,10 @@ using namespace KDevelop;
 
 namespace go
 {
-    
+
 CodeCompletionContext::CodeCompletionContext(const KDevelop::DUContextPointer& context,
-                                             const QString& text, 
-                                             const KDevelop::CursorInRevision& position, int depth): 
+                                             const QString& text,
+                                             const KDevelop::CursorInRevision& position, int depth):
                                              KDevelop::CodeCompletionContext(context,
                                                                              extractLastExpression(text), position, depth), m_fullText(text)
 {
@@ -66,8 +66,8 @@ bool CodeCompletionContext::isImportAndMemberCompletion()
 
 QList< CompletionTreeItemPointer > CodeCompletionContext::completionItems(bool& abort, bool fullCompletion)
 {
-    (void)abort;
-    (void)fullCompletion;
+    Q_UNUSED(abort);
+    Q_UNUSED(fullCompletion);
     qCDebug(COMPLETION) << m_text;
     QList<CompletionTreeItemPointer> items;
 
@@ -346,14 +346,14 @@ QStack< CodeCompletionContext::ExpressionStackEntry > CodeCompletionContext::exp
     Lexer lexer(iter);
     bool atEnd=false;
     ExpressionStackEntry entry;
-    
+
     entry.startPosition = 0;
     entry.operatorStart = 0;
     entry.operatorEnd = 0;
     entry.commas = 0;
-    
+
     stack.push(entry);
-    
+
     qint64 line, lineEnd, column, columnEnd;
     while(!atEnd)
     {
@@ -384,7 +384,7 @@ QStack< CodeCompletionContext::ExpressionStackEntry > CodeCompletionContext::exp
             break;
         case Parser::Token_IDENT:
             //temporary hack to allow completion in variable declarations
-            //two identifiers in a row is not possible? 
+            //two identifiers in a row is not possible?
             if(lexer.size() > 1 && lexer.at(lexer.index()-2).kind == Parser::Token_IDENT)
             {
                 lexer.locationTable()->positionAt(lexer.at(lexer.index()-2).begin, &line, &column);
@@ -500,7 +500,7 @@ bool CodeCompletionContext::isInsideCommentOrString()
         }
         else if(inDoubleQuotes)
         {
-            if(c != QLatin1Char('\\') && next == QLatin1Char('\"'))
+            if(c != QLatin1Char('\\') && next == QLatin1Char('"'))
             {
                 inDoubleQuotes = false;
                 continue;
@@ -522,7 +522,7 @@ bool CodeCompletionContext::isInsideCommentOrString()
                 inComment = true;
             if(next == QLatin1Char('\''))
                 inQuotes = true;
-            if(next == QLatin1Char('\"'))
+            if(next == QLatin1Char('"'))
                 inDoubleQuotes = true;
             if(next == QLatin1Char('`'))
                 inBackQuotes = true;

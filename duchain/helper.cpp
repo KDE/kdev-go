@@ -160,7 +160,7 @@ DeclarationPointer getTypeOrVarDeclaration(QualifiedIdentifier id, DUContext* co
         for(Declaration* decl : declarations)
         {
             if((decl->kind() == Declaration::Import) || (decl->kind() == Declaration::Namespace) || (decl->kind() == Declaration::NamespaceAlias))
-                continue; 
+                continue;
             return DeclarationPointer(decl);
         }
         if(searchInParent && context->parentContext())
@@ -180,9 +180,9 @@ DeclarationPointer getTypeDeclaration(QualifiedIdentifier id, DUContext* context
         for(Declaration* decl : declarations)
         {
             //TODO change this to just decl->kind() != Declaration::Type
-            if((decl->kind() == Declaration::Import) || (decl->kind() == Declaration::Namespace) 
+            if((decl->kind() == Declaration::Import) || (decl->kind() == Declaration::Namespace)
                 || (decl->kind() == Declaration::NamespaceAlias) || (decl->kind() == Declaration::Instance))
-                continue; 
+                continue;
             return DeclarationPointer(decl);
         }
         if(searchInParent && context->parentContext())
@@ -195,7 +195,7 @@ DeclarationPointer getTypeDeclaration(QualifiedIdentifier id, DUContext* context
 
 QList< Declaration* > getDeclarations(QualifiedIdentifier id, DUContext* context, bool searchInParent)
 {
-    (void)searchInParent;
+    Q_UNUSED(searchInParent);
     DUChainReadLocker lock;
     if(context)
     {

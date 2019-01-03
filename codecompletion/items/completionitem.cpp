@@ -33,8 +33,8 @@ CompletionItem::CompletionItem(KDevelop::DeclarationPointer decl, QExplicitlySha
     NormalDeclarationCompletionItem(decl, QExplicitlySharedDataPointer<KDevelop::CodeCompletionContext>(), 0),
     m_prefix("")
 {
-    (void)context;
-    (void)inheritanceDepth;
+    Q_UNUSED(context);
+    Q_UNUSED(inheritanceDepth);
     DUChainReadLocker lock;
     if(!decl)
         return;

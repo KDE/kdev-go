@@ -404,7 +404,7 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
     QList<ReferencedTopDUContext> contexts = m_session->contextForImport(import);
     if(contexts.empty())
         return;
- 
+
     //usually package name matches directory, so try searching for that first
     QualifiedIdentifier packageName(import.mid(1, import.length()-2));
     bool firstContext = true;
@@ -424,7 +424,7 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
         }
         if(!decl) //contexts belongs to a different package
             continue;
-        
+
         DUChainWriteLocker lock;
         if(firstContext) //only open declarations once per import(others are redundant)
         {
@@ -438,7 +438,7 @@ void DeclarationBuilder::visitImportSpec(go::ImportSpecAst* node)
                 closeDeclaration();
             }else if(node->dot != -1)
             {//anonymous import
-                NamespaceAliasDeclaration* decl = openDeclaration<NamespaceAliasDeclaration>(QualifiedIdentifier(globalImportIdentifier()), 
+                NamespaceAliasDeclaration* decl = openDeclaration<NamespaceAliasDeclaration>(QualifiedIdentifier(globalImportIdentifier()),
                                                                                             editorFindRange(node->importpath, 0));
                 decl->setKind(Declaration::NamespaceAlias);
                 decl->setImportIdentifier(packageName); //this needs to be actual package name
@@ -463,7 +463,7 @@ void DeclarationBuilder::visitSourceFile(go::SourceFileAst* node)
     Declaration* packageDeclaration = openDeclaration<Declaration>(identifierForNode(node->packageClause->packageName), editorFindRange(node->packageClause->packageName, 0));
     packageDeclaration->setKind(Declaration::Namespace);
     openContext(node, editorFindRange(node, 0), DUContext::Namespace, identifierForNode(node->packageClause->packageName));
-    
+
     packageDeclaration->setInternalContext(currentContext());
     lock.unlock();
     m_thisPackage = identifierForNode(node->packageClause->packageName);
@@ -496,7 +496,7 @@ void DeclarationBuilder::importThisPackage()
 
         DUChainWriteLocker lock;
         //TODO Since package names are identical duchain should find declarations without namespace alias, right?
-        
+
         //NamespaceAliasDeclaration* import = openDeclaration<NamespaceAliasDeclaration>(QualifiedIdentifier(globalImportIdentifier()), RangeInRevision());
         //import->setKind(Declaration::NamespaceAlias);
         //import->setImportIdentifier(packageName); //this needs to be actual package name
@@ -678,7 +678,7 @@ go::GoFunctionDefinition* DeclarationBuilder::declareMethod(go::IdentifierAst *i
                                                       go::GoFunctionDeclaration *declaration,
                                                       const QualifiedIdentifier &identifier)
 {
-    (void)declaration;
+    Q_UNUSED(declaration);
     setComment(comment);
     DUChainWriteLocker lock;
     auto dec = openDefinition<go::GoFunctionDefinition>(identifier, editorFindRange(id, 0));

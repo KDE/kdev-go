@@ -30,7 +30,7 @@
 
 using namespace KDevelop;
 
-namespace go 
+namespace go
 {
 
 ExpressionVisitor::ExpressionVisitor(ParseSession* session, DUContext* context, DeclarationBuilder* builder) :
@@ -71,7 +71,7 @@ void ExpressionVisitor::visitExpression(ExpressionAst* node)
         for(const AbstractType::Ptr &type : types)
             addType(type);
     }
-    
+
     //push unknown type if we failed to find anything else
     if(m_types.size() == 0)
         pushType(AbstractType::Ptr(new IntegralType(IntegralType::TypeNone)));
@@ -120,7 +120,7 @@ void ExpressionVisitor::visitPrimaryExpr(PrimaryExprAst* node)
     if(node->id)
     {
         //first try to handle builtin functions, so we can allow identifiers like "make"
-        if(!handleBuiltinFunction(node)) 
+        if(!handleBuiltinFunction(node))
         {
             QualifiedIdentifier id(identifierForNode(node->id));
             DeclarationPointer decl = go::getTypeOrVarDeclaration(id, m_context);
@@ -141,7 +141,7 @@ void ExpressionVisitor::visitPrimaryExpr(PrimaryExprAst* node)
             }
             m_declaration = decl;
             //qCDebug(DUCHAIN) << "Expression Visitor for "<< id;
-        
+
             //this handles stuff like mytype{}, mytype()
             if((node->literalValue || node->callOrBuiltinParam) && decl->kind() == Declaration::Type)
             {
@@ -183,7 +183,7 @@ void ExpressionVisitor::visitPrimaryExpr(PrimaryExprAst* node)
                 {
                     pushType(decl->abstractType());
                 }
-            } 
+            }
         }
     }
     else if(node->expression)
@@ -213,15 +213,15 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
         //note that methods do NOT inherit from type to type
         //e.g. type mystruct int; type mystruct2 mystruct; func (m mystruct) method() {};
         //in this example mystruct2 will NOT have method method()
-        
+
         //second type is field members of Go structs and interfaces(e.g. struct{ abc int}{10}.   or mystruct{10}.
         //                                                                                    ^                  ^
         // ^ - we are here
-        //note that members are inherited(e.g. type mystruct struct { var1 int}; type mystruct2 mystruct; 
+        //note that members are inherited(e.g. type mystruct struct { var1 int}; type mystruct2 mystruct;
         //in this example mystruct2 will have member named var1
         //hope this explanation helps understand this code and some code in completion classes
-        
-        
+
+
         bool success=false;
         AbstractType::Ptr type = types.first();
         //evaluate pointers
@@ -232,7 +232,7 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
             if(ptype->baseType())
                 type = ptype->baseType();
         }
-            
+
         if(fastCast<StructureType*>(type.constData()))
         {//we have to look for namespace declarations
             DUChainReadLocker lock;
@@ -291,7 +291,7 @@ void ExpressionVisitor::visitPrimaryExprResolve(PrimaryExprResolveAst* node)
                 }
                 else
                     break;
-                
+
             } while(type && count < 100); //if we descended 100 times and still didn't find anything - something is wrong
         }
     }
@@ -539,7 +539,7 @@ void ExpressionVisitor::handleLiteralsAndConversions(PrimaryExprAst* node)
 
 void ExpressionVisitor::visitBlock(BlockAst* node)
 {
-  (void)node;
+    Q_UNUSED(node);
 }
 
 

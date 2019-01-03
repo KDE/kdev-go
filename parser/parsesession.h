@@ -45,19 +45,19 @@ typedef QPair<KDevelop::DUContextPointer, KDevelop::RangeInRevision> SimpleUse;
 class KDEVGOPARSER_EXPORT ParseSession
 {
 public:
-  
+
     ParseSession(const QByteArray& contents, int priority, bool appendWithNewline=true);
-    
+
     virtual ~ParseSession();
-  
+
     static KDevelop::IndexedString languageString();
-    
+
     bool startParsing();
-    
+
     bool parseExpression(go::ExpressionAst **node);
-    
+
     go::StartAst* ast();
-    
+
     QString symbol(qint64 index);
 
     KDevelop::RangeInRevision findRange(go::AstNode* from, go::AstNode* to);
@@ -112,7 +112,7 @@ public:
      *  This only exists, because parser test application uses DebugVisitor, which needs a lexer
      */
     friend go::Lexer* getLexer(const ParseSession& session) { return session.m_lexer; }
-    
+
     void mapAstUse(go::AstNode* node, const SimpleUse& use)
     {
         Q_UNUSED(node);
@@ -120,15 +120,15 @@ public:
     }
 
 private:
-    
+
     bool lex();
-    
+
     KDevPG::MemoryPool* m_pool;
     go::Lexer* m_lexer;
     go::Parser* m_parser;
     go::StartAst* m_ast;
     QByteArray m_contents;
-    
+
     int m_priority;
     KDevelop::IndexedString m_document;
     KDevelop::TopDUContext::Features m_features;

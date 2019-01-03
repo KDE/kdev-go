@@ -86,7 +86,7 @@ void ContextBuilder::setParseSession(ParseSession* session)
 
 TopDUContext* ContextBuilder::newTopContext(const RangeInRevision& range, ParsingEnvironmentFile* file)
 {
-    
+
     if (!file) {
         file = new ParsingEnvironmentFile(m_session->currentDocument());
         file->setLanguage(m_session->languageString());
@@ -185,7 +185,6 @@ void ContextBuilder::visitPrimaryExpr(go::PrimaryExprAst *node)
                     }
                     if(declaration && declaration->kind() == Declaration::Type)
                     {
-//                         const RangeInRevision &range = editorFindRange(primaryExprResolveNode->literalValue, 0); // Unused
                         openContext(node->id, editorFindRange(primaryExprResolveNode->literalValue, 0), DUContext::Other, id);
                         visitPrimaryExprResolve(node->primaryExprResolve);
                         closeContext();

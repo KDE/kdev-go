@@ -47,9 +47,9 @@ GoParseJob::GoParseJob(const KDevelop::IndexedString& url, KDevelop::ILanguageSu
 
 void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread)
 {
-   (void)self;
-   (void)thread;
-   qCDebug(Go) << "GoParseJob succesfully created for document " << document(); 
+   Q_UNUSED(self);
+   Q_UNUSED(thread);
+   qCDebug(Go) << "GoParseJob succesfully created for document " << document();
 
    UrlParseLock urlLock(document());
 
@@ -68,7 +68,7 @@ void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread
 
     //ParseSession session(QString(contents().contents).toUtf8(), priority());
     ParseSession session(code, parsePriority());
-    
+
     session.setCurrentDocument(document());
     session.setFeatures(minimumFeatures());
 
@@ -81,9 +81,9 @@ void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread
         DUChainReadLocker lock;
         context = DUChainUtils::standardContextForUrl(document().toUrl());
     }
-    
+
     //ParsingEnvironmentFilePointer filep = context->parsingEnvironmentFile();
-    
+
     if (context) {
         translateDUChainToRevision(context);
         context->setRange(RangeInRevision(0, 0, INT_MAX, INT_MAX));
@@ -139,7 +139,7 @@ void GoParseJob::run(ThreadWeaver::JobPointer self, ThreadWeaver::Thread *thread
         context = new TopDUContext(document(), RangeInRevision(0, 0, INT_MAX, INT_MAX), file);
         DUChain::self()->addDocumentChain(context);
     }
-        
+
     setDuChain(context);
     {
         DUChainWriteLocker lock;

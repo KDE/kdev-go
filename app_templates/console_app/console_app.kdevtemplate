@@ -34,6 +34,7 @@ Comment[fr]=Générer la structure de fichiers pour lancer une application conso
 Comment[gl]=Xera a estrutura de ficheiros para comezar un aplicativo de consola en Go.
 Comment[it]=Genera la struttura di file per avviare un'applicazione Go per console
 Comment[nl]=Genereer de bestandsstructuur om een Go console-toepassing te starten
+Comment[pl]=Tworzy strukturę plików, aby zacząć aplikację Go w konsoli
 Comment[pt]=Gerar a estrutura de ficheiros para iniciar uma aplicação de consola em Go
 Comment[sv]=Skapa filstrukturen för att starta ett Go terminalprogram
 Comment[uk]=Створити структуру файлів для запуску консольної програми мовою Go

@@ -17,7 +17,7 @@
         "Description[pl]": "Importuje projekty Go",
         "Description[pt]": "Importa projectos de Go",
         "Description[sv]": "Importerar Go-projekt",
-        "Description[uk]": "Імпортування проектів Go",
+        "Description[uk]": "Імпортування проєктів Go",
         "Description[x-test]": "xxImports Go projectsxx",
         "Description[zh_TW]": "匯入 Go 專案",
         "Icon": "kdevelop",
@@ -40,7 +40,7 @@
         "Name[sk]": "Správca projektu Go",
         "Name[sv]": "Gå till projekthanterare",
         "Name[tr]": "Go Proje Yöneticisi",
-        "Name[uk]": "Керування проектами go",
+        "Name[uk]": "Керування проєктами go",
         "Name[x-test]": "xxGo Project Managerxx",
         "Name[zh_TW]": "Go 專案管理員",
         "ServiceTypes": [

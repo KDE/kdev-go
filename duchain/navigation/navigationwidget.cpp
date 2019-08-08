@@ -24,12 +24,10 @@
 using namespace KDevelop;
 
 NavigationWidget::NavigationWidget(KDevelop::Declaration* decl, KDevelop::TopDUContext* topContext,
-                                   const QString& htmlPrefix, const QString& htmlSuffix,
                                    const KDevelop::AbstractNavigationWidget::DisplayHints hints)
 {
     auto context = NavigationContextPointer(new DeclarationNavigationContext(DeclarationPointer(decl), TopDUContextPointer(topContext), nullptr));
     
-    context->setPrefixSuffix(htmlPrefix, htmlSuffix);
     setDisplayHints(hints);
     setContext(context);
 }

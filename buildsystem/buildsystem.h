@@ -37,6 +37,7 @@ public:
     bool removeTarget(KDevelop::ProjectTargetItem *target) override;
     bool removeFilesFromTargets(const QList<KDevelop::ProjectFileItem*>&) override;
     bool hasBuildInfo(KDevelop::ProjectBaseItem* item) const override;
+    KDevelop::Path compiler(KDevelop::ProjectTargetItem* p) const override;
     KDevelop::Path buildDirectory(KDevelop::ProjectBaseItem*) const override;
     QList<KDevelop::ProjectTargetItem*> targets(KDevelop::ProjectFolderItem*) const override;
     KDevelop::ProjectFolderItem* createFolderItem(KDevelop::IProject * project, const KDevelop::Path & path, KDevelop::ProjectBaseItem * parent) override;

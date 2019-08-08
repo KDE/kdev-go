@@ -95,6 +95,12 @@ bool GoBuildSystem::hasBuildInfo(KDevelop::ProjectBaseItem* item) const
     return false;
 }
 
+Path GoBuildSystem::compiler(KDevelop::ProjectTargetItem* p) const
+{
+    Q_UNUSED(p);
+    return Path("go");
+}
+
 Path GoBuildSystem::buildDirectory(KDevelop::ProjectBaseItem* item) const
 {
     auto project = item->project();

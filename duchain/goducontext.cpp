@@ -37,26 +37,26 @@ REGISTER_DUCHAIN_ITEM_WITH_DATA(GoTopDUContext, TopDUContextData);
 typedef GoDUContext<DUContext> GoNormalDUContext;
 REGISTER_DUCHAIN_ITEM_WITH_DATA(GoNormalDUContext, DUContextData);
 
-template<>
-QWidget* GoTopDUContext::createNavigationWidget(Declaration* decl, TopDUContext* topContext,
-                                                const QString& htmlPrefix, const QString& htmlSuffix,
-                                                const KDevelop::AbstractNavigationWidget::DisplayHints hints) const {
+template <>
+AbstractNavigationWidget*
+GoTopDUContext::createNavigationWidget(Declaration* decl, TopDUContext* topContext,
+                                             AbstractNavigationWidget::DisplayHints hints) const {
     if (!decl) {
         qCDebug(DUCHAIN) << "no declaration, not returning navigationwidget";
         return 0;
     }
-    return new NavigationWidget(decl, topContext, htmlPrefix, htmlSuffix, hints);
+    return new NavigationWidget(decl, topContext, hints);
 }
 
-template<>
-QWidget* GoNormalDUContext::createNavigationWidget(Declaration* decl, TopDUContext* topContext,
-                                                   const QString& htmlPrefix, const QString& htmlSuffix,
-                                                   const KDevelop::AbstractNavigationWidget::DisplayHints hints) const {
+template <>
+AbstractNavigationWidget*
+GoNormalDUContext::createNavigationWidget(Declaration* decl, TopDUContext* topContext,
+                                             AbstractNavigationWidget::DisplayHints hints) const {
     if (!decl) {
         qCDebug(DUCHAIN) << "no declaration, not returning navigationwidget";
         return 0;
     }
-    return new NavigationWidget(decl, topContext, htmlPrefix, htmlSuffix, hints);
+    return new NavigationWidget(decl, topContext, hints);
 }
 
 }
